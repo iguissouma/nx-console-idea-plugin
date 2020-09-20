@@ -1,7 +1,7 @@
-package org.jetbrains.plugins.template.services
+package com.github.iguissouma.nxconsoleideaplugin.services
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.template.MyBundle
+import com.github.iguissouma.nxconsoleideaplugin.MyBundle
 
 class MyProjectService(project: Project) {
 

@@ -1,19 +1,39 @@
 <idea-plugin>
-    <id>com.github.iguissouma.nxconsoleideaplugin</id>
-    <name>nx-console-idea-plugin</name>
+    <id>com.github.iguissouma.nxconsole</id>
+    <name>Nx Console Idea</name>
     <vendor>iguissouma</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>JavaScript</depends>
+    <depends>com.intellij.modules.json</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.iguissouma.nxconsoleideaplugin.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.iguissouma.nxconsoleideaplugin.services.MyProjectService"/>
+        <applicationService serviceImplementation="com.github.iguissouma.nxconsole.services.NxApplicationService"/>
+        <projectService serviceImplementation="com.github.iguissouma.nxconsole.services.NxProjectService"/>
+        <!--buildTools-->
+        <configurationType implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType"/>
+        <runConfigurationProducer
+                implementation="com.github.iguissouma.nxconsole.buildTools.NxRunConfigurationProducer"/>
+        <projectService serviceImplementation="com.github.iguissouma.nxconsole.buildTools.NxFileManager"/>
+        <runAnything.executionProvider
+                implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
+
     </extensions>
 
     <projectListeners>
-        <listener class="com.github.iguissouma.nxconsoleideaplugin.listeners.MyProjectManagerListener"
+        <listener class="com.github.iguissouma.nxconsole.listeners.NxProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </projectListeners>
+
+    <actions>
+        <!--Actions here-->
+        <group id="ShowJsbtNxTasks">
+            <action id="ShowNxTasks" class="com.github.iguissouma.nxconsole.buildTools.ShowNxScriptsActions"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+        </group>
+    </actions>
 </idea-plugin>

@@ -1,11 +1,11 @@
-package com.github.iguissouma.nxconsoleideaplugin
+package com.github.iguissouma.nxconsole
 
 import com.intellij.AbstractBundle
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
 @NonNls
-private const val BUNDLE = "messages.MyBundle"
+private const val BUNDLE = "messages.NxBundle"
 
 object MyBundle : AbstractBundle(BUNDLE) {
 

@@ -6,6 +6,7 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeUtil
+import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
@@ -36,6 +37,25 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
-        return false
+        val runSettings = createRunSettingsFromContext(
+            configuration.runSettings,
+            context,
+            sourceElement
+        )
+        return if (runSettings == null) {
+            false
+        } else {
+            setupConfigurationFromSettings(configuration, runSettings)
+            true
+        }
+    }
+
+    private fun createRunSettingsFromContext(
+        runSettings: NxRunSettings,
+        context: ConfigurationContext,
+        sourceElement: Ref<PsiElement>
+    ): NxRunSettings? {
+        // TODO
+        return null
     }
 }

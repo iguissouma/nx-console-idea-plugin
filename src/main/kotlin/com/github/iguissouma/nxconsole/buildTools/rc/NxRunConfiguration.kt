@@ -14,6 +14,7 @@ import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import org.jdom.Element
 import org.jetbrains.annotations.Nullable
 
 class NxRunConfiguration(
@@ -47,5 +48,15 @@ class NxRunConfiguration(
                 }
             }
         }
+    }
+
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+        runSettings.readFromXml(element)
+    }
+
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        runSettings.writeToXml(element)
     }
 }

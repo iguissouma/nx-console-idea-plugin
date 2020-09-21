@@ -179,7 +179,8 @@ class NxService(val project: Project) : JsbtService(project) {
     }
 
     override fun showTaskListingSettingsDialog(contextNxfile: VirtualFile?): Boolean {
-        return false
+        editConfigurations()
+        return true
     }
 
     fun detectFirstBuildfileInContentRoots(webModulesOnly: Boolean): VirtualFile? {

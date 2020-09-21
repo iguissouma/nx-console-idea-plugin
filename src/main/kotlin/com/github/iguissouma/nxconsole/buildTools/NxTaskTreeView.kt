@@ -117,7 +117,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             return null
         } else {
             var resultStructure: NxFileStructure? = null
-            val taskNames: MutableList<String> = SmartList<String>()
+            val taskNames: MutableList<String> = SmartList()
             for (node in nodes) {
                 val task = NxTask.getUserObject(node) ?: return null
                 val structure = task.structure

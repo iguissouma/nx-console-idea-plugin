@@ -81,7 +81,7 @@ class NxService(val project: Project) : JsbtService(project) {
         webModulesOnly: Boolean,
         filterOutEmptyBuildfiles: Boolean
     ): MutableList<VirtualFile> {
-        val buildfiles: MutableList<VirtualFile> = SmartList<VirtualFile>()
+        val buildfiles: MutableList<VirtualFile> = SmartList()
         JsbtUtil.iterateOverContentRoots(myProject, webModulesOnly) { contentRoot: VirtualFile ->
             val packageJson = findChildNxJsonFile(contentRoot)
             LOG.info("Found nx.json in " + contentRoot.path + ": " + packageJson)
@@ -127,29 +127,24 @@ class NxService(val project: Project) : JsbtService(project) {
             throw invalidFile(nxJson)
         } else {
             val structure = NxFileStructure(nxJson)
-            if (false) {
+            val angularJsonFile = findChildAngularJsonFile(nxJson.parent)
+            val nxProjectsProperty = findProjectsProperty(project, nxJson)
+            if (angularJsonFile == null) {
                 structure
             } else {
-                val angularJsonFile = findChildAngularJsonFile(nxJson.parent)
-                val nxProjectsProperty = findProjectsProperty(project, nxJson)
-                val angularProjectsProperty = angularJsonFile?.let { findProjectsProperty(project, it) }
+                val angularProjectsProperty = angularJsonFile.let { findProjectsProperty(project, it) }
                 val projectsFromAngular = ObjectUtils.tryCast(angularProjectsProperty?.value, JsonObject::class.java)
                 val projectsFromNx = ObjectUtils.tryCast(nxProjectsProperty?.value, JsonObject::class.java)
                 if (projectsFromNx != null && projectsFromAngular != null) {
                     val propertyList = projectsFromNx.propertyList
-                    val map1 = propertyList.map { it.name }
+                    structure.myNxProjectsTask = propertyList.map { it.name }
                         .map { it to projectsFromAngular.findProperty(it) }
                         .map { it.first to (it.second?.value as JsonObject).findProperty("architect") }
                         .map {
                             it.first to (it.second?.value as JsonObject).propertyList.map { property ->
-                                NxTask(
-                                    structure,
-                                    property.name
-                                )
+                                NxTask(structure, property.name)
                             }.toList()
-                        }
-                        .toMap()
-                    structure.myNxProjectsTask = map1
+                        }.toMap()
                 }
                 val listOf = listOf("Generate & Run Target", "Common Nx Commands", "Projects")
                 val scripts = listOf.map { NxTask(structure, it) }.toList()
@@ -171,7 +166,7 @@ class NxService(val project: Project) : JsbtService(project) {
     override fun fetchBuildfileStructure(nxJson: VirtualFile): JsbtFileStructure {
         return ReadAction.compute<NxFileStructure, JsbtTaskFetchException> {
             if (myProject.isDisposed) {
-                throw JsbtTaskFetchException.newGenericException(nxJson, myProject.toString() + " is disposed already")
+                throw JsbtTaskFetchException.newGenericException(nxJson, "myProject is disposed already")
             } else if (!nxJson.isValid()) {
                 throw JsbtTaskFetchException.newBuildfileSyntaxError(nxJson)
             } else {
@@ -179,17 +174,14 @@ class NxService(val project: Project) : JsbtService(project) {
                 if (psiFile == null) {
                     throw JsbtTaskFetchException.newGenericException(nxJson, "Cannot find PSI file")
                 } else {
-                    return@compute CachedValuesManager.getCachedValue(psiFile, NxService.STRUCTURE_KEY) {
-                        val value: NxFileStructure
-                        value = try {
-                            // TODO build tasks
+                    return@compute CachedValuesManager.getCachedValue(psiFile, STRUCTURE_KEY) {
+                        val value: NxFileStructure = try {
                             //NpmScriptsUtil.listTasks(myProject, nxJson)
                             listTasks(project, nxJson)
-                            //NxFileStructure(nxJson)
                         } catch (var5: JsbtTaskFetchException) {
                             NxFileStructure(nxJson)
                         }
-                        CachedValueProvider.Result.create(value, *arrayOf<Any>(psiFile))
+                        CachedValueProvider.Result.create(value, psiFile)
                     }
                 }
             }
@@ -227,7 +219,7 @@ class NxService(val project: Project) : JsbtService(project) {
         val merged = NxRunSettings(
             nxFilePath = structure.nxJson.path,
             tasks = taskSet.taskNames
-        )//NxRunSettings.Builder(nxRunConfiguration.runSettings).setGulpfilePath(structure.buildfile.path).setTasks(taskSet.taskNames).build()
+        )
         NxRunConfigurationProducer.setupConfigurationFromSettings(nxRunConfiguration, merged)
     }
 
@@ -241,7 +233,7 @@ class NxService(val project: Project) : JsbtService(project) {
         return ContainerUtil.getFirstItem(buildfiles) as VirtualFile
     }
 
-     class NxApplicationService : JsbtApplicationService() {
+    class NxApplicationService : JsbtApplicationService() {
 
         override fun getProjectService(project: Project): NxService {
             return ServiceManager.getService(project, NxService::class.java) as NxService

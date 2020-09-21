@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.SmartList
+import com.intellij.util.containers.toArray
 import com.intellij.util.xmlb.annotations.XCollection
 
 
@@ -23,7 +24,7 @@ class NxFileManager(val project: Project) : JsbtFileManager(project, NxService.g
     PersistentStateComponent<NxFileManager.State> {
 
     val LOCK = Object();
-    private var myNxJsonFiles: ImmutableSet<VirtualFile>? = null
+    var myNxJsonFiles: Set<VirtualFile> = setOf()
 
 
     companion object {
@@ -38,16 +39,16 @@ class NxFileManager(val project: Project) : JsbtFileManager(project, NxService.g
     }
 
     fun getValidNxJsonFiles(): Set<VirtualFile> {
-        var nxJsonFiles: ImmutableSet<VirtualFile>?
+        var nxJsonFiles: Set<VirtualFile>?
         synchronized(this.LOCK) { nxJsonFiles = this.myNxJsonFiles }
-        return this.myNxJsonFiles?.toSet() ?: emptySet()
+        return this.myNxJsonFiles.toSet() ?: emptySet()
         //return this.filter(packageJsonFiles, false)
     }
 
 
     override fun loadState(state: NxFileManager.State) {
 
-        val files: MutableList<VirtualFile?> = SmartList<VirtualFile?>()
+        val files: MutableList<VirtualFile> = SmartList()
         val var3: Iterator<*> = state.myPaths.iterator()
 
         while (var3.hasNext()) {
@@ -58,7 +59,7 @@ class NxFileManager(val project: Project) : JsbtFileManager(project, NxService.g
             }
         }
 
-        synchronized(LOCK) { this.myNxJsonFiles = ImmutableSet.copyOf(files) }
+        synchronized(LOCK) { this.myNxJsonFiles = files.toSet() }
     }
 
     class State {

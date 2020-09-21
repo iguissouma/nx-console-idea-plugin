@@ -13,6 +13,7 @@
         <applicationService serviceImplementation="com.github.iguissouma.nxconsole.services.NxApplicationService"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.services.NxProjectService"/>
         <!--buildTools-->
+        <postStartupActivity implementation="com.github.iguissouma.nxconsole.buildTools.NxJsbtStartupActivity"/>
         <configurationType implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType"/>
         <runConfigurationProducer
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunConfigurationProducer"/>

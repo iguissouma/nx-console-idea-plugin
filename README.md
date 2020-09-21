@@ -1,8 +1,8 @@
-# nx-console-idea-plugin
+# Nx Console Idea Plugin
 
 ![Build](https://github.com/iguissouma/nx-console-idea-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.iguissouma.nxconsole.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.iguissouma.nxconsole.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.iguissouma.nxconsole.svg)](https://plugins.jetbrains.com/plugin/15101-nx-console-idea)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.iguissouma.nxconsole.svg)](https://plugins.jetbrains.com/plugin/15101-nx-console-idea)
 
 ## Template ToDo list
 - [x] Create a new [IntelliJ Platform Plugin Template][template] project.
@@ -15,6 +15,12 @@
 
 <!-- Plugin description -->
 This plugin will add support for projects using [Nx](http://nx.dev/) dev tools. 
+- Open `nx.json` file
+- Right button and choose `Show Nx Tasks`
+- A tool window will appear with the available tasks, you can double-click to run the Nx task.
+
+- You can also run tasks from the `RunAnything` command, just type `nx run <task>` you'll get the list of available tasks, choose one to execute.
+
 <!-- Plugin description end -->
 
 ## Installation

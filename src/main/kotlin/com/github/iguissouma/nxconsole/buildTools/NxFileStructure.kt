@@ -33,12 +33,12 @@ class NxFileStructure(val nxJson: VirtualFile) : JsbtFileStructure(nxJson) {
     private var myTaskNames: List<String> = mutableListOf()
 
     override fun getTaskNames(): List<String> {
-        return this.myNxProjectsTask.flatMap { it.value.map { t -> "${it.key}:${t.myName}" } }
+        return this.myNxProjectsTask.flatMap { it.value.map { t -> "${it.key}:${t.name}" } }
     }
 
     fun setScripts(scripts: List<NxTask>) {
         myScripts = ImmutableList.copyOf(scripts)
-        myTaskNames = ImmutableList.copyOf(Lists.transform(myScripts) { input: NxTask? -> input!!.myName })
+        myTaskNames = ImmutableList.copyOf(Lists.transform(myScripts) { input: NxTask? -> input!!.name })
     }
 
     companion object {
@@ -46,5 +46,4 @@ class NxFileStructure(val nxJson: VirtualFile) : JsbtFileStructure(nxJson) {
             return JsbtTree.getUserObject(node, NxFileStructure::class.java)
         }
     }
-
 }

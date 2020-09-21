@@ -1,8 +1,8 @@
 package com.github.iguissouma.nxconsole.listeners
 
+import com.github.iguissouma.nxconsole.services.NxProjectService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
-import com.github.iguissouma.nxconsole.services.NxProjectService
 
 internal class NxProjectManagerListener : ProjectManagerListener {
 

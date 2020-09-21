@@ -41,13 +41,12 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         .addLabeledComponent("&Package nx-cli:", this.nxPackageField)
         .panel
 
-
     private fun createTasksField(): TextFieldWithHistory {
         val field = TextFieldWithHistory()
         field.setMinimumAndPreferredWidth(0)
         field.setHistorySize(-1)
         JsbtUtil.enableExpandingWithLazyHistoryLoading(field)
-        //TODO
+        // TODO
 
         return field
     }
@@ -97,7 +96,6 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             tasks = tasks
         )
     }
-
 
     private fun createNxFileFieldWithBrowseButton(project: Project): TextFieldWithHistoryWithBrowseButton {
         return SwingHelper.createTextFieldWithHistoryWithBrowseButton(

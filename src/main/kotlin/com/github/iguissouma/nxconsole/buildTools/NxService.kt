@@ -1,14 +1,23 @@
 package com.github.iguissouma.nxconsole.buildTools
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findChildNxJsonFile
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.isNxJsonFile
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.listTasks
 import com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType
 import com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfiguration
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.json.psi.JsonObject
-import com.intellij.lang.javascript.buildTools.base.*
+import com.intellij.lang.javascript.buildTools.base.JsbtApplicationService
+import com.intellij.lang.javascript.buildTools.base.JsbtFileManager
+import com.intellij.lang.javascript.buildTools.base.JsbtFileStructure
+import com.intellij.lang.javascript.buildTools.base.JsbtService
+import com.intellij.lang.javascript.buildTools.base.JsbtTaskFetchException
+import com.intellij.lang.javascript.buildTools.base.JsbtTaskSet
+import com.intellij.lang.javascript.buildTools.base.JsbtTaskTreeView
+import com.intellij.lang.javascript.buildTools.base.JsbtToolWindowManager
+import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.lang.javascript.library.JSLibraryUtil
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.ServiceManager
@@ -16,14 +25,13 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
-import com.intellij.util.ObjectUtils
 import com.intellij.util.SmartList
 import com.intellij.util.containers.ContainerUtil
 import javax.swing.Icon
@@ -32,17 +40,27 @@ import javax.swing.Icon
 class NxService(val project: Project) : JsbtService(project) {
 
     companion object {
+
         val LOG = Logger.getInstance(NxService::class.java)
+
         val APPLICATION_SERVICE = NxApplicationService()
+
         fun getInstance(project: Project): NxService {
             return APPLICATION_SERVICE.getProjectService(project)
         }
 
         val STRUCTURE_KEY = Key.create<CachedValue<NxFileStructure>>(NxService::class.java.name)
-        val NX_NAME_WITHOUT_EXT = "nx"
-        val KNOWN_EXTENSIONS = arrayOf("json")
-    }
 
+        fun doComputeAvailability(project: Project, psiFile: PsiFile, nxJson: VirtualFile) =
+            CachedValuesManager.getCachedValue(psiFile, STRUCTURE_KEY) {
+                val value: NxFileStructure = try {
+                    listTasks(project, nxJson)
+                } catch (var5: JsbtTaskFetchException) {
+                    NxFileStructure(nxJson)
+                }
+                CachedValueProvider.Result.create(value, psiFile)
+            }
+    }
 
     override fun getApplicationService(): JsbtApplicationService {
         return APPLICATION_SERVICE
@@ -54,7 +72,6 @@ class NxService(val project: Project) : JsbtService(project) {
 
     override fun createToolWindowManager(): JsbtToolWindowManager {
         return JsbtToolWindowManager(project, "Nx ", NxIcons.NRWL_ICON, "reference.tool.window.nx", this)
-
     }
 
     override fun createTaskTreeView(layoutPlace: String?): JsbtTaskTreeView {
@@ -101,60 +118,6 @@ class NxService(val project: Project) : JsbtService(project) {
         }
     }
 
-    fun listTasks(project: Project, nxJson: VirtualFile): NxFileStructure {
-
-        val exRef = Ref.create<JsbtTaskFetchException>()
-        val structureRef = Ref.create<NxFileStructure>()
-        ApplicationManager.getApplication().runReadAction {
-            try {
-                structureRef.set(doBuildStructure(project, nxJson))
-            } catch (var5: JsbtTaskFetchException) {
-                exRef.set(var5)
-            }
-        }
-        val structure = structureRef.get() as NxFileStructure
-        return if (structure != null) {
-            structure
-        } else {
-            throw (exRef.get() as JsbtTaskFetchException)
-        }
-    }
-
-
-    private fun doBuildStructure(project: Project, nxJson: VirtualFile): NxFileStructure {
-
-        return if (!nxJson.isValid) {
-            throw invalidFile(nxJson)
-        } else {
-            val structure = NxFileStructure(nxJson)
-            val angularJsonFile = findChildAngularJsonFile(nxJson.parent)
-            val nxProjectsProperty = findProjectsProperty(project, nxJson)
-            if (angularJsonFile == null) {
-                structure
-            } else {
-                val angularProjectsProperty = angularJsonFile.let { findProjectsProperty(project, it) }
-                val projectsFromAngular = ObjectUtils.tryCast(angularProjectsProperty?.value, JsonObject::class.java)
-                val projectsFromNx = ObjectUtils.tryCast(nxProjectsProperty?.value, JsonObject::class.java)
-                if (projectsFromNx != null && projectsFromAngular != null) {
-                    val propertyList = projectsFromNx.propertyList
-                    structure.myNxProjectsTask = propertyList.map { it.name }
-                        .map { it to projectsFromAngular.findProperty(it) }
-                        .map { it.first to (it.second?.value as JsonObject).findProperty("architect") }
-                        .map {
-                            it.first to (it.second?.value as JsonObject).propertyList.map { property ->
-                                NxTask(structure, property.name)
-                            }.toList()
-                        }.toMap()
-                }
-                val listOf = listOf("Generate & Run Target", "Common Nx Commands", "Projects")
-                val scripts = listOf.map { NxTask(structure, it) }.toList()
-                structure.setScripts(scripts)
-                structure
-            }
-        }
-    }
-
-
     override fun isBuildfile(file: VirtualFile): Boolean {
         return isNxJsonFile(file)
     }
@@ -174,15 +137,7 @@ class NxService(val project: Project) : JsbtService(project) {
                 if (psiFile == null) {
                     throw JsbtTaskFetchException.newGenericException(nxJson, "Cannot find PSI file")
                 } else {
-                    return@compute CachedValuesManager.getCachedValue(psiFile, STRUCTURE_KEY) {
-                        val value: NxFileStructure = try {
-                            //NpmScriptsUtil.listTasks(myProject, nxJson)
-                            listTasks(project, nxJson)
-                        } catch (var5: JsbtTaskFetchException) {
-                            NxFileStructure(nxJson)
-                        }
-                        CachedValueProvider.Result.create(value, psiFile)
-                    }
+                    doComputeAvailability(project, psiFile, nxJson)
                 }
             }
         }
@@ -226,7 +181,6 @@ class NxService(val project: Project) : JsbtService(project) {
     override fun showTaskListingSettingsDialog(contextNxfile: VirtualFile?): Boolean {
         return false
     }
-
 
     fun detectFirstBuildfileInContentRoots(webModulesOnly: Boolean): VirtualFile? {
         val buildfiles = this.detectAllBuildfilesInContentRoots(webModulesOnly)

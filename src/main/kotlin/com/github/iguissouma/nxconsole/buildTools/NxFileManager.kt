@@ -1,8 +1,7 @@
 package com.github.iguissouma.nxconsole.buildTools
 
-import com.google.common.collect.ImmutableSet
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.isNxJsonFile
 import com.intellij.lang.javascript.buildTools.base.JsbtFileManager
-import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.components.State
@@ -11,21 +10,21 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.SmartList
-import com.intellij.util.containers.toArray
 import com.intellij.util.xmlb.annotations.XCollection
-
 
 @State(
     name = "JsBuildToolNxFileManager",
-    storages = [Storage("\$CACHE_FILE$"),
-        Storage(value = "\$WORKSPACE_FILE$", deprecated = true)]
+    storages = [
+        Storage("\$CACHE_FILE$"),
+        Storage(value = "\$WORKSPACE_FILE$", deprecated = true)
+    ]
 )
-class NxFileManager(val project: Project) : JsbtFileManager(project, NxService.getInstance(project)),
+class NxFileManager(val project: Project) :
+    JsbtFileManager(project, NxService.getInstance(project)),
     PersistentStateComponent<NxFileManager.State> {
 
-    val LOCK = Object();
+    val LOCK = Object()
     var myNxJsonFiles: Set<VirtualFile> = setOf()
-
 
     companion object {
         fun getInstance(project: Project): NxFileManager {
@@ -33,20 +32,18 @@ class NxFileManager(val project: Project) : JsbtFileManager(project, NxService.g
         }
     }
 
-
-    override fun getState(): NxFileManager.State {
-        return NxFileManager.State(this.getValidNxJsonFiles().map { it.path }.sorted().toList())
+    override fun getState(): State {
+        return State(this.getValidNxJsonFiles().map { it.path }.sorted().toList())
     }
 
     fun getValidNxJsonFiles(): Set<VirtualFile> {
         var nxJsonFiles: Set<VirtualFile>?
         synchronized(this.LOCK) { nxJsonFiles = this.myNxJsonFiles }
         return this.myNxJsonFiles.toSet() ?: emptySet()
-        //return this.filter(packageJsonFiles, false)
+        // return this.filter(packageJsonFiles, false)
     }
 
-
-    override fun loadState(state: NxFileManager.State) {
+    override fun loadState(state: State) {
 
         val files: MutableList<VirtualFile> = SmartList()
         val var3: Iterator<*> = state.myPaths.iterator()

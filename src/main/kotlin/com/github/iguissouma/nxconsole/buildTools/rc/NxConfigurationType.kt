@@ -30,6 +30,4 @@ class NxConfigurationType :
             return type.configurationFactories[0]
         }
     }
-
-
 }

@@ -41,7 +41,6 @@ class NxRunProfileState(
         val console: ConsoleView = this.createConsole(processHandler, commandLine.workDirectory)
         console.attachToProcess(processHandler)
         return DefaultExecutionResult(console, processHandler)
-
     }
 
     private fun configureCommandLine(commandLine: GeneralCommandLine, interpreter: NodeJsInterpreter) {
@@ -54,7 +53,6 @@ class NxRunProfileState(
             commandLine.addParameter(getNxBinFile(this.nxPackage).absolutePath)
         }
 
-
         commandLine.addParameters("run")
         commandLine.addParameters(this.runSettings.tasks)
 
@@ -65,7 +63,6 @@ class NxRunProfileState(
         return File(nxPackage.systemDependentPath, "bin" + File.separator + "nx.js")
     }
 
-
     private fun createConsole(processHandler: ProcessHandler, cwd: File?): ConsoleView {
         val project: Project = this.environment.project
         val consoleView = NodeCommandLineUtil.createConsole(processHandler, project, false)
@@ -74,5 +71,4 @@ class NxRunProfileState(
         consoleView.addMessageFilter(TypeScriptErrorConsoleFilter(project, cwd))
         return consoleView
     }
-
 }

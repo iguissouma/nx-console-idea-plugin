@@ -11,8 +11,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.lang.javascript.buildTools.gulp.rc.GulpRunConfiguration
-import com.intellij.lang.javascript.buildTools.gulp.rc.GulpRunProfileState
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
@@ -50,5 +48,4 @@ class NxRunConfiguration(
             }
         }
     }
-
 }

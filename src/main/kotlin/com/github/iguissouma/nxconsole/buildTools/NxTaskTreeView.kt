@@ -1,8 +1,16 @@
 package com.github.iguissouma.nxconsole.buildTools
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findChildAngularJsonFile
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findProjectProperty
+import com.intellij.execution.PsiLocation
 import com.intellij.icons.AllIcons
-import com.intellij.lang.javascript.buildTools.base.*
+import com.intellij.json.psi.JsonObject
+import com.intellij.lang.javascript.buildTools.base.JsbtFileStructure
+import com.intellij.lang.javascript.buildTools.base.JsbtSortingMode
+import com.intellij.lang.javascript.buildTools.base.JsbtTaskSet
+import com.intellij.lang.javascript.buildTools.base.JsbtTaskTreeView
+import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -25,14 +33,14 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             val node = DefaultMutableTreeNode(myScript, false)
             generateAndRunTargetNode.add(node)
         }
-        //buildfileTreeNode.add(generateAndRunTargetNode)
+        // buildfileTreeNode.add(generateAndRunTargetNode)
 
         val nxCommonCommandTaskNode = DefaultMutableTreeNode("Common Nx Commands", true)
         for (myScript in structure.myNxCommonCommandTask) {
             val node = DefaultMutableTreeNode(myScript, false)
             nxCommonCommandTaskNode.add(node)
         }
-        //buildfileTreeNode.add(nxCommonCommandTaskNode)
+        // buildfileTreeNode.add(nxCommonCommandTaskNode)
 
         val nxProjectsTaskNode = DefaultMutableTreeNode("Projects", true)
         for (myScript: Map.Entry<String, List<NxTask>> in structure.myNxProjectsTask.entries) {
@@ -48,7 +56,6 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         if (structure.myScripts.isEmpty()) {
             buildfileTreeNode.add(DefaultMutableTreeNode("No scripts found", false))
         }
-
     }
 
     override fun hasTaskNodes(nxTreeNode: DefaultMutableTreeNode): Boolean {
@@ -82,12 +89,11 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             val script = NxTask.getUserObject(node)
             if (script != null) {
                 renderer.icon = AllIcons.Nodes.C_plocal
-                renderer.append(script.myName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                renderer.append(script.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             } else {
                 renderer.append(node.userObject as String, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }
         }
-
     }
 
     override fun getPersistentId(node: DefaultMutableTreeNode): String? {
@@ -96,13 +102,13 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             structure.buildfile.path
         } else {
             val script = NxTask.getUserObject(node)
-            script?.myName
+            script?.name
         }
     }
 
     override fun getPresentableTaskName(node: DefaultMutableTreeNode): String? {
         val script = NxTask.getUserObject(node)
-        return script?.myName
+        return script?.name
     }
 
     override fun createTaskSetFromSelectedNodes(): JsbtTaskSet? {
@@ -114,28 +120,61 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             val taskNames: MutableList<String> = SmartList<String>()
             for (node in nodes) {
                 val task = NxTask.getUserObject(node) ?: return null
-                val structure = task.myStructure
+                val structure = task.structure
 
                 if (resultStructure != null && resultStructure != structure) {
                     return null
                 }
                 resultStructure = structure
                 val parent = node.parent as DefaultMutableTreeNode
-                taskNames.add("${parent.userObject}:"+ task.myName)
+                taskNames.add("${parent.userObject}:" + task.name)
             }
             return resultStructure?.let { JsbtTaskSet(it, taskNames) }
         }
     }
 
-    override fun createJumpToSourceDescriptor(p0: Project, p1: DefaultMutableTreeNode): Navigatable? {
-        return null;
+    override fun createJumpToSourceDescriptor(project: Project, node: DefaultMutableTreeNode): Navigatable? {
+        val script = NxTask.getUserObject(node)
+        if (script == null && (node.userObject as String != "Projects")) {
+            // TODO check project.baseDir
+            val angularJsonFile = findChildAngularJsonFile(project.baseDir) ?: return null
+            val property = findProjectProperty(
+                project,
+                angularJsonFile,
+                node.userObject as String
+            )
+            if (property != null) {
+                val location = PsiLocation.fromPsiElement(property)
+                if (location != null) {
+                    return location.openFileDescriptor
+                }
+            }
+        } else if (script != null) {
+            val virtualNxJson = script.structure.buildfile
+            val angularJsonFile = findChildAngularJsonFile(virtualNxJson.parent) ?: return null
+            val property = findProjectProperty(
+                project,
+                angularJsonFile,
+                (node.parent as DefaultMutableTreeNode).userObject as String
+            )
+            if (property != null) {
+                val architectProperty = (property.value as JsonObject)
+                    .findProperty("architect")
+                val taskProperty = (architectProperty?.value as JsonObject).findProperty(script.name)
+                val location = PsiLocation.fromPsiElement(taskProperty)
+                if (location != null) {
+                    return location.openFileDescriptor
+                }
+            }
+        }
+        return null
     }
 
     override fun compareNodes(node1: DefaultMutableTreeNode, node2: DefaultMutableTreeNode, p2: JsbtSortingMode): Int {
         val script1 = NxTask.getUserObject(node1)
         val script2 = NxTask.getUserObject(node2)
         return if (script1 != null && script2 != null) {
-            if (sortingMode == JsbtSortingMode.NAME) script1.myName.compareTo(script2.myName) else getPosition(script1) - getPosition(
+            if (sortingMode == JsbtSortingMode.NAME) script1.name.compareTo(script2.name) else getPosition(script1) - getPosition(
                 script2
             )
         } else if (script1 == null && script2 == null) {
@@ -146,7 +185,6 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
     }
 
     private fun getPosition(script: NxTask): Int {
-        return script.myStructure.myScripts.indexOf(script)
+        return script.structure.myScripts.indexOf(script)
     }
-
 }

@@ -12,7 +12,6 @@ import com.intellij.psi.PsiElement
 
 class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfiguration>() {
 
-
     companion object {
         fun setupConfigurationFromSettings(configuration: NxRunConfiguration, runSettings: NxRunSettings) {
             configuration.runSettings = runSettings
@@ -21,7 +20,6 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
 
         fun buildName(tasks: List<String>): String? {
             return if (tasks.isEmpty()) "default" else StringUtil.join(tasks, ", ")
-
         }
     }
 
@@ -34,11 +32,10 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
     }
 
     override fun setupConfigurationFromContext(
-      configuration: NxRunConfiguration,
-      context: ConfigurationContext,
-      sourceElement: Ref<PsiElement>
+        configuration: NxRunConfiguration,
+        context: ConfigurationContext,
+        sourceElement: Ref<PsiElement>
     ): Boolean {
         return false
     }
-
 }

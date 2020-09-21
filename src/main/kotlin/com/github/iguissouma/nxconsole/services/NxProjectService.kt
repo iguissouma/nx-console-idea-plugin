@@ -1,7 +1,7 @@
 package com.github.iguissouma.nxconsole.services
 
-import com.intellij.openapi.project.Project
 import com.github.iguissouma.nxconsole.MyBundle
+import com.intellij.openapi.project.Project
 
 class NxProjectService(project: Project) {
 

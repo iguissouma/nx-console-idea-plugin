@@ -13,35 +13,43 @@ import com.intellij.openapi.vfs.newvfs.ManagingFS
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.util.SmartList
 
-
 class NxJsbtStartupActivity : StartupActivity.DumbAware {
-    companion object{
+    companion object {
         private val LOG = Logger.getInstance(
             NxJsbtStartupActivity::class.java
         )
         private fun setAvailable(project: Project, service: JsbtService, buildfilesToAdd: List<VirtualFile>) {
-            ApplicationManager.getApplication().invokeLater({
-                buildfilesToAdd.forEach {
-                    service.fileManager.addBuildfile(it)
-                }
-                service.toolWindowManager.setAvailable()
-            }, project.disposed)
+            ApplicationManager.getApplication().invokeLater(
+                {
+                    buildfilesToAdd.forEach {
+                        service.fileManager.addBuildfile(it)
+                    }
+                    service.toolWindowManager.setAvailable()
+                },
+                project.disposed
+            )
         }
 
         private fun scheduleDetection(project: Project, servicesForDetection: List<JsbtService>) {
-            ApplicationManager.getApplication().invokeLater({
-                RefreshQueue.getInstance().refresh(
-                    true, true,
-                    {
-                        ApplicationManager.getApplication().executeOnPooledThread {
-                            doDetect(
-                                project,
-                                servicesForDetection
-                            )
-                        }
-                    }, *ManagingFS.getInstance().getRoots(LocalFileSystem.getInstance())
-                )
-            }, ModalityState.NON_MODAL, project.disposed)
+            ApplicationManager.getApplication().invokeLater(
+                {
+                    RefreshQueue.getInstance().refresh(
+                        true,
+                        true,
+                        {
+                            ApplicationManager.getApplication().executeOnPooledThread {
+                                doDetect(
+                                    project,
+                                    servicesForDetection
+                                )
+                            }
+                        },
+                        *ManagingFS.getInstance().getRoots(LocalFileSystem.getInstance())
+                    )
+                },
+                ModalityState.NON_MODAL,
+                project.disposed
+            )
         }
 
         private fun doDetect(project: Project, servicesForDetection: List<JsbtService>) {
@@ -77,7 +85,5 @@ class NxJsbtStartupActivity : StartupActivity.DumbAware {
         if (!servicesForDetection.isEmpty()) {
             scheduleDetection(project, servicesForDetection)
         }
-
     }
-
 }

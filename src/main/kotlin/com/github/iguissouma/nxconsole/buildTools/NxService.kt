@@ -6,6 +6,7 @@ import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.isNxJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.listTasks
 import com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType
 import com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfiguration
+import com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.lang.javascript.buildTools.base.JsbtApplicationService

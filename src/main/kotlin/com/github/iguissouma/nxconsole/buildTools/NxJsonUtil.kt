@@ -4,13 +4,17 @@ import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonProperty
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskFetchException
+import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.PsiManagerEx
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ObjectUtils
 import org.jetbrains.annotations.Contract
 
@@ -136,4 +140,91 @@ object NxJsonUtil {
         }
         return null
     }
+
+    fun findContainingPropertyInsideNxJsonFile(element: PsiElement): JsonProperty? {
+        return if (isInsideNxJsonFile(element)) PsiTreeUtil.getParentOfType(
+            element,
+            JsonProperty::class.java, false
+        ) else null
+    }
+
+    fun findContainingPropertyInsideAngularJsonFile(element: PsiElement): JsonProperty? {
+        return if (isInsideAngularJsonFile(element)) PsiTreeUtil.getParentOfType(
+            element,
+            JsonProperty::class.java, false
+        ) else null
+    }
+
+    fun isProjectProperty(property: JsonProperty?): Boolean {
+        val projectsProperty = PsiTreeUtil.getParentOfType(
+            property,
+            JsonProperty::class.java, true
+        )
+        return projectsProperty != null && "projects" == projectsProperty.name && PackageJsonUtil.isTopLevelProperty(
+            projectsProperty
+        )
+    }
+
+    fun isArchitectProperty(property: JsonProperty?): Boolean {
+        val architectProperty = PsiTreeUtil.getParentOfType(
+            property,
+            JsonProperty::class.java, true
+        )
+        return architectProperty != null && "architect" == architectProperty.name
+    }
+
+    fun isInsideNxJsonFile(element: PsiElement): Boolean {
+        return getContainingNxJsonFile(element) != null
+    }
+
+    fun isInsideAngularJsonFile(element: PsiElement): Boolean {
+        return getContainingAngularJsonFile(element) != null
+    }
+
+    fun getContainingNxJsonFile(element: PsiElement): JsonFile? {
+        val file = element.containingFile
+        return if (isNxJsonFile(file)) file as JsonFile else null
+    }
+
+    fun getContainingAngularJsonFile(element: PsiElement): JsonFile? {
+        val file = element.containingFile
+        return if (isAngularJsonFile(file)) file as JsonFile else null
+    }
+
+    @Contract("null -> false")
+    fun isNxJsonFile(file: PsiFile?): Boolean {
+        return file is JsonFile && "nx.json" == file.getName()
+    }
+
+    @Contract("null -> false")
+    fun isAngularJsonFile(file: PsiFile?): Boolean {
+        return file is JsonFile && "angular.json" == file.getName()
+    }
+
+
+    fun findContainingTopLevelProperty(element: PsiElement?): JsonProperty? {
+        return if (element != null && isInsideNxJsonFile(element)) {
+            var property: JsonProperty?
+            property = PsiTreeUtil.getParentOfType(
+                element,
+                JsonProperty::class.java, false
+            )
+            while (property != null && !isTopLevelProperty(property)) {
+                property = PsiTreeUtil.getParentOfType(
+                    property,
+                    JsonProperty::class.java, true
+                )
+            }
+            property
+        } else {
+            null
+        }
+    }
+
+
+    fun isTopLevelProperty(property: JsonProperty): Boolean {
+        val parent = property.parent
+        return parent != null && parent.parent is JsonFile
+    }
+
 }

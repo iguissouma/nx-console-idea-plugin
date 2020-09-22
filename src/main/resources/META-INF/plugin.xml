@@ -13,10 +13,12 @@
         <applicationService serviceImplementation="com.github.iguissouma.nxconsole.services.NxApplicationService"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.services.NxProjectService"/>
         <!--buildTools-->
+        <!--<runLineMarkerContributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.buildTools.NxRunLineMarkerContributor"/>-->
+        <runLineMarkerContributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.buildTools.NxAngularRunLineMarkerContributor"/>
         <postStartupActivity implementation="com.github.iguissouma.nxconsole.buildTools.NxJsbtStartupActivity"/>
         <configurationType implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType"/>
         <runConfigurationProducer
-                implementation="com.github.iguissouma.nxconsole.buildTools.NxRunConfigurationProducer"/>
+                implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfigurationProducer"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.buildTools.NxFileManager"/>
         <runAnything.executionProvider
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>

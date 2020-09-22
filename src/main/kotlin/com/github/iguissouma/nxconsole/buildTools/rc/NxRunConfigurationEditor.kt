@@ -113,7 +113,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             nodeInterpreterField.interpreterRef = settings.interpreterRef
         }
         if (settings.nxFileSystemIndependentPath != null) {
-            this.nxJsonField.setTextAndAddToHistory(FileUtil.toSystemDependentName(settings.nxFileSystemIndependentPath))
+            this.nxJsonField.setTextAndAddToHistory(FileUtil.toSystemDependentName(settings.nxFileSystemIndependentPath!!))
         }
 
         val defaultPackage =

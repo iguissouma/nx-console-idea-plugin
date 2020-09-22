@@ -12,7 +12,8 @@ class NxRunSettings(
     var tasks: List<String> = emptyList()
 ) {
 
-    val nxFileSystemIndependentPath: String? = nxFilePath?.let { FileUtil.toSystemIndependentName(it) }
+    val nxFileSystemIndependentPath: String?
+        get() = nxFilePath?.let { FileUtil.toSystemIndependentName(it) }
 
     fun writeToXml(parent: Element) {
         JDOMExternalizerUtil.writeCustomField(parent, "node-interpreter", this.interpreterRef.getReferenceName())

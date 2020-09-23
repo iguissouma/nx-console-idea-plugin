@@ -1,4 +1,4 @@
-package com.github.iguissouma.nxconsole.graph
+package com.github.iguissouma.nxconsole.graph.model
 
 class BasicNxEdge(
     val source: BasicNxNode,

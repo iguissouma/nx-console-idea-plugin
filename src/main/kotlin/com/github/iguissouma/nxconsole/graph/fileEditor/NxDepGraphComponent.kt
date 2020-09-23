@@ -1,5 +1,9 @@
-package com.github.iguissouma.nxconsole.graph
+package com.github.iguissouma.nxconsole.graph.fileEditor
 
+import com.github.iguissouma.nxconsole.graph.NxDepGraphDataModel
+import com.github.iguissouma.nxconsole.graph.NxDepGraphPresentationModel
+import com.github.iguissouma.nxconsole.graph.model.BasicNxEdge
+import com.github.iguissouma.nxconsole.graph.model.BasicNxNode
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces

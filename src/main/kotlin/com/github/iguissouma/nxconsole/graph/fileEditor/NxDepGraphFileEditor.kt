@@ -1,4 +1,4 @@
-package com.github.iguissouma.nxconsole.graph
+package com.github.iguissouma.nxconsole.graph.fileEditor
 
 import com.intellij.json.psi.JsonFile
 import com.intellij.openapi.application.ReadAction

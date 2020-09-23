@@ -1,6 +1,7 @@
-package com.github.iguissouma.nxconsole.graph
+package com.github.iguissouma.nxconsole.graph.fileEditor
 
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
+import com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditor
 import com.intellij.json.psi.JsonFile
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile

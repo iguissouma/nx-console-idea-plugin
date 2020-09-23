@@ -24,7 +24,7 @@
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
 
         <!--dep-graph-->
-        <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.NxDepGraphFileEditorProvider"/>
+        <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>
 
 
     </extensions>

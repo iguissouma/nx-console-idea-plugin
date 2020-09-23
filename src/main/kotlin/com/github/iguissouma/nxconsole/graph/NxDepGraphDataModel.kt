@@ -1,6 +1,9 @@
 package com.github.iguissouma.nxconsole.graph
 
-import com.github.iguissouma.nxconsole.buildTools.NxService
+import com.github.iguissouma.nxconsole.graph.model.AppNode
+import com.github.iguissouma.nxconsole.graph.model.BasicNxEdge
+import com.github.iguissouma.nxconsole.graph.model.BasicNxNode
+import com.github.iguissouma.nxconsole.graph.model.LibNode
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -91,7 +94,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
 
         println(grabCommandOutput)
         // TODO temp file
-        //val depGraphJsonFile = createTempFile.readText()
+        // val depGraphJsonFile = createTempFile.readText()
         // createTempFile.deleteOnExit()
         val depGraphJsonFile = depGraph.readText()
         val listPersonType = object : TypeToken<Map<String, Any>>() {}.type

@@ -20,7 +20,8 @@ class NxRunLineMarkerContributor : RunLineMarkerContributor() {
                 val property = NxJsonUtil.findContainingPropertyInsideNxJsonFile(element)
                 if (property != null && property.nameElement === element.parent) {
                     if (!isProjectProperty(property)) null else Info(TestState.Run, ExecutorAction.getActions()) {
-                            psiElement: PsiElement? -> "Run Tasks"
+                        psiElement: PsiElement? ->
+                        "Run Tasks"
                     }
                 } else {
                     null

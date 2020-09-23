@@ -49,7 +49,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
                         // findContainingProjectProperty(element)
                         val taskPropertyLiteral = element.parent as JsonStringLiteral
-                        val  architectJsonObject = PsiTreeUtil.getParentOfType(
+                        val architectJsonObject = PsiTreeUtil.getParentOfType(
                             taskPropertyLiteral,
                             JsonObject::class.java
                         )
@@ -59,14 +59,17 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         ) ?: return null
                         val projectProperty = PsiTreeUtil.getParentOfType(
                             projectJsonObject,
-                            JsonProperty::class.java, false
+                            JsonProperty::class.java,
+                            false
                         ) ?: return null
 
                         val setting = templateRunSettings.apply {
                             nxFilePath = findChildNxJsonFile.path
-                            tasks = listOf("${projectProperty.name}:${
+                            tasks = listOf(
+                                "${projectProperty.name}:${
                                 taskPropertyLiteral.value
-                            }")
+                                }"
+                            )
                         }
                         sourceElement?.set(element)
                         setting
@@ -95,7 +98,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
         }
 
         private fun getElement(context: ConfigurationContext): PsiElement? {
-             val location = context.location
+            val location = context.location
             return location?.psiElement
         }
 
@@ -118,7 +121,6 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
         )
         return if (thisRunSettings == null) false else NxService.getInstance(configuration.project)
             .isConfigurationMatched(configuration, thisRunSettings)
-
     }
 
     override fun setupConfigurationFromContext(
@@ -138,5 +140,4 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
             true
         }
     }
-
 }

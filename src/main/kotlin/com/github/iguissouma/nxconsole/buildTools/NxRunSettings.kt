@@ -49,7 +49,6 @@ class NxRunSettings(
             StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
             readTasks(parent)
         )
-
     }
 
     private fun createInterpreterRef(interpreterRefName: String?): NodeJsInterpreterRef {
@@ -64,5 +63,4 @@ class NxRunSettings(
             return emptyList()
         }
     }
-
 }

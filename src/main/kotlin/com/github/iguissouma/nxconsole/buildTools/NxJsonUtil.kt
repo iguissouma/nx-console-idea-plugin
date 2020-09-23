@@ -144,21 +144,24 @@ object NxJsonUtil {
     fun findContainingPropertyInsideNxJsonFile(element: PsiElement): JsonProperty? {
         return if (isInsideNxJsonFile(element)) PsiTreeUtil.getParentOfType(
             element,
-            JsonProperty::class.java, false
+            JsonProperty::class.java,
+            false
         ) else null
     }
 
     fun findContainingPropertyInsideAngularJsonFile(element: PsiElement): JsonProperty? {
         return if (isInsideAngularJsonFile(element)) PsiTreeUtil.getParentOfType(
             element,
-            JsonProperty::class.java, false
+            JsonProperty::class.java,
+            false
         ) else null
     }
 
     fun isProjectProperty(property: JsonProperty?): Boolean {
         val projectsProperty = PsiTreeUtil.getParentOfType(
             property,
-            JsonProperty::class.java, true
+            JsonProperty::class.java,
+            true
         )
         return projectsProperty != null && "projects" == projectsProperty.name && PackageJsonUtil.isTopLevelProperty(
             projectsProperty
@@ -168,7 +171,8 @@ object NxJsonUtil {
     fun isArchitectProperty(property: JsonProperty?): Boolean {
         val architectProperty = PsiTreeUtil.getParentOfType(
             property,
-            JsonProperty::class.java, true
+            JsonProperty::class.java,
+            true
         )
         return architectProperty != null && "architect" == architectProperty.name
     }
@@ -201,18 +205,19 @@ object NxJsonUtil {
         return file is JsonFile && "angular.json" == file.getName()
     }
 
-
     fun findContainingTopLevelProperty(element: PsiElement?): JsonProperty? {
         return if (element != null && isInsideNxJsonFile(element)) {
             var property: JsonProperty?
             property = PsiTreeUtil.getParentOfType(
                 element,
-                JsonProperty::class.java, false
+                JsonProperty::class.java,
+                false
             )
             while (property != null && !isTopLevelProperty(property)) {
                 property = PsiTreeUtil.getParentOfType(
                     property,
-                    JsonProperty::class.java, true
+                    JsonProperty::class.java,
+                    true
                 )
             }
             property
@@ -221,10 +226,8 @@ object NxJsonUtil {
         }
     }
 
-
     fun isTopLevelProperty(property: JsonProperty): Boolean {
         val parent = property.parent
         return parent != null && parent.parent is JsonFile
     }
-
 }

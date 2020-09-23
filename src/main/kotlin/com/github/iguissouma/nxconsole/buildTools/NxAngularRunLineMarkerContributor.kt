@@ -18,7 +18,8 @@ class NxAngularRunLineMarkerContributor : RunLineMarkerContributor() {
                 val property = NxJsonUtil.findContainingPropertyInsideAngularJsonFile(element)
                 if (property != null && property.nameElement === element.parent) {
                     if (!NxJsonUtil.isArchitectProperty(property)) null else Info(AllIcons.RunConfigurations.TestState.Run, ExecutorAction.getActions()) {
-                            psiElement: PsiElement? -> "${psiElement?.text}"
+                        psiElement: PsiElement? ->
+                        "${psiElement?.text}"
                     }
                 } else {
                     null

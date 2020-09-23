@@ -22,7 +22,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutPlace: String?) :
     JsbtTaskTreeView(nxService, project, layoutPlace) {
 
-    private val NO_TASKS_FOUND = "No tasks found"
+    companion object {
+
+        private const val NO_TASKS_FOUND = "No tasks found"
+    }
 
     override fun addBuildfileChildren(buildfileTreeNode: DefaultMutableTreeNode, _structure: JsbtFileStructure) {
 

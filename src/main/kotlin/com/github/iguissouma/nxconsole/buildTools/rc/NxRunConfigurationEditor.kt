@@ -70,28 +70,30 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         field.setHistorySize(-1)
         JsbtUtil.enableExpandingWithLazyHistoryLoading(field)
         val lastNxJsonRef = Ref.create<VirtualFile>()
-        field.addPopupMenuListener(object : PopupMenuListenerAdapter() {
-            override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
-                val nxJson = LocalFileSystem.getInstance().findFileByPath((nxJsonPath.get() as String)!!)
-                if (nxJson != null && nxJson.isValid && !nxJson.isDirectory) {
-                    if (nxJson != lastNxJsonRef.get()) {
-                        lastNxJsonRef.set(nxJson)
-                        try {
-                            val structure =
-                                NxService.getInstance(this@NxRunConfigurationEditor.project).fetchBuildfileStructure(
-                                    nxJson
-                                )
-                            SwingHelper.setHistory(field, JsbtUtil.encodeNames(structure.taskNames), false)
-                        } catch (var4: JsbtTaskFetchException) {
-                            SwingHelper.setHistory(field, emptyList(), false)
+        field.addPopupMenuListener(
+            object : PopupMenuListenerAdapter() {
+                override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
+                    val nxJson = LocalFileSystem.getInstance().findFileByPath((nxJsonPath.get() as String)!!)
+                    if (nxJson != null && nxJson.isValid && !nxJson.isDirectory) {
+                        if (nxJson != lastNxJsonRef.get()) {
+                            lastNxJsonRef.set(nxJson)
+                            try {
+                                val structure =
+                                    NxService.getInstance(this@NxRunConfigurationEditor.project).fetchBuildfileStructure(
+                                        nxJson
+                                    )
+                                SwingHelper.setHistory(field, JsbtUtil.encodeNames(structure.taskNames), false)
+                            } catch (var4: JsbtTaskFetchException) {
+                                SwingHelper.setHistory(field, emptyList(), false)
+                            }
                         }
+                    } else {
+                        SwingHelper.setHistory(field, emptyList(), false)
+                        lastNxJsonRef.set(null)
                     }
-                } else {
-                    SwingHelper.setHistory(field, emptyList(), false)
-                    lastNxJsonRef.set(null)
                 }
             }
-        })
+        )
 
         return field
     }

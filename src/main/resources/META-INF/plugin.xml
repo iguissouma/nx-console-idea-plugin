@@ -23,6 +23,10 @@
         <runAnything.executionProvider
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
 
+        <!--dep-graph-->
+        <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.NxDepGraphFileEditorProvider"/>
+
+
     </extensions>
 
     <projectListeners>

@@ -27,8 +27,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
 
     private val myNodes: MutableSet<BasicNxNode> = mutableSetOf()
     private val myEdges: MutableSet<BasicNxEdge> = mutableSetOf()
-    private val myProject = nxJsonFile.project;
-
+    private val myProject = nxJsonFile.project
 
     override fun dispose() {
     }
@@ -68,7 +67,6 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
         updateDataModel()
     }
 
-
     private fun updateDataModel() {
 
         val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(nxJsonFile.project).interpreter ?: return
@@ -86,8 +84,8 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
         val moduleExe = "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
         // TODO check if json can be out of monorepo
         // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
-        val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".graph.json")
-        val commandLine = GeneralCommandLine("", moduleExe, "dep-graph", "--file=.graph.json")
+        val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json")
+        val commandLine = GeneralCommandLine("", moduleExe, "dep-graph", "--file=.nxdeps.json")
         configurator.configure(commandLine)
 
         val grabCommandOutput = grabCommandOutput(commandLine, nxJsonFile.parent!!.virtualFile.path)
@@ -117,22 +115,16 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
                 }
             }
         }
-
-
     }
 
     private fun addNode(node: BasicNxNode) {
         myNodes.add(node)
     }
 
-
     private fun addEdge(edge: BasicNxEdge) {
         myEdges.add(edge)
     }
-
-
 }
-
 
 private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
 
@@ -146,39 +138,43 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
     if (output.exitCode == 0) {
         if (output.stderr.trim().isNotEmpty()) {
             if (myLogErrors.get()) {
-                LOG.error("Error while loading schematics info.\n"
-                        + shortenOutput(output.stderr),
+                LOG.error(
+                    "Error while loading schematics info.\n" +
+                        shortenOutput(output.stderr),
                     Attachment("err-output", output.stderr)
                 )
-            }
-            else {
-                LOG.info("Error while loading schematics info.\n"
-                        + shortenOutput(output.stderr))
+            } else {
+                LOG.info(
+                    "Error while loading schematics info.\n" +
+                        shortenOutput(output.stderr)
+                )
             }
         }
         return output.stdout
-    }
-    else if (myLogErrors.get()) {
-        LOG.error("Failed to load schematics info.\n"
-                + shortenOutput(output.stderr),
+    } else if (myLogErrors.get()) {
+        LOG.error(
+            "Failed to load schematics info.\n" +
+                shortenOutput(output.stderr),
             Attachment("err-output", output.stderr),
-            Attachment("std-output", output.stdout))
-    }
-    else {
-        LOG.info("Error while loading schematics info.\n"
-                + shortenOutput(output.stderr))
+            Attachment("std-output", output.stdout)
+        )
+    } else {
+        LOG.info(
+            "Error while loading schematics info.\n" +
+                shortenOutput(output.stderr)
+        )
     }
     return ""
 }
-
 
 private fun shortenOutput(output: String): String {
     return StringUtil.shortenTextWithEllipsis(
         output.replace('\\', '/')
             .replace("(/[^()/:]+)+(/[^()/:]+)(/[^()/:]+)".toRegex(), "/...$1$2$3"),
-        750, 0)
+        750,
+        0
+    )
 }
-
 
 /*
 /Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/node_modules/yargs/yargs.js:1109

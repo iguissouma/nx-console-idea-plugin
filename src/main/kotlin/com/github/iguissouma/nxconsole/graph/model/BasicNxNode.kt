@@ -5,7 +5,4 @@ import javax.swing.Icon
 abstract class BasicNxNode(open val name: String) {
 
     abstract fun getIcon(): Icon
-
 }
-
-

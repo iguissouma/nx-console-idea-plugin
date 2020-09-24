@@ -8,17 +8,13 @@ import com.intellij.openapi.graph.builder.util.GraphViewUtil
 import com.intellij.openapi.graph.view.Graph2D
 import com.intellij.openapi.graph.view.NodeRealizer
 
-
-class NxDepGraphPresentationModel(graph: Graph2D) : BasicGraphPresentationModel<BasicNxNode, BasicNxEdge>(graph)  {
-
+class NxDepGraphPresentationModel(graph: Graph2D) : BasicGraphPresentationModel<BasicNxNode, BasicNxEdge>(graph) {
 
     private var myRenderer: BasicGraphNodeRenderer<BasicNxNode, BasicNxEdge>? = null
-
 
     override fun getNodeRealizer(n: BasicNxNode?): NodeRealizer {
         return GraphViewUtil.createNodeRealizer("NxNodeRenderer", getRenderer())
     }
-
 
     private fun getRenderer(): BasicGraphNodeRenderer<BasicNxNode, BasicNxEdge>? {
         if (myRenderer == null) {
@@ -27,4 +23,3 @@ class NxDepGraphPresentationModel(graph: Graph2D) : BasicGraphPresentationModel<
         return myRenderer
     }
 }
-

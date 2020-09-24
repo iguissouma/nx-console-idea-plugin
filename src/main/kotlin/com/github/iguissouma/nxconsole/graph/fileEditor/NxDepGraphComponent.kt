@@ -22,38 +22,39 @@ import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-
 class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Disposable {
     private lateinit var myBuilder: GraphBuilder<BasicNxNode, BasicNxEdge>
 
     init {
 
-        val progress = ProgressManager.getInstance().progressIndicator;
+        val progress = ProgressManager.getInstance().progressIndicator
         if (progress != null) {
 
-            progress.text = "Initializing...";
-            val project = nxJsonFile.project;
-            val graph = GraphManager.getGraphManager().createGraph2D();
-            val view = GraphManager.getGraphManager().createGraph2DView();
+            progress.text = "Initializing..."
+            val project = nxJsonFile.project
+            val graph = GraphManager.getGraphManager().createGraph2D()
+            val view = GraphManager.getGraphManager().createGraph2DView()
 
-            progress.text = "Building model...";
+            progress.text = "Building model..."
 
-            val myDataModel = NxDepGraphDataModel(nxJsonFile);
-            val presentationModel = NxDepGraphPresentationModel(graph);
+            val myDataModel = NxDepGraphDataModel(nxJsonFile)
+            val presentationModel = NxDepGraphPresentationModel(graph)
 
             myBuilder = GraphBuilderFactory.getInstance(project).createGraphBuilder(
                 graph,
                 view,
                 myDataModel,
                 presentationModel
-            );
-            Disposer.register(this, myBuilder);
+            )
+            Disposer.register(this, myBuilder)
 
             val graphComponent = myBuilder.getView().jComponent
             layout = BorderLayout()
 
             val toolbar = ActionManager.getInstance().createActionToolbar(
-                ActionPlaces.TOOLBAR, GraphViewUtil.getCommonToolbarActions(), true
+                ActionPlaces.TOOLBAR,
+                GraphViewUtil.getCommonToolbarActions(),
+                true
             )
             toolbar.setTargetComponent(graphComponent)
 
@@ -62,16 +63,14 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
 
             myBuilder.initialize()
         }
-
     }
-
 
     override fun getData(dataId: String): Any? {
         if (Comparing.equal(dataId, NX_DESIGNER_COMPONENT)) {
-            return this;
+            return this
         }
 
-        return null;
+        return null
     }
 
     override fun dispose() {
@@ -85,10 +84,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
         return actionToolbar.component
     }
 
-
     companion object {
         private const val NX_DESIGNER_COMPONENT: String = "STRUTS2_DESIGNER_COMPONENT"
     }
-
 }
-

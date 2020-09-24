@@ -10,7 +10,6 @@ import com.intellij.util.xml.DomElement
 import com.intellij.util.xml.ui.PerspectiveFileEditor
 import javax.swing.JComponent
 
-
 class NxDepGraphFileEditor(project: Project, file: VirtualFile) : PerspectiveFileEditor(project, file) {
 
     private var myComponent: NxDepGraphComponent? = null
@@ -35,7 +34,6 @@ class NxDepGraphFileEditor(project: Project, file: VirtualFile) : PerspectiveFil
     }
 
     override fun setSelectedDomElement(domElement: DomElement?) {
-
     }
 
     override fun createCustomComponent(): JComponent {
@@ -68,5 +66,4 @@ class NxDepGraphFileEditor(project: Project, file: VirtualFile) : PerspectiveFil
         )
         return graphComponent[0]
     }
-
 }

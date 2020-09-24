@@ -17,11 +17,16 @@ import com.intellij.openapi.graph.builder.util.GraphViewUtil
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Comparing
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiTreeChangeAdapter
+import com.intellij.psi.PsiTreeChangeEvent
+import com.intellij.psi.util.PsiUtilCore
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -68,20 +73,37 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             myBuilder.initialize()
 
             // listen to nx.json changes
-            // TODO check if thi optimal
+            // TODO check if this optimal, it's better to use PSI instead
             project.messageBus.connect().subscribe(
-                VirtualFileManager.VFS_CHANGES,
-                object : BulkFileListener {
-                    override fun after(events: List<VFileEvent?>) {
-                        // handle the events
-                        events.forEach { event ->
-                            if (event is VFileContentChangeEvent && event.file.name == "nx.json" && isShowing) {
-                                myBuilder.queueUpdate()
-                            }
+               VirtualFileManager.VFS_CHANGES,
+               object : BulkFileListener {
+                   override fun after(events: List<VFileEvent?>) {
+                       // handle the events
+                       events.forEach { event ->
+                           if (event is VFileContentChangeEvent && event.file.name == "nx.json" && isShowing) {
+                               myBuilder.queueUpdate()
+                           }
+                       }
+                   }
+               }
+           )
+
+            /*PsiManager.getInstance(project).addPsiTreeChangeListener(
+                object : PsiTreeChangeAdapter() {
+                    override fun childrenChanged(event: PsiTreeChangeEvent) {
+                        val file = event.file
+                        val virtualFile: VirtualFile? = PsiUtilCore.getVirtualFile(file)
+                        if (virtualFile != null && virtualFile.name == "nx.json" && isShowing) {
+                            myBuilder.queueUpdate()
                         }
                     }
-                }
-            )
+
+                    override fun propertyChanged(event: PsiTreeChangeEvent) {
+                        childrenChanged(event)
+                    }
+                },
+                this
+            )*/
         }
     }
 

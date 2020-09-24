@@ -10,6 +10,11 @@
     <depends>com.intellij.modules.json</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <directoryProjectGenerator
+                implementation="com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator"/>  <!-- works in WebStorm and other SmallIDEs -->
+        <projectTemplatesFactory implementation="com.github.iguissouma.nxconsole.cli.NxProjectTemplateFactory"/> <!-- works in IntelliJ IDEA -->
+
+
         <applicationService serviceImplementation="com.github.iguissouma.nxconsole.services.NxApplicationService"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.services.NxProjectService"/>
         <!--buildTools-->

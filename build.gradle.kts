@@ -46,6 +46,17 @@ dependencies {
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
+
+    tasks {
+        buildSearchableOptions {
+            enabled = false
+        }
+
+        runIde {
+            maxHeapSize = "2g"
+        }
+    }
+
     pluginName = pluginName_
     version = platformVersion
     type = platformType

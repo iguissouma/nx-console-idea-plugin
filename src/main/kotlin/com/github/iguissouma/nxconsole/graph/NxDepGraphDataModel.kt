@@ -175,25 +175,3 @@ private fun shortenOutput(output: String): String {
         0
     )
 }
-
-/*
-/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/node_modules/yargs/yargs.js:1109
-      else throw err
-           ^
-
-Error: ENOENT: no such file or directory, open '/Users/iguissouma/idea/nx-apollo-angular-example//var/folders/9s/n5pqj4w965lb9g66c38lmpbm0000gn/T/tmp14208282063884785141.json'
-    at Object.openSync (fs.js:443:3)
-    at Object.writeFileSync (fs.js:1194:35)
-    at Object.generateGraph (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/src/command-line/dep-graph.js:70:18)
-    at Object.exports.commandsObject.yargs.usage.command.command.command.command.command.command.command.command.command.command.command.command.command [as handler] (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/src/command-line/nx-commands.js:47:127)
-    at Object.runCommand (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/node_modules/yargs/lib/command.js:235:44)
-    at Object.parseArgs [as _parseArgs] (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/node_modules/yargs/yargs.js:1022:30)
-    at Object.get [as argv] (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/workspace/node_modules/yargs/yargs.js:965:21)
-    at Object.initLocal (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/cli/lib/init-local.js:22:13)
-    at Object.<anonymous> (/Users/iguissouma/idea/nx-apollo-angular-example/node_modules/@nrwl/cli/bin/nx.js:12:18)
-    at Module._compile (internal/modules/cjs/loader.js:778:30)
-
-
-
-*
-* */

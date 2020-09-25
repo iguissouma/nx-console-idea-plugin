@@ -48,7 +48,8 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                     } else {
                         val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
                         // findContainingProjectProperty(element)
-                        val taskPropertyLiteral = element.parent as JsonStringLiteral
+                        // TODO check when it's not JsonStringLiteral
+                        val taskPropertyLiteral = element.parent as? JsonStringLiteral ?:return null
                         val architectJsonObject = PsiTreeUtil.getParentOfType(
                             taskPropertyLiteral,
                             JsonObject::class.java

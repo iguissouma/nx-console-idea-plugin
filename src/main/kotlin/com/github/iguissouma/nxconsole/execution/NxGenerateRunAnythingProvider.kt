@@ -49,6 +49,10 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         return HELP_COMMAND
     }
 
+    override fun getHelpCommandAliases(): List<String> {
+        return listOf("nx g")
+    }
+
     override fun getHelpIcon(): Icon? = NxIcons.NRWL_ICON
 
     override fun getMainListItem(dataContext: DataContext, value: String) =
@@ -134,7 +138,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
     }
 
     private fun completeBasicPhases(commandLine: CommandLine): Sequence<String> {
-        return listOf("generate").asSequence().filter { it !in commandLine }
+        return listOf("").asSequence().filter { it !in commandLine }
     }
 
     private fun createContext(project: Project, context: RunAnythingContext, dataContext: DataContext): Context {

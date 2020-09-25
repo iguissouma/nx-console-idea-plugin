@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.PathUtil
 import java.io.File
@@ -46,8 +47,8 @@ class NxCliProjectGenerator : NpmPackageProjectGenerator() {
         return arrayOf(baseDir.name)
     }
 
-    override fun generateInTemp(): Boolean {
-        return true
+    override fun workingDir(settings: Settings?, baseDir: VirtualFile): File {
+        return VfsUtilCore.virtualToIoFile(baseDir).parentFile
     }
 
     override fun filters(project: Project, baseDir: VirtualFile): Array<Filter> {
@@ -79,19 +80,7 @@ class NxCliProjectGenerator : NpmPackageProjectGenerator() {
         processHandler.addProcessListener(
             object : ProcessAdapter() {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-// https://github.com/vuejs/vue-cli/blob/dev/packages/%40vue/cli/lib/create.js#L43
-                    if (event.text.contains("Generate project in current directory?")) {
-                        event.processHandler.removeProcessListener(this)
-                        val processInput = event.processHandler.processInput
-                        if (processInput != null) {
-                            try {
-                                processInput.write("yes\n".toByteArray(StandardCharsets.UTF_8))
-                                processInput.flush()
-                            } catch (e: IOException) {
-                                LOG.warn("Failed to write 'yes' to the Vue CLI console.", e)
-                            }
-                        }
-                    }
+                    // nothing to customise for now
                 }
             }
         )

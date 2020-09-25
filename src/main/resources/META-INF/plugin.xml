@@ -8,6 +8,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.json</depends>
+    <depends>AngularJS</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <directoryProjectGenerator
@@ -25,6 +26,8 @@
         <runConfigurationProducer
                 implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfigurationProducer"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.buildTools.NxFileManager"/>
+        <runAnything.executionProvider
+                implementation="com.github.iguissouma.nxconsole.execution.NxGenerateRunAnythingProvider" order="first"/>
         <runAnything.executionProvider
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
 

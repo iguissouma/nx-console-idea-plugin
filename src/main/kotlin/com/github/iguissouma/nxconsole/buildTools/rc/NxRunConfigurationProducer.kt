@@ -64,14 +64,14 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             false
                         ) ?: return null
 
-                        val setting = templateRunSettings.apply {
-                            nxFilePath = findChildNxJsonFile.path
+                        val setting = NxRunSettings (
+                            nxFilePath = findChildNxJsonFile.path,
                             tasks = listOf(
                                 "${projectProperty.name}:${
                                 taskPropertyLiteral.value
                                 }"
                             )
-                        }
+                        )
                         sourceElement?.set(element)
                         setting
                     }

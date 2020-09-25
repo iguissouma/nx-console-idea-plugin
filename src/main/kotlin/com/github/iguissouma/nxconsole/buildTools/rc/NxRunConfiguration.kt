@@ -30,7 +30,7 @@ class NxRunConfiguration(
         return nxPackage?.let { NxRunProfileState(environment, this.runSettings, it) }
     }
 
-    private fun getNxPackage(project: Project, runSettings: NxRunSettings): @Nullable NodePackage? {
+    private fun getNxPackage(project: Project, runSettings: NxRunSettings): NodePackage? {
         return NodePackage.findDefaultPackage(project, "nx", NodeJsInterpreterRef.createProjectRef().resolve(project))
     }
 
@@ -52,7 +52,13 @@ class NxRunConfiguration(
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
-        runSettings.readFromXml(element)
+        val readFromXml = runSettings.readFromXml(element)
+        if (readFromXml != null) {
+            this.runSettings.apply {
+                nxFilePath = readFromXml.nxFileSystemIndependentPath
+                tasks = readFromXml.tasks
+            }
+        }
     }
 
     override fun writeExternal(element: Element) {

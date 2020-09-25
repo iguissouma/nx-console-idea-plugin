@@ -134,14 +134,14 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     }
 
     private fun getCurrentSettings(): NxRunSettings {
-        val tasksText: String = this.tasksField.getText()
+        val tasksText: String = this.tasksField.text
         var tasks: List<String> = emptyList()
         if (!StringUtil.isEmptyOrSpaces(tasksText)) {
             tasks = ParametersListUtil.parse(tasksText)
         }
         return NxRunSettings(
             interpreterRef = nodeInterpreterField.interpreterRef,
-            nxFilePath = PathShortener.getAbsolutePath(this.nxJsonField.getChildComponent().textEditor),
+            nxFilePath = PathShortener.getAbsolutePath(this.nxJsonField.childComponent.textEditor),
             tasks = tasks
         )
     }

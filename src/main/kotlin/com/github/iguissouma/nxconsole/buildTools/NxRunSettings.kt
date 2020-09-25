@@ -16,7 +16,7 @@ class NxRunSettings(
         get() = nxFilePath?.let { FileUtil.toSystemIndependentName(it) }
 
     fun writeToXml(parent: Element) {
-        JDOMExternalizerUtil.writeCustomField(parent, "node-interpreter", this.interpreterRef.getReferenceName())
+        JDOMExternalizerUtil.writeCustomField(parent, "node-interpreter", this.interpreterRef.referenceName)
         if (this.nxFilePath?.isNotEmpty() == true) {
             JDOMExternalizerUtil.writeCustomField(
                 parent,
@@ -31,7 +31,7 @@ class NxRunSettings(
     }
 
     private fun writeTasks(parent: Element) {
-        if (!this.tasks.isEmpty()) {
+        if (this.tasks.isNotEmpty()) {
             val tasksElement = Element("tasks")
             JDOMExternalizerUtil.addChildrenWithValueAttribute(tasksElement, "task", this.tasks)
             parent.addContent(tasksElement)
@@ -45,9 +45,9 @@ class NxRunSettings(
         val interpreterRefName = JDOMExternalizerUtil.readCustomField(parent, "node-interpreter")
         val interpreterRef = createInterpreterRef(interpreterRefName)
         return NxRunSettings(
-            interpreterRef,
-            StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
-            readTasks(parent)
+            interpreterRef = interpreterRef,
+            nxFilePath = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
+            tasks = readTasks(parent)
         )
     }
 

@@ -27,7 +27,8 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Disposable {
-    private lateinit var myBuilder: GraphBuilder<BasicNxNode, BasicNxEdge>
+
+    lateinit var myBuilder: GraphBuilder<BasicNxNode, BasicNxEdge>
 
     init {
 
@@ -111,14 +112,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
     }
 
     override fun dispose() {
-    }
-
-    private fun createToolbarPanel(): JComponent? {
-        val actions = DefaultActionGroup()
-        actions.add(GraphViewUtil.getBasicToolbar(myBuilder))
-        val actionToolbar: ActionToolbar =
-            ActionManager.getInstance().createActionToolbar("NxDepGraph", actions, true)
-        return actionToolbar.component
     }
 
     companion object {

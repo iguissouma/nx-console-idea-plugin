@@ -2,13 +2,14 @@ package com.github.iguissouma.nxconsole.graph.fileEditor
 
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.intellij.json.psi.JsonFile
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.util.xml.ui.PerspectiveFileEditor
 import com.intellij.util.xml.ui.PerspectiveFileEditorProvider
 
-class NxDepGraphFileEditorProvider : PerspectiveFileEditorProvider() {
+class NxDepGraphFileEditorProvider : PerspectiveFileEditorProvider(), DumbAware {
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
         if (!file.isValid) {

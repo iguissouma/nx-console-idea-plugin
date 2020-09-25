@@ -75,7 +75,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         NpmPackageProjectGenerator.generate(interpreter, NodePackage(module.virtualFile?.path!!),
             { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
             cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-            null, arrayOf(filter), "generate", *commandLine.completedParameters.toTypedArray())
+            null, arrayOf(filter), "generate", *commandLine.parameters.toTypedArray())
 
         return true
     }

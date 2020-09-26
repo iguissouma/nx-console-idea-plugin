@@ -11,7 +11,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import org.angular2.cli.AngularCliFilter
@@ -29,9 +29,6 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         const val HELP_COMMAND = "nx generate"
 
     }
-
-    private fun loadSchematics(project: Project): Collection<Schematic> =
-        AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir, true, true)
 
     override fun getIcon(value: String): Icon? = NxIcons.NRWL_ICON
 
@@ -76,10 +73,12 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         val module = modules.firstOrNull() ?: return false
         val filter = AngularCliFilter(project, project.baseDir.path)
 
-        NpmPackageProjectGenerator.generate(interpreter, NodePackage(module.virtualFile?.path!!),
+        NpmPackageProjectGenerator.generate(
+            interpreter, NodePackage(module.virtualFile?.path!!),
             { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
             cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-            null, arrayOf(filter), "generate", *commandLine.parameters.toTypedArray())
+            null, arrayOf(filter), "generate", *commandLine.parameters.toTypedArray()
+        )
 
         return true
     }
@@ -128,11 +127,15 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
             return mutableListOf()
         }
 
-        // TODO check how to avoid read problems
         if (schematics.isEmpty()) {
-            ApplicationManager.getApplication().executeOnPooledThread {
-                schematics = loadSchematics(project).toMutableList()
-            }
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                {
+                    val mySchematics = AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                    schematics.clear()
+                    schematics.addAll(mySchematics)
+                },
+                "loading schematics...", false, project,
+            )
         }
         return schematics
     }
@@ -142,7 +145,8 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
     }
 
     private fun createContext(project: Project, context: RunAnythingContext, dataContext: DataContext): Context {
-        val tasks = loadSchematics(project).filterNot { it.name.isNullOrEmpty() }.map { it.name!! to it }.toMap()
+        val tasks = schematics
+            .filterNot { it.name.isNullOrEmpty() }.map { it.name!! to it }.toMap()
         val executor = RunAnythingAction.EXECUTOR_KEY.getData(dataContext)
         return Context(context, project, tasks)
     }

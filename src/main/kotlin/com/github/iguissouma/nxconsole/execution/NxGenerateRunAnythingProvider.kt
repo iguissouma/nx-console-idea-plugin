@@ -1,7 +1,9 @@
 package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.ide.actions.runAnything.RunAnythingAction
+import com.intellij.ide.actions.runAnything.RunAnythingAction.EXECUTOR_KEY
 import com.intellij.ide.actions.runAnything.RunAnythingContext
 import com.intellij.ide.actions.runAnything.RunAnythingUtil
 import com.intellij.ide.actions.runAnything.activity.RunAnythingCommandLineProvider
@@ -11,7 +13,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import org.angular2.cli.AngularCliFilter
@@ -60,6 +62,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
     override fun run(dataContext: DataContext, commandLine: CommandLine): Boolean {
         val project = RunAnythingUtil.fetchProject(dataContext)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return false
+        val executor = dataContext.getData(EXECUTOR_KEY)
 
         // TODO check use global or local
         val modules: MutableList<CompletionModuleInfo> = mutableListOf()
@@ -72,11 +75,16 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         val module = modules.firstOrNull() ?: return false
         val filter = AngularCliFilter(project, project.baseDir.path)
 
+        val args = mutableListOf(*commandLine.parameters.toTypedArray())
+        if (executor is DefaultDebugExecutor && "--dryRun" !in args) {
+            args.add("--dryRun")
+        }
+
         NpmPackageProjectGenerator.generate(
             interpreter, NodePackage(module.virtualFile?.path!!),
             { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
             cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-            null, arrayOf(filter), "generate", *commandLine.parameters.toTypedArray()
+            null, arrayOf(filter), "generate", *args.toTypedArray()
         )
 
         return true
@@ -125,16 +133,16 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         }
 
         if (schematics.isEmpty()) {
-            ProgressManager.getInstance().runProcessWithProgressSynchronously(
-                {
-                    val mySchematics = AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+            //TODO java.lang.Throwable: Synchronous execution on EDT
+            ApplicationManager.getApplication().executeOnPooledThread {
+                ApplicationManager.getApplication().invokeLater {
+                    val mySchematics = runCatching {
+                        AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                    }.getOrNull() ?: emptyList()
                     schematics.clear()
                     schematics.addAll(mySchematics)
-                },
-                "loading schematics...",
-                false,
-                project,
-            )
+                }
+            }
         }
         return schematics
     }

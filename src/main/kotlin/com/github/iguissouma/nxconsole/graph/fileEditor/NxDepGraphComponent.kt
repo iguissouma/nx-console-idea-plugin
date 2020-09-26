@@ -2,19 +2,26 @@ package com.github.iguissouma.nxconsole.graph.fileEditor
 
 import com.github.iguissouma.nxconsole.graph.NxDepGraphDataModel
 import com.github.iguissouma.nxconsole.graph.NxDepGraphPresentationModel
+import com.github.iguissouma.nxconsole.graph.grabCommandOutput
 import com.github.iguissouma.nxconsole.graph.model.BasicNxEdge
 import com.github.iguissouma.nxconsole.graph.model.BasicNxNode
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.javascript.nodejs.CompletionModuleInfo
+import com.intellij.javascript.nodejs.NodeModuleSearchUtil
+import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
+import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DataProvider
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.graph.GraphManager
 import com.intellij.openapi.graph.builder.GraphBuilder
 import com.intellij.openapi.graph.builder.GraphBuilderFactory
 import com.intellij.openapi.graph.builder.util.GraphViewUtil
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.Comparing
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -23,7 +30,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiFile
 import java.awt.BorderLayout
-import javax.swing.JComponent
+import java.io.File
 import javax.swing.JPanel
 
 class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Disposable {
@@ -66,8 +73,50 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             add(toolbar.component, BorderLayout.NORTH)
             add(graphComponent, BorderLayout.CENTER)
 
-            myBuilder.initialize()
+            val nxDepGraphTask = object : Task.Backgroundable(nxJsonFile.project, "loading nx-depgraph...", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    // ApplicationManager.getApplication().runReadAction{
+                    ApplicationManager.getApplication().invokeLater {
+                        val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(nxJsonFile.project).interpreter
+                        if (nodeJsInterpreter != null) {
+                            val configurator: NodeCommandLineConfigurator
+                            try {
+                                configurator = NodeCommandLineConfigurator.find(nodeJsInterpreter)
+                                val modules: MutableList<CompletionModuleInfo> = mutableListOf()
+                                NodeModuleSearchUtil.findModulesWithName(
+                                    modules,
+                                    "@nrwl/cli",
+                                    nxJsonFile.virtualFile,
+                                    null
+                                )
+                                val module = modules.firstOrNull()
+                                if (module != null) {
+                                    val moduleExe =
+                                        "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
+                                    // TODO check if json can be out of monorepo
+                                    // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
+                                    val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json")
+                                    val commandLine =
+                                        GeneralCommandLine("", moduleExe, "dep-graph", "--file=.nxdeps.json")
+                                    configurator.configure(commandLine)
+                                    grabCommandOutput(
+                                        nxJsonFile.project,
+                                        commandLine,
+                                        nxJsonFile.parent!!.virtualFile.path
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                // LOG.error("Cannot load schematics", e)
+                                // return
+                            }
+                        }
+                        myBuilder.queueUpdate()
 
+                    }
+                }
+            }
+            nxDepGraphTask.queue()
+            myBuilder.initialize()
             // listen to nx.json changes
             // TODO check if this optimal, it's better to use PSI instead
             project.messageBus.connect().subscribe(
@@ -77,7 +126,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                         // handle the events
                         events.forEach { event ->
                             if (event is VFileContentChangeEvent && event.file.name == "nx.json" && isShowing) {
-                                myBuilder.queueUpdate()
+                                nxDepGraphTask.queue()
                             }
                         }
                     }

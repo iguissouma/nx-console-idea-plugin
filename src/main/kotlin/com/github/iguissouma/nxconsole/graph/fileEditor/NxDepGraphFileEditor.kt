@@ -16,7 +16,7 @@ class NxDepGraphFileEditor(project: Project, file: VirtualFile) : PerspectiveFil
     private val myNxJsonFile: JsonFile = psiFile as JsonFile
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return getNxGraphComponent()?.myBuilder?.view?.jComponent;
+        return getNxGraphComponent()?.myBuilder?.view?.jComponent
     }
 
     override fun getName(): String {

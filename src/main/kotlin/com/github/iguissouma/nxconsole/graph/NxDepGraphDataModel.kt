@@ -8,18 +8,17 @@ import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Attachment
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.graph.builder.GraphDataModel
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.Task.Backgroundable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
+import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
 
 private val LOG: Logger = Logger.getInstance("#com.github.iguissouma.nxconsole.graph.NxDepGraphDataModel")
@@ -33,14 +32,21 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
     private val myProject = nxJsonFile.project
 
     init {
-        refreshDataModel()
+        object : Task.Backgroundable(myProject, "loding nx-depgraph...", false) {
+            override fun run(indicator: ProgressIndicator) {
+                // ApplicationManager.getApplication().runReadAction{
+                ApplicationManager.getApplication().invokeLater {
+                    refreshDataModel()
+                }
+            }
+        }.queue()
     }
 
     override fun dispose() {
     }
 
     override fun getNodes(): MutableCollection<BasicNxNode> {
-        // refreshDataModel()
+        refreshDataModel()
         return myNodes.toMutableSet()
     }
 
@@ -71,33 +77,35 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
     private fun refreshDataModel() {
         myNodes.clear()
         myEdges.clear()
+        // TODO check how to avoid graph is not fit the content
+         /*ApplicationManager.getApplication().executeOnPooledThread{
+             ApplicationManager.getApplication().invokeLater {
+                 updateDataModel()
+             }
+         }*/
+
+        // this is not working
+        /*ProgressManager.getInstance().runProcessWithProgressSynchronously({
+            ApplicationManager.getApplication().invokeAndWait {
+                updateDataModel()
+            }
+        }, "loding nx-depgraph...", false, myProject)*/
+
         updateDataModel()
+
+        /*object : Task.Backgroundable(myProject, "loding nx-depgraph...", false ){
+            override fun run(indicator: ProgressIndicator) {
+                //ApplicationManager.getApplication().runReadAction{
+                ApplicationManager.getApplication().invokeLater {
+                    updateDataModel()
+                }
+            }
+        }.queue()*/
     }
 
     private fun updateDataModel() {
-
-        val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(nxJsonFile.project).interpreter ?: return
-        val configurator: NodeCommandLineConfigurator
-        try {
-            configurator = NodeCommandLineConfigurator.find(nodeJsInterpreter)
-        } catch (e: Exception) {
-            LOG.error("Cannot load schematics", e)
-            return
-        }
-
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", nxJsonFile.virtualFile, null)
-        val module = modules.firstOrNull() ?: return
-        val moduleExe = "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
-        // TODO check if json can be out of monorepo
-        // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
         val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json")
-        val commandLine = GeneralCommandLine("", moduleExe, "dep-graph", "--file=.nxdeps.json")
-        configurator.configure(commandLine)
-
-        val grabCommandOutput = grabCommandOutput(commandLine, nxJsonFile.parent!!.virtualFile.path)
-
-        println(grabCommandOutput)
+        // println(grabCommandOutput)
         // TODO temp file
         // val depGraphJsonFile = createTempFile.readText()
         // createTempFile.deleteOnExit()
@@ -139,45 +147,56 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
     }
 }
 
-private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
-
-private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {
+var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
+fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, workingDir: String?): String {
     if (workingDir != null) {
         commandLine.withWorkDirectory(workingDir)
     }
     val handler = CapturingProcessHandler(commandLine)
-    val output = handler.runProcess()
+    val promise = AsyncPromise<String>()
+    object : Task.Backgroundable(project, "executing nx dep-graph...") {
+        override fun run(p0: ProgressIndicator) {
+            try {
+                val output = handler.runProcess()
 
-    if (output.exitCode == 0) {
-        if (output.stderr.trim().isNotEmpty()) {
-            if (myLogErrors.get()) {
-                LOG.error(
-                    "Error while loading schematics info.\n" +
-                        shortenOutput(output.stderr),
-                    Attachment("err-output", output.stderr)
-                )
-            } else {
-                LOG.info(
-                    "Error while loading schematics info.\n" +
-                        shortenOutput(output.stderr)
-                )
+                if (output.exitCode == 0) {
+                    if (output.stderr.trim().isNotEmpty()) {
+                        if (myLogErrors.get()) {
+                            LOG.error(
+                                "Error while loading schematics info.\n" +
+                                    shortenOutput(output.stderr),
+                                Attachment("err-output", output.stderr)
+                            )
+                        } else {
+                            LOG.info(
+                                "Error while loading schematics info.\n" +
+                                    shortenOutput(output.stderr)
+                            )
+                        }
+                    }
+                    return promise.setResult(output.stdout)
+                } else if (myLogErrors.get()) {
+                    LOG.error(
+                        "Failed to load schematics info.\n" +
+                            shortenOutput(output.stderr),
+                        Attachment("err-output", output.stderr),
+                        Attachment("std-output", output.stdout)
+                    )
+                } else {
+                    LOG.info(
+                        "Error while loading schematics info.\n" +
+                            shortenOutput(output.stderr)
+                    )
+                }
+                promise.setResult("")
+            } catch (t: Throwable) {
+                promise.setError(t)
             }
         }
-        return output.stdout
-    } else if (myLogErrors.get()) {
-        LOG.error(
-            "Failed to load schematics info.\n" +
-                shortenOutput(output.stderr),
-            Attachment("err-output", output.stderr),
-            Attachment("std-output", output.stdout)
-        )
-    } else {
-        LOG.info(
-            "Error while loading schematics info.\n" +
-                shortenOutput(output.stderr)
-        )
-    }
-    return ""
+    }.queue()
+
+    return promise.blockingGet("10".toInt())
+        ?: error("Failed to fetch list of processes.")
 }
 
 private fun shortenOutput(output: String): String {

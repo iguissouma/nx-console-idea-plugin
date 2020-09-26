@@ -133,7 +133,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         }
 
         if (schematics.isEmpty()) {
-            //TODO java.lang.Throwable: Synchronous execution on EDT
+            // TODO java.lang.Throwable: Synchronous execution on EDT
             ApplicationManager.getApplication().executeOnPooledThread {
                 ApplicationManager.getApplication().invokeLater {
                     val mySchematics = runCatching {

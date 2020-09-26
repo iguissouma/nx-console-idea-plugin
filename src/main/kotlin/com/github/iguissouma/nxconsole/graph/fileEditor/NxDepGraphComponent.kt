@@ -111,7 +111,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                             }
                         }
                         myBuilder.queueUpdate()
-
                     }
                 }
             }

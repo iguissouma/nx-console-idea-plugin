@@ -14,5 +14,4 @@ class NxExecuteGenerateTaskAction : AnAction(NxIcons.NRWL_ICON), DumbAware {
         val runAnythingManager = RunAnythingManager.getInstance(project)
         runAnythingManager.show("nx generate ", false, event)
     }
-
 }

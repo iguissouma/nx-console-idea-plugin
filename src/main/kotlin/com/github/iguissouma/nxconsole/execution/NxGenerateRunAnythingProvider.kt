@@ -27,7 +27,6 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         var schematics: MutableList<Schematic> = mutableListOf()
 
         const val HELP_COMMAND = "nx generate"
-
     }
 
     override fun getIcon(value: String): Icon? = NxIcons.NRWL_ICON
@@ -83,7 +82,6 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         return true
     }
 
-
     override fun suggestCompletionVariants(dataContext: DataContext, commandLine: CommandLine): Sequence<String> {
         val project = RunAnythingUtil.fetchProject(dataContext)
         val executionContext = dataContext.getData(EXECUTING_CONTEXT) ?: RunAnythingContext.ProjectContext(project)
@@ -100,7 +98,6 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
                 longOptionsVariants + basicPhasesVariants + customGoalsVariants
             else ->
                 basicPhasesVariants + customGoalsVariants + longOptionsVariants
-
         }
     }
 
@@ -134,7 +131,9 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
                     schematics.clear()
                     schematics.addAll(mySchematics)
                 },
-                "loading schematics...", false, project,
+                "loading schematics...",
+                false,
+                project,
             )
         }
         return schematics

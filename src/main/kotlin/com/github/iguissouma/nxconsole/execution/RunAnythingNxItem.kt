@@ -1,7 +1,9 @@
 package com.github.iguissouma.nxconsole.execution
 
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
-import com.intellij.openapi.util.text.StringUtil.*
+import com.intellij.openapi.util.text.StringUtil.notNullize
+import com.intellij.openapi.util.text.StringUtil.shortenTextWithEllipsis
+import com.intellij.openapi.util.text.StringUtil.substringAfterLast
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
 import org.angular2.cli.Schematic
@@ -9,7 +11,6 @@ import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.Icon
 import javax.swing.JPanel
-
 
 class RunAnythingNxItem(command: String, icon: Icon?) : RunAnythingItemBase(command, icon) {
 
@@ -39,5 +40,4 @@ class RunAnythingNxItem(command: String, icon: Icon?) : RunAnythingItemBase(comm
 
         return component
     }
-
 }

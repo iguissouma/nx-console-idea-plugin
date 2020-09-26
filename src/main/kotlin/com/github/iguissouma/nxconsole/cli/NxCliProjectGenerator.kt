@@ -19,8 +19,6 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.PathUtil
 import java.io.File
-import java.io.IOException
-import java.nio.charset.StandardCharsets
 import javax.swing.Icon
 
 class NxCliProjectGenerator : NpmPackageProjectGenerator() {

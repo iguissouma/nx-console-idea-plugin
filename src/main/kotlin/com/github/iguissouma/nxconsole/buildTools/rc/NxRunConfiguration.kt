@@ -15,7 +15,6 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import org.jdom.Element
-import org.jetbrains.annotations.Nullable
 
 class NxRunConfiguration(
     project: Project,

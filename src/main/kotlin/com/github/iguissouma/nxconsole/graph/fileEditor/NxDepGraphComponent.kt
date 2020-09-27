@@ -163,6 +163,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
     }
 
     companion object {
-        private const val NX_DESIGNER_COMPONENT: String = "STRUTS2_DESIGNER_COMPONENT"
+        private const val NX_DESIGNER_COMPONENT: String = "NX_DESIGNER_COMPONENT"
     }
 }

@@ -34,6 +34,10 @@
         <!--dep-graph-->
         <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>
 
+        <!--ui-->
+        <fileEditorProvider implementation="com.github.iguissouma.nxconsole.execution.NxUIEditorProvider"/>
+        <fileIconProvider implementation="com.github.iguissouma.nxconsole.execution.NxUiIconProvider"/>
+
 
     </extensions>
 

@@ -14,12 +14,25 @@ import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.layout.CellBuilder
+import com.intellij.ui.layout.LayoutBuilder
+import com.intellij.ui.layout.Row
+import com.intellij.ui.layout.panel
 import org.angular2.cli.AngularCliFilter
 import org.angular2.cli.AngularCliSchematicsRegistryService
+import org.angular2.cli.Option
 import org.angular2.cli.Schematic
 import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComponent
+import javax.swing.border.EmptyBorder
+
 
 class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
 
@@ -63,6 +76,9 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         val project = RunAnythingUtil.fetchProject(dataContext)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return false
         val executor = dataContext.getData(EXECUTOR_KEY)
+        val executionContext = dataContext.getData(EXECUTING_CONTEXT) ?: RunAnythingContext.ProjectContext(project)
+        val context = createContext(project, executionContext, dataContext)
+
 
         // TODO check use global or local
         val modules: MutableList<CompletionModuleInfo> = mutableListOf()
@@ -80,13 +96,107 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
             args.add("--dryRun")
         }
 
-        NpmPackageProjectGenerator.generate(
-            interpreter, NodePackage(module.virtualFile?.path!!),
-            { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
-            cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-            null, arrayOf(filter), "generate", *args.toTypedArray()
-        )
+        if (!isUI()) {
+            NpmPackageProjectGenerator.generate(
+                interpreter, NodePackage(module.virtualFile?.path!!),
+                { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
+                cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
+                null, arrayOf(filter), "generate", *args.toTypedArray()
+            )
+        } else {
+            val schematic = hasSchematic(context, commandLine)
+            if (schematic != null) {
 
+                /*val builder = FormBuilder.createFormBuilder()
+                //builder.panel.layout = VerticalFlowLayout()
+                val jButton = JButton("Run")
+                jButton.preferredSize = Dimension(100, 26)
+                builder.addComponentToRightColumn(jButton)
+                schematic.options.forEach { option ->
+                    builder.addLabeledComponent(option.name.let { "$it:" }, buildComponentForOption(option))
+                }*/
+
+                val panel = panel {
+                    row{
+                        right {
+                            JButton("Run")()
+                        }
+                    }
+                    titledRow("Arguments") {
+                        schematic.arguments.forEach { option ->
+                            addRow(option)
+                        }
+                    }
+                    titledRow("Options") {
+                        schematic.options.forEach { option ->
+                            addRow(option)
+                        }
+                    }
+                }.apply {
+                    border = EmptyBorder(4, 4, 4, 10)
+                }
+                //val panel = JPanel(BorderLayout())
+                val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(panel))
+                FileEditorManager.getInstance(project).openFile(vFile, true)
+            }
+        }
+
+        return true
+    }
+
+    private fun LayoutBuilder.addRow(option: Option) {
+        row(option.takeIf { it.type == "string" }?.let { "${it.name}:" }) {
+            buildComponentForOption<JComponent>(option)
+        }
+    }
+
+   /* private fun buildComponentForOption(option: Option): JComponent {
+        return when {
+            option.type == "string" && option.enum.isNullOrEmpty() ->  buildTextField(option)
+            option.type == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
+            option.type == "boolean" -> buildCheckboxField(option)
+            else -> buildTextField(option)
+        }
+    }*/
+
+    private fun <T : JComponent> Row.buildComponentForOption(option: Option): CellBuilder<JComponent> {
+        return when {
+            option.type == "string" && option.enum.isNullOrEmpty() ->  buildTextField(option)
+            option.type == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
+            option.type == "boolean" -> buildCheckboxField(option)
+            else -> buildTextField(option)
+        }
+    }
+
+    /*private fun buildSelectField(option: Option): JComponent {
+        return ComboBox(option.enum.toTypedArray())
+    }
+
+    private fun buildCheckboxField(option: Option): JComponent {
+        return JBCheckBox(option.name, option.default as? Boolean ?: false)
+    }
+
+    private fun buildTextField(option: Option): JBTextField {
+        val jTextField = JBTextField()
+        jTextField.emptyText.text = option.description ?: ""
+        return jTextField
+    }*/
+
+    private fun Row.buildCheckboxField(option: Option): CellBuilder<JBCheckBox> {
+        return checkBox(option.name?:"", option.default as? Boolean ?: false, option.description ?: "")
+    }
+
+    private fun Row.buildSelectField(option: Option): CellBuilder<ComboBox<String>> {
+        return ComboBox(option.enum.toTypedArray())()
+    }
+
+    private fun Row.buildTextField(option: Option): CellBuilder<JBTextField> {
+       val jTextField = JBTextField()
+        jTextField.emptyText.text = option.description ?: ""
+        return jTextField()
+    }
+
+    private fun isUI(): Boolean {
         return true
     }
 
@@ -114,7 +224,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         return schematic.options.mapNotNull { "--${it.name}" }.filter { it !in commandLine }.asSequence()
     }
 
-    fun hasSchematic(context: Context, commandLine: CommandLine): Schematic? {
+    private fun hasSchematic(context: Context, commandLine: CommandLine): Schematic? {
         return getSchematics(project = context.project)
             .firstOrNull { schematic: Schematic -> commandLine.completedParameters.contains(schematic.name) }
     }

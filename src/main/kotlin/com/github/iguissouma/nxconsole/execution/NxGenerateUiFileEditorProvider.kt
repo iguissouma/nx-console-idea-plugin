@@ -16,7 +16,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBPanelWithEmptyText
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.vcs.log.impl.VcsLogContentUtil
 import com.intellij.vcs.log.impl.VcsLogTabsManager
 import java.awt.BorderLayout
@@ -56,7 +55,7 @@ internal class DefaultNxUiFile(name: String, panel: NxUiPanel) : NxUiFile(name) 
 
     init {
         nxUiPanel = panel
-        //Disposer.register(panel.getUi(), Disposable { nxUiPanel = null })
+        // Disposer.register(panel.getUi(), Disposable { nxUiPanel = null })
 
         putUserData(SplitAction.FORBID_TAB_SPLIT, true)
     }
@@ -78,7 +77,7 @@ internal class DefaultNxUiFile(name: String, panel: NxUiPanel) : NxUiFile(name) 
 class NxUiPanel(root: JComponent) : JPanel(BorderLayout()) {
     init {
         border = EmptyBorder(10, 10, 10, 10)
-        add(JBScrollPane(root))
+        add(root)
     }
 }
 

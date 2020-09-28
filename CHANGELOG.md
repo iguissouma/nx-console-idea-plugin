@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 ### Added
+## [0.3.0] - 2020-09-28
+### Added
+- Run Nx generate form ui (add --ui to your command)
 ## [0.2.0] - 2020-09-25
 ### Added
 - Nx workspace generator

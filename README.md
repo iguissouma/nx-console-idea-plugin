@@ -19,7 +19,10 @@ This plugin will add support for projects using [Nx](http://nx.dev/) dev tools.
 - Right button and choose `Show Nx Tasks`
 - A tool window will appear with the available tasks, you can double-click to run the Nx task.
 
-- You can also run tasks from the `RunAnything` command, just type `nx run <task>` you'll get the list of available tasks, choose one to execute.
+- You can also use nx run tasks from the `RunAnything` command, just type `nx run <task>` you'll get the list of available tasks, choose one to execute.
+
+- You can also use nx generate  from the `RunAnything` command, just type `nx generate <schematic>` you'll get the list of available schematic, choose one and add options then to execute.
+- If you want to use the nx generate with the UI Form, just append `--ui` to your command 
 
 <!-- Plugin description end -->
 

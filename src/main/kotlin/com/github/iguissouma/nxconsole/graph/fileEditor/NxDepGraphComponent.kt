@@ -95,7 +95,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                                         "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
                                     // TODO check if json can be out of monorepo
                                     // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
-                                    val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json")
                                     val commandLine =
                                         GeneralCommandLine("", moduleExe, "dep-graph", "--file=.nxdeps.json")
                                     configurator.configure(commandLine)
@@ -104,18 +103,20 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                                         commandLine,
                                         nxJsonFile.parent!!.virtualFile.path
                                     )
+                                    myBuilder.initialize()
+
                                 }
                             } catch (e: Exception) {
                                 // LOG.error("Cannot load schematics", e)
                                 // return
                             }
                         }
-                        myBuilder.queueUpdate()
                     }
                 }
             }
             nxDepGraphTask.queue()
-            myBuilder.initialize()
+
+
             // listen to nx.json changes
             // TODO check if this optimal, it's better to use PSI instead
             project.messageBus.connect().subscribe(

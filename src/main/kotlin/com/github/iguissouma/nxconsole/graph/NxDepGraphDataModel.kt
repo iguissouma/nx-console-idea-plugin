@@ -20,6 +20,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
 import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 private val LOG: Logger = Logger.getInstance("#com.github.iguissouma.nxconsole.graph.NxDepGraphDataModel")
 
@@ -36,7 +37,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
             override fun run(indicator: ProgressIndicator) {
                 // ApplicationManager.getApplication().runReadAction{
                 ApplicationManager.getApplication().invokeLater {
-                    refreshDataModel()
+                    //refreshDataModel()
                 }
             }
         }.queue()
@@ -78,11 +79,11 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
         myNodes.clear()
         myEdges.clear()
         // TODO check how to avoid graph is not fit the content
-         /*ApplicationManager.getApplication().executeOnPooledThread{
-             ApplicationManager.getApplication().invokeLater {
-                 updateDataModel()
-             }
-         }*/
+        /*ApplicationManager.getApplication().executeOnPooledThread{
+            ApplicationManager.getApplication().invokeLater {
+                updateDataModel()
+            }
+        }*/
 
         // this is not working
         /*ProgressManager.getInstance().runProcessWithProgressSynchronously({
@@ -104,7 +105,9 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
     }
 
     private fun updateDataModel() {
-        val depGraph = File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json")
+        val depGraph =
+            kotlin.runCatching { File(File(nxJsonFile.parent!!.virtualFile.path), ".nxdeps.json") }.getOrNull()
+                ?: return
         // println(grabCommandOutput)
         // TODO temp file
         // val depGraphJsonFile = createTempFile.readText()
@@ -155,7 +158,7 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
     val handler = CapturingProcessHandler(commandLine)
     val promise = AsyncPromise<String>()
     object : Task.Backgroundable(project, "executing nx dep-graph...") {
-        override fun run(p0: ProgressIndicator) {
+        override fun run(progress: ProgressIndicator) {
             try {
                 val output = handler.runProcess()
 
@@ -164,13 +167,13 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                         if (myLogErrors.get()) {
                             LOG.error(
                                 "Error while loading schematics info.\n" +
-                                    shortenOutput(output.stderr),
+                                        shortenOutput(output.stderr),
                                 Attachment("err-output", output.stderr)
                             )
                         } else {
                             LOG.info(
                                 "Error while loading schematics info.\n" +
-                                    shortenOutput(output.stderr)
+                                        shortenOutput(output.stderr)
                             )
                         }
                     }
@@ -178,14 +181,14 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                 } else if (myLogErrors.get()) {
                     LOG.error(
                         "Failed to load schematics info.\n" +
-                            shortenOutput(output.stderr),
+                                shortenOutput(output.stderr),
                         Attachment("err-output", output.stderr),
                         Attachment("std-output", output.stdout)
                     )
                 } else {
                     LOG.info(
                         "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr)
+                                shortenOutput(output.stderr)
                     )
                 }
                 promise.setResult("")
@@ -195,7 +198,7 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
         }
     }.queue()
 
-    return promise.blockingGet("10".toInt())
+    return promise.blockingGet(5000, TimeUnit.MILLISECONDS)
         ?: error("Failed to fetch list of processes.")
 }
 

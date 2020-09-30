@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 ### Added
+## [0.4.0] - 2020-09-28
+### Added
+- Preserve args and options when switching from commands to ui
+- Navigation from Nx dep-grah ui
 ## [0.3.0] - 2020-09-28
 ### Added
 - Run Nx generate form ui (add --ui to your command)

@@ -17,6 +17,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
@@ -37,7 +38,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
             override fun run(indicator: ProgressIndicator) {
                 // ApplicationManager.getApplication().runReadAction{
                 ApplicationManager.getApplication().invokeLater {
-                    //refreshDataModel()
+                    // refreshDataModel()
                 }
             }
         }.queue()
@@ -115,12 +116,20 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
         val depGraphJsonFile = depGraph.readText()
         val listPersonType = object : TypeToken<Map<String, Any>>() {}.type
         val graph: Map<String, Any> = Gson().fromJson(depGraphJsonFile, listPersonType)
-        val graphProperty = graph["graph"] as Map<*, *>
+        val graphProperty = graph["graph"] as? Map<*, *> ?: return
         (graphProperty["nodes"] as Map<*, *>).forEach {
-            if ((it.value as Map<*, *>)["type"] as String in listOf("e2e", "app")) {
-                addNode(AppNode(it.key as String))
+            // val findFileByUrl = VirtualFileManager.getInstance().findFileByUrl(nxJsonFile.parent?.virtualFile?.path + "/apps/api")
+            // val findDirectory = PsiManager.getInstance(nxJsonFile.project).findDirectory(findFileByIoFile!!)?.createSmartPointer()
+            val map = it.value as Map<*, *>
+            val data = map["data"] as Map<*, *>?
+            val findFileByIoFile = data?.get("root")?.let { root ->
+                LocalFileSystem.getInstance()
+                    .findFileByIoFile(File(nxJsonFile.parent?.virtualFile?.path + "/" + root))
+            }
+            if (map["type"] as String in listOf("e2e", "app")) {
+                addNode(AppNode(it.key as String, findFileByIoFile))
             } else {
-                addNode(LibNode(it.key as String))
+                addNode(LibNode(it.key as String, findFileByIoFile))
             }
         }
         (graphProperty["dependencies"] as Map<*, *>).forEach { entry ->
@@ -167,13 +176,13 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                         if (myLogErrors.get()) {
                             LOG.error(
                                 "Error while loading schematics info.\n" +
-                                        shortenOutput(output.stderr),
+                                    shortenOutput(output.stderr),
                                 Attachment("err-output", output.stderr)
                             )
                         } else {
                             LOG.info(
                                 "Error while loading schematics info.\n" +
-                                        shortenOutput(output.stderr)
+                                    shortenOutput(output.stderr)
                             )
                         }
                     }
@@ -181,14 +190,14 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                 } else if (myLogErrors.get()) {
                     LOG.error(
                         "Failed to load schematics info.\n" +
-                                shortenOutput(output.stderr),
+                            shortenOutput(output.stderr),
                         Attachment("err-output", output.stderr),
                         Attachment("std-output", output.stdout)
                     )
                 } else {
                     LOG.info(
                         "Error while loading schematics info.\n" +
-                                shortenOutput(output.stderr)
+                            shortenOutput(output.stderr)
                     )
                 }
                 promise.setResult("")

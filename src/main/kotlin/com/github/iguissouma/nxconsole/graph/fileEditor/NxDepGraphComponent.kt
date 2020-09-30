@@ -50,7 +50,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             progress.text = "Building model..."
 
             val myDataModel = NxDepGraphDataModel(nxJsonFile)
-            val presentationModel = NxDepGraphPresentationModel(graph)
+            val presentationModel = NxDepGraphPresentationModel(project, graph)
 
             myBuilder = GraphBuilderFactory.getInstance(project).createGraphBuilder(
                 graph,
@@ -60,7 +60,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             )
             Disposer.register(this, myBuilder)
 
-            val graphComponent = myBuilder.getView().jComponent
+            val graphComponent = myBuilder.view.jComponent
             layout = BorderLayout()
 
             val toolbar = ActionManager.getInstance().createActionToolbar(
@@ -104,7 +104,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                                         nxJsonFile.parent!!.virtualFile.path
                                     )
                                     myBuilder.initialize()
-
                                 }
                             } catch (e: Exception) {
                                 // LOG.error("Cannot load schematics", e)
@@ -115,7 +114,6 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                 }
             }
             nxDepGraphTask.queue()
-
 
             // listen to nx.json changes
             // TODO check if this optimal, it's better to use PSI instead

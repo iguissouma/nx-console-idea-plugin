@@ -4,7 +4,7 @@
 
 ## [Unreleased]
 ### Added
-## [0.4.0] - 2020-09-28
+## [0.4.0] - 2020-09-30
 ### Added
 - Preserve args and options when switching from commands to ui
 - Navigation from Nx dep-grah ui

@@ -93,7 +93,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         } else {
             val schematic = hasSchematic(context, commandLine)
             if (schematic != null) {
-                val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(project, schematic))
+                val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(project, schematic, args))
                 FileEditorManager.getInstance(project).openFile(vFile, true)
             }
         }

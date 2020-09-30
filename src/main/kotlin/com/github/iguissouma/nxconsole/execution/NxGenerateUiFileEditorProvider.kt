@@ -12,6 +12,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -44,6 +45,7 @@ import org.angular2.cli.Option
 import org.angular2.cli.Schematic
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
+import java.lang.Integer.min
 import javax.swing.DefaultComboBoxModel
 import javax.swing.Icon
 import javax.swing.JCheckBox
@@ -78,7 +80,7 @@ abstract class NxUiFile(name: String) : LightVirtualFile(name, NxUiFileType.INST
     abstract fun createMainComponent(project: Project): JComponent
 }
 
-internal class DefaultNxUiFile(name: String, panel: NxUiPanel) : NxUiFile(name) {
+internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(task) {
     private var nxUiPanel: NxUiPanel? = null
 
     init {
@@ -100,14 +102,52 @@ internal class DefaultNxUiFile(name: String, panel: NxUiPanel) : NxUiFile(name) 
     }
 
     override fun isValid(): Boolean = nxUiPanel != null
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as DefaultNxUiFile
+
+        if (task != other.task) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return task.hashCode()
+    }
 }
 
-class NxUiPanel(project: Project, schematic: Schematic) : JPanel(BorderLayout()) {
+class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String>) : JPanel(BorderLayout()) {
     var modelUI = (schematic.arguments + schematic.options)
         .filterNot { it.name == null }
         .map { it.name!! to it.default }.toMap().toMutableMap()
 
     init {
+
+        val parsedArgs: List<String> = parseArguments(args.toTypedArray())
+            .filter { it != schematic.name }
+
+        (0 until min(parsedArgs.size, schematic.arguments.size)).forEach {
+            modelUI[schematic.arguments[it].name ?: ""] = parsedArgs[it]
+        }
+
+        parseOptions(args.toTypedArray())
+            .filterKeys { modelUI.containsKey(it) }
+            .forEach { (t: String, u: List<String>) ->
+                val get = modelUI.get(t)
+                if (get is Boolean) {
+                    val b = u.firstOrNull()
+                    if (b == null) {
+                        modelUI[t] = true
+                    } else {
+                        modelUI[t] = b.toBoolean()
+                    }
+                    // u.firstOrNull()?.let { it.toBoolean() }?.let { modelUI[t] = it }
+                } else {
+                    u.firstOrNull()?.let { modelUI[t] = it }
+                }
+            }
 
         val modules: MutableList<CompletionModuleInfo> = mutableListOf()
         NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
@@ -122,7 +162,7 @@ class NxUiPanel(project: Project, schematic: Schematic) : JPanel(BorderLayout())
         val panel = panel {
 
             titledRow("Arguments") {
-                schematic.arguments.forEach { option ->
+                schematic.arguments.forEachIndexed { index, option ->
                     addRow(option)
                 }
             }
@@ -176,15 +216,16 @@ class NxUiPanel(project: Project, schematic: Schematic) : JPanel(BorderLayout())
         actionGroup.addAction(dryRun)
 
         val actionToolbar =
-            ActionManager.getInstance().createActionToolbar("top", actionGroup, true)
+            ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR, actionGroup, true)
         actionToolbar.setMinimumButtonSize(ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE)
         actionToolbar.layoutPolicy = ActionToolbar.AUTO_LAYOUT_POLICY
         actionToolbar.component.border = IdeBorderFactory.createBorder(SideBorder.TOP + SideBorder.BOTTOM)
 
         val mainPanel = JPanel(BorderLayout())
         mainPanel.add(actionToolbar.component, BorderLayout.NORTH)
-        mainPanel.add(JBScrollPane(panel), BorderLayout.CENTER)
-        actionToolbar.setTargetComponent(panel)
+        val jbScrollPane = JBScrollPane(panel)
+        mainPanel.add(jbScrollPane, BorderLayout.CENTER)
+        actionToolbar.setTargetComponent(jbScrollPane)
 
         add(mainPanel)
     }
@@ -222,6 +263,7 @@ class NxUiPanel(project: Project, schematic: Schematic) : JPanel(BorderLayout())
     private inline fun Row.buildSelectField(option: Option) {
         val model: DefaultComboBoxModel<String> = DefaultComboBoxModel(option.enum.toTypedArray())
         val comboBox = ComboBox(model)
+        comboBox.selectedItem = modelUI[option.name] ?: option.enum.first()
         comboBox.addActionListener {
             modelUI[option.name ?: ""] = (comboBox.selectedItem as? String) ?: ""
         }
@@ -232,8 +274,9 @@ class NxUiPanel(project: Project, schematic: Schematic) : JPanel(BorderLayout())
         val jTextField = JBTextField()
         // jTextField.emptyText.text = option.description ?: ""
         option.default?.let {
-            jTextField.text = it as? String ?: ""
+            // jTextField.text = it as? String ?: ""
         }
+        jTextField.text = modelUI[option.name] as? String ?: ""
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {
                 modelUI[option.name ?: ""] = jTextField.text
@@ -323,4 +366,56 @@ fun FileEditor.disposeNxUis(): List<String> {
         logUis.forEach(Disposer::dispose)
     }
     return disposedIds
+}
+
+// a stupid options parser
+/**
+ * "--directory x --dryRun --dire=y" ->
+ */
+fun parseOptions(args: Array<String>): MutableMap<String, List<String>> {
+    val params = mutableMapOf<String, List<String>>()
+    var options: MutableList<String>? = null
+    for (i in 0 until args.size) {
+        val a = args[i]
+        if (a[0] == '-') {
+            if (a.length < 2) {
+                continue
+            }
+            options = mutableListOf()
+            if (a.contains("=")) {
+                val endIndex = a.indexOf("=")
+                options.add(a.substring(endIndex + 1))
+                if (a[1] == '-') {
+                    params[a.substring(2, endIndex)] = options
+                } else {
+                    params[a.substring(1, endIndex)] = options
+                }
+            } else {
+                if (a[1] == '-') {
+                    params[a.substring(2)] = options
+                } else {
+                    params[a.substring(1)] = options
+                }
+            }
+        } else if (options != null) {
+            options.add(a)
+        }
+    }
+    return params
+}
+
+// a stupid arg parser
+/**
+ * "--directory x --dryRun --dire=y" ->
+ */
+fun parseArguments(args: Array<String>): MutableList<String> {
+    val options: MutableList<String> = mutableListOf()
+    for (element in args) {
+        if (element[0] == '-') {
+            break
+        } else {
+            options.add(element)
+        }
+    }
+    return options
 }

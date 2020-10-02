@@ -25,6 +25,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -44,6 +45,7 @@ import org.angular2.cli.AngularCliFilter
 import org.angular2.cli.Option
 import org.angular2.cli.Schematic
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.lang.Integer.min
 import javax.swing.DefaultComboBoxModel
@@ -51,6 +53,7 @@ import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.LayoutFocusTraversalPolicy
 import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 
@@ -119,6 +122,11 @@ internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(ta
 }
 
 class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String>) : JPanel(BorderLayout()) {
+
+    var hasFocus = false
+
+    var centerPanel: DialogPanel? = null
+
     var modelUI = (schematic.arguments + schematic.options)
         .filterNot { it.name == null }
         .map { it.name!! to it.default }.toMap().toMutableMap()
@@ -159,7 +167,7 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         val module = modules.firstOrNull()
         val filter = AngularCliFilter(project, project.baseDir.path)
 
-        val panel = panel {
+        centerPanel = panel {
 
             titledRow("Arguments") {
                 schematic.arguments.forEachIndexed { index, option ->
@@ -173,6 +181,7 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
             }
         }.apply {
             border = EmptyBorder(10, 10, 4, 15)
+            // requestFocusInWindow(true)
         }
 
         val actionGroup = DefaultActionGroup()
@@ -220,14 +229,36 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         actionToolbar.setMinimumButtonSize(ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE)
         actionToolbar.layoutPolicy = ActionToolbar.AUTO_LAYOUT_POLICY
         actionToolbar.component.border = IdeBorderFactory.createBorder(SideBorder.TOP + SideBorder.BOTTOM)
+        actionToolbar.setMinimumButtonSize(Dimension(22, 22))
+        actionToolbar.component.isOpaque = true
 
         val mainPanel = JPanel(BorderLayout())
         mainPanel.add(actionToolbar.component, BorderLayout.NORTH)
-        val jbScrollPane = JBScrollPane(panel)
+        val jbScrollPane = JBScrollPane(centerPanel)
         mainPanel.add(jbScrollPane, BorderLayout.CENTER)
         actionToolbar.setTargetComponent(jbScrollPane)
 
+        isFocusCycleRoot = true
+        focusTraversalPolicy = LayoutFocusTraversalPolicy()
+        // isFocusable = true
+        // isRequestFocusEnabled = true
+
         add(mainPanel)
+        // panel.isFocusable = true
+
+        /*UIUtil.invokeLaterIfNeeded {
+            //panel.requestFocusInWindow()
+            //panel.preferredFocusedComponent?.requestFocus()
+            //panel.preferredFocusedComponent?.grabFocus()
+            //panel.preferredFocusedComponent?.let { IdeFocusManager.getInstance(project).requestFocus(it, true) }
+            centerPanel.preferredFocusedComponent?.let {
+                IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
+                    IdeFocusManager.getGlobalInstance().requestFocus(it, true)
+                }
+            }
+
+
+        }*/
     }
 
     private fun ignoredOptions() = listOf("dryRun", "linter", "strict", "force", "importantPath")
@@ -287,7 +318,14 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
             }
         }
         jTextField.document.addDocumentListener(docListener)
-        jTextField(comment = option.description)
+
+        // add focus on first input text field
+        if (!hasFocus) {
+            jTextField(comment = option.description).focused()
+            hasFocus = true
+        } else {
+            jTextField(comment = option.description)
+        }
     }
 
     private fun computeArgsFromModelUi(): List<String> {
@@ -327,13 +365,14 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
 }
 
 class NxUIEditor(private val project: Project, private val nxUiFile: NxUiFile) : FileEditorBase() {
-    internal val rootComponent: JComponent = JPanel(BorderLayout()).also {
-        it.add(nxUiFile.createMainComponent(project), BorderLayout.CENTER)
+    private val createMainComponent: JComponent = nxUiFile.createMainComponent(project)
+    private val rootComponent: JComponent = JPanel(BorderLayout()).also {
+        it.add(createMainComponent, BorderLayout.CENTER)
     }
 
     override fun getComponent(): JComponent = rootComponent
     override fun getPreferredFocusedComponent(): JComponent? =
-        VcsLogContentUtil.getLogUis(component).firstOrNull()?.mainComponent
+        (createMainComponent as? NxUiPanel)?.centerPanel?.preferredFocusedComponent
 
     override fun getName(): String = NxBundle.message("nx.ui.editor.name")
     override fun getFile() = nxUiFile

@@ -38,6 +38,8 @@
         <fileEditorProvider implementation="com.github.iguissouma.nxconsole.execution.NxUIEditorProvider"/>
         <fileIconProvider implementation="com.github.iguissouma.nxconsole.execution.NxUiIconProvider"/>
 
+        <!--filetype-->
+        <fileType name="nx" fileNames="nx.json" implementationClass="com.github.iguissouma.nxconsole.NxFileType" fieldName="INSTANCE"/>
 
     </extensions>
 

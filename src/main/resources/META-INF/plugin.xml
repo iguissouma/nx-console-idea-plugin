@@ -57,5 +57,14 @@
         <action id="Nx.NxExecuteGenerateTaskAction"
                 class="com.github.iguissouma.nxconsole.execution.NxExecuteGenerateTaskAction" text="Nx Run a Schematic"
                 description="Runs a schematic that generates and/or modifies files based on a schematic from a collection."/>
+
+        <!-- Add your actions here -->
+        <group id="Nx.RefactoringGroup" text="Refactoring">
+            <add-to-group group-id="RefactoringMenu" anchor="after" relative-to-action="Move"/>
+            <action id="nx.refactoring.move" text="Move Nx App or Lib"
+                    class="com.github.iguissouma.nxconsole.actions.NxMoveLibOrAppAction">
+                <keyboard-shortcut keymap="$default" first-keystroke="control F6"/>
+            </action>
+        </group>
     </actions>
 </idea-plugin>

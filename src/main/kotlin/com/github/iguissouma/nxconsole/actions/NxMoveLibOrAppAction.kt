@@ -1,0 +1,153 @@
+package com.github.iguissouma.nxconsole.actions
+
+import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
+import com.intellij.javascript.nodejs.CompletionModuleInfo
+import com.intellij.javascript.nodejs.NodeModuleSearchUtil
+import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.intellij.javascript.nodejs.util.NodePackage
+import com.intellij.json.psi.JsonObject
+import com.intellij.json.psi.JsonProperty
+import com.intellij.json.psi.JsonStringLiteral
+import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileChooser.FileChooserFactory
+import com.intellij.openapi.keymap.KeymapUtil
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.TextComponentAccessor
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
+import com.intellij.ui.components.JBLabelDecorator
+import com.intellij.ui.layout.panel
+import org.angular2.cli.AngularCliFilter
+import java.awt.Dimension
+import java.io.File
+import javax.swing.JComponent
+import javax.swing.event.DocumentEvent
+
+class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
+
+    override fun actionPerformed(event: AnActionEvent) {
+        val project = event.project ?: return
+        // TODO check if it's monorepo
+        val findChildNxJsonFile = NxJsonUtil.findChildNxJsonFile(project.baseDir) ?: return
+        val appOrLibDirectory = event.getData(PlatformDataKeys.VIRTUAL_FILE) ?: return
+        if (!appOrLibDirectory.isDirectory) {
+            return
+        }
+        val angularJsonFile = NxJsonUtil.findChildAngularJsonFile(project.baseDir) ?: return
+        val findProjectsProperty: JsonProperty? = NxJsonUtil.findProjectsProperty(project, angularJsonFile) ?: return
+        val toMap = ((findProjectsProperty as JsonProperty).value as JsonObject)
+            .propertyList
+            .map { it.name to (it.value as? JsonObject)?.findProperty("root") }
+            .filter { it.second != null }
+            .map {
+                LocalFileSystem.getInstance()
+                    .findFileByIoFile(File(angularJsonFile.parent.path + "/" + (it.second?.value as? JsonStringLiteral)?.value)) to it.first
+            }.toMap()
+
+        if (toMap.containsKey(appOrLibDirectory)) {
+            // show dialog
+            val nxMoveLibOrAppDialog = NxMoveLibOrAppDialog(project, appOrLibDirectory)
+            if (nxMoveLibOrAppDialog.showAndGet()) {
+                // TODO check current directory
+                val cli = project.baseDir
+                val workingDir = project.baseDir
+                // TODO check use global or local
+                val modules: MutableList<CompletionModuleInfo> = mutableListOf()
+                NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
+                val module = modules.firstOrNull() ?: return
+                val filter = AngularCliFilter(project, project.baseDir.path)
+                val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
+                val args = arrayOf(
+                    "@nrwl/workspace:move",
+                    "--project",
+                    toMap[appOrLibDirectory],
+                    nxMoveLibOrAppDialog.myTargetDirectoryField.text.replace(project.baseDir.path, "")
+                        .replace("/libs", "")
+                        .replace("/apps", "")
+
+                )
+                NpmPackageProjectGenerator.generate(
+                    interpreter, NodePackage(module.virtualFile?.path!!),
+                    { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
+                    cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
+                    null, arrayOf(filter), "generate", *args
+                )
+            }
+        }
+    }
+
+    internal class NxMoveLibOrAppDialog(val project: Project, val appOrLibDirectory: VirtualFile) : DialogWrapper(
+        project
+    ) {
+
+        val myLabel = JBLabelDecorator.createJBLabelDecorator().setBold(true)
+
+        val myTargetDirectoryField = TextFieldWithHistoryWithBrowseButton()
+
+        init {
+            title = "Move"
+
+            myLabel.text = "Move Nx App or Lib"
+            myLabel.preferredSize = Dimension(600, 15)
+
+            init()
+        }
+
+        override fun createCenterPanel(): JComponent {
+
+            val initialTargetPath = appOrLibDirectory.presentableUrl
+            myTargetDirectoryField.childComponent.text = initialTargetPath
+            val lastDirectoryIdx = initialTargetPath.lastIndexOf(File.separator)
+            val textLength = initialTargetPath.length
+            if (lastDirectoryIdx > 0 && lastDirectoryIdx + 1 < textLength) {
+                myTargetDirectoryField.childComponent.textEditor.select(lastDirectoryIdx + 1, textLength)
+            }
+
+            val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
+
+            myTargetDirectoryField.addBrowseFolderListener(
+                "Select Target Directory",
+                "App or Lib will be moved to this directory",
+                project,
+                descriptor,
+                TextComponentAccessor.TEXT_FIELD_WITH_HISTORY_WHOLE_TEXT
+            )
+
+            val textField = myTargetDirectoryField.childComponent.textEditor
+            FileChooserFactory.getInstance().installFileCompletion(textField, descriptor, true, disposable)
+            textField.document.addDocumentListener(
+                object : DocumentAdapter() {
+                    override fun textChanged(e: DocumentEvent) {
+// validateButtons()
+                    }
+                }
+            )
+
+            val shortcutText = KeymapUtil.getFirstKeyboardShortcutText(
+                ActionManager.getInstance().getAction(IdeActions.ACTION_CODE_COMPLETION)
+            )
+
+            return panel {
+                row { myLabel() }
+                row("To directory:") {
+                    myTargetDirectoryField(comment = "Use $shortcutText for path completion\n")
+                }
+            }
+        }
+
+        override fun getPreferredFocusedComponent(): JComponent {
+            return myTargetDirectoryField
+        }
+    }
+}

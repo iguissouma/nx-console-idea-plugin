@@ -1,7 +1,6 @@
 package com.github.iguissouma.nxconsole
 
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
-import com.intellij.icons.AllIcons
 import com.intellij.ide.IconProvider
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonStringLiteral
@@ -39,7 +38,6 @@ class NxDirectoryIconProvider : IconProvider(), DumbAware {
                     return NxIcons.NX_LIB_FOLDER
                 }
             }
-
         }
         return null
     }

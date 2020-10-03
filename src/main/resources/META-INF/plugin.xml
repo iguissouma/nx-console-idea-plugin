@@ -40,6 +40,7 @@
 
         <!--filetype-->
         <fileType name="nx" fileNames="nx.json" implementationClass="com.github.iguissouma.nxconsole.NxFileType" fieldName="INSTANCE"/>
+        <iconProvider implementation="com.github.iguissouma.nxconsole.NxDirectoryIconProvider" order="before directory, before javaDirectory"/>
 
     </extensions>
 

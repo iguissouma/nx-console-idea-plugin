@@ -11,6 +11,7 @@ import com.intellij.lang.javascript.buildTools.base.JsbtSortingMode
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskSet
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskTreeView
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -20,7 +21,10 @@ import com.intellij.util.SmartList
 import javax.swing.tree.DefaultMutableTreeNode
 
 class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutPlace: String?) :
-    JsbtTaskTreeView(nxService, project, layoutPlace) {
+    JsbtTaskTreeView(nxService, project, layoutPlace), Disposable {
+
+    var filterByAffected: List<String> = emptyList()
+    var isAffected = false
 
     companion object {
 
@@ -52,7 +56,11 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
                 val node = DefaultMutableTreeNode(it, false)
                 projectNode.add(node)
             }
-            nxProjectsTaskNode.add(projectNode)
+            if (!isAffected) {
+                nxProjectsTaskNode.add(projectNode)
+            } else if (filterByAffected.contains(myScript.key)) {
+                nxProjectsTaskNode.add(projectNode)
+            }
         }
         buildfileTreeNode.add(nxProjectsTaskNode)
 

@@ -58,7 +58,8 @@
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </group>
         <action id="Nx.NxExecuteGenerateTaskAction"
-                class="com.github.iguissouma.nxconsole.execution.NxExecuteGenerateTaskAction" text="Nx Run a Schematic"
+                class="com.github.iguissouma.nxconsole.execution.NxExecuteGenerateTaskAction"
+                text="Nx Run a Schematic"
                 description="Runs a schematic that generates and/or modifies files based on a schematic from a collection."/>
 
         <!-- Add your actions here -->
@@ -69,5 +70,14 @@
                 <keyboard-shortcut keymap="$default" first-keystroke="control F6"/>
             </action>
         </group>
+
+        <!--NxShowAffectedAction-->
+        <action id="ShowAffectedAction" class="com.github.iguissouma.nxconsole.actions.NxShowAffectedAction"
+                text="Nx Show Affected">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

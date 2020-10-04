@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 ### Added
+## [0.5.0] - 2020-10-03
+### Added
+- Move Nx action
+- Nx config file type
+- Nx icons for app lib directories
+- Nx affected by files and changes
 ## [0.4.0] - 2020-09-30
 ### Added
 - Preserve args and options when switching from commands to ui

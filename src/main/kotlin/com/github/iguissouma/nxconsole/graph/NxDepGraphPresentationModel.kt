@@ -3,13 +3,18 @@ package com.github.iguissouma.nxconsole.graph
 import com.github.iguissouma.nxconsole.graph.model.BasicNxEdge
 import com.github.iguissouma.nxconsole.graph.model.BasicNxNode
 import com.intellij.ide.util.PsiNavigationSupport
+import com.intellij.openapi.graph.GraphManager
 import com.intellij.openapi.graph.builder.components.BasicGraphPresentationModel
 import com.intellij.openapi.graph.builder.renderer.BasicGraphNodeRenderer
 import com.intellij.openapi.graph.builder.util.GraphViewUtil
+import com.intellij.openapi.graph.view.Arrow
+import com.intellij.openapi.graph.view.EdgeRealizer
 import com.intellij.openapi.graph.view.Graph2D
+import com.intellij.openapi.graph.view.LineType
 import com.intellij.openapi.graph.view.NodeRealizer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import java.awt.Color
 
 class NxDepGraphPresentationModel(val project: Project, graph: Graph2D) :
     BasicGraphPresentationModel<BasicNxNode, BasicNxEdge>(graph) {
@@ -41,5 +46,13 @@ class NxDepGraphPresentationModel(val project: Project, graph: Graph2D) :
 
     private fun navigateToFile(project: Project, file: VirtualFile) {
         PsiNavigationSupport.getInstance().createNavigatable(project, file, -1).navigate(true)
+    }
+
+    override fun getEdgeRealizer(e: BasicNxEdge?): EdgeRealizer {
+        val edgeRealizer: EdgeRealizer = GraphManager.getGraphManager().createPolyLineEdgeRealizer()
+        edgeRealizer.lineType = if (e?.type == "dynamic") LineType.DASHED_1 else LineType.LINE_1
+        edgeRealizer.lineColor = Color.GRAY
+        edgeRealizer.arrow = Arrow.STANDARD
+        return edgeRealizer
     }
 }

@@ -14,7 +14,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.graph.builder.GraphDataModel
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -142,7 +141,8 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
                         BasicNxEdge(
                             source,
                             target,
-                            if (x["type"] as String == "implicit") "implicit" else ""
+                            if (x["type"] as String? == "implicit") "implicit" else "",
+                            x["type"] as String?
                         )
                     )
                 }

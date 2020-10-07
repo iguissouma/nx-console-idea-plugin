@@ -42,6 +42,10 @@
         <fileType name="nx" fileNames="nx.json" implementationClass="com.github.iguissouma.nxconsole.NxFileType" fieldName="INSTANCE"/>
         <iconProvider implementation="com.github.iguissouma.nxconsole.NxDirectoryIconProvider" order="before directory, before javaDirectory"/>
 
+        <!--vcs-->
+        <checkinHandlerFactory implementation="com.github.iguissouma.nxconsole.vcs.checkin.NxReformatCheckinHandlerFactory"/>
+        <projectService serviceImplementation="com.github.iguissouma.nxconsole.vcs.NxVcsConfiguration"/>
+
     </extensions>
 
     <projectListeners>

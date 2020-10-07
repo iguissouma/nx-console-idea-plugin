@@ -6,10 +6,12 @@ import com.intellij.psi.search.scope.packageSet.NamedScope
 class NxProjectsScopesProvider : CustomScopesProviderEx() {
 
     companion object {
-        val INSTANCE = NxProjectFilesScope()
+        val NxProjectFilesScope = NxProjectFilesScope()
+        val NxAppsFilesScope = NxAppsFilesScope()
+        val NxLibsScope = NxLibsFilesScope()
     }
 
     override fun getCustomScopes(): List<NamedScope> {
-        return listOf(INSTANCE)
+        return listOf(NxProjectFilesScope, NxAppsFilesScope, NxLibsScope)
     }
 }

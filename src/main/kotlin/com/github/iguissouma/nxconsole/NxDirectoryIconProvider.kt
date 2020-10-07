@@ -21,6 +21,16 @@ class NxDirectoryIconProvider : IconProvider(), DumbAware {
             val angularJsonFile = NxJsonUtil.findChildAngularJsonFile(project.baseDir) ?: return null
             val projectsProperty = NxJsonUtil.findProjectsProperty(project, angularJsonFile) ?: return null
             val file: VirtualFile = element.virtualFile
+
+            // TODO compare with folder virtual file
+            if ("apps" == file.name) {
+                return NxIcons.NX_APPS_FOLDER
+            }
+
+            if ("libs" == file.name) {
+                return NxIcons.NX_LIBS_FOLDER
+            }
+
             val toMap = (projectsProperty.value as JsonObject)
                 .propertyList
                 .map { Triple(it.name, (it.value as? JsonObject)?.findProperty("root"), (it.value as? JsonObject)?.findProperty("projectType")) }

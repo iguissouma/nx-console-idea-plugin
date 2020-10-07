@@ -46,6 +46,9 @@
         <checkinHandlerFactory implementation="com.github.iguissouma.nxconsole.vcs.checkin.NxReformatCheckinHandlerFactory"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.vcs.NxVcsConfiguration"/>
 
+        <!--scope provider-->
+        <customScopesProvider implementation="com.github.iguissouma.nxconsole.scopes.NxProjectsScopesProvider" order="last"/>
+
     </extensions>
 
     <projectListeners>

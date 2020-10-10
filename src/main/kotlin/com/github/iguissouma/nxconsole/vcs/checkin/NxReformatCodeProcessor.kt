@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.vcs.checkin
 import com.github.iguissouma.nxconsole.NxBundle
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
@@ -57,7 +58,12 @@ class NxReformatCodeProcessor(val myProject: Project, val psiFiles: Array<PsiFil
 class NxExecutionUtil(val project: Project) {
 
     fun execute(command: String, vararg args: String): Boolean {
-        val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return false
+        val output = executeAndGetOutput(command, *args)
+        return output?.exitCode == 0
+    }
+
+    fun executeAndGetOutput(command: String, vararg args: String): ProcessOutput? {
+        val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return null
         val configurator = NodeCommandLineConfigurator.find(nodeJsInterpreter)
         val modules: MutableList<CompletionModuleInfo> = mutableListOf()
         NodeModuleSearchUtil.findModulesWithName(
@@ -66,7 +72,7 @@ class NxExecutionUtil(val project: Project) {
             project.baseDir, // TODO change deprecation
             null
         )
-        val module = modules.firstOrNull() ?: return false
+        val module = modules.firstOrNull() ?: return null
         val moduleExe =
             "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
         val commandLine =
@@ -74,8 +80,6 @@ class NxExecutionUtil(val project: Project) {
         commandLine.withWorkDirectory(project.basePath)
         configurator.configure(commandLine)
         val handler = CapturingProcessHandler(commandLine)
-        val output = handler.runProcess()
-
-        return output.exitCode == 0
+        return handler.runProcess()
     }
 }

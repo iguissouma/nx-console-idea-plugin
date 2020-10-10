@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.plugins
 
+import com.github.iguissouma.nxconsole.vcs.checkin.NxExecutionUtil
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
@@ -32,57 +33,6 @@ import com.intellij.webcore.packaging.RepoPackage
 import java.io.File
 import java.util.Arrays
 
-const val command =
-    """
-
->  NX  Installed plugins:
-
-  @angular-devkit/build-angular (builders)
-  @nrwl/angular (builders,schematics)
-  @nrwl/cypress (builders,schematics)
-  @nrwl/jest (builders,schematics)
-  @nrwl/linter (builders)
-  @nrwl/workspace (builders,schematics)
-
-
->  NX  Also available:
-
-  @nrwl/bazel (schematics)
-  @nrwl/express (builders,schematics)
-  @nrwl/nest (builders,schematics)
-  @nrwl/next (builders,schematics)
-  @nrwl/node (builders,schematics)
-  @nrwl/nx-plugin (builders,schematics)
-  @nrwl/react (builders,schematics)
-  @nrwl/storybook (builders,schematics)
-  @nrwl/web (builders,schematics)
-
-
->  NX  Community plugins:
-
-  @nxtend/ionic-react - An Nx plugin for developing Ionic React applications and libraries
-  @nxtend/capacitor - An Nx plugin for developing cross-platform applications using Capacitor
-  @angular-architects/ddd - Nx plugin for structuring a monorepo with domains and layers
-  @offeringsolutions/nx-karma-to-jest - Nx plugin for replacing karma with jest in an Nx workspace
-  @flowaccount/nx-serverless - Nx plugin for node/angular-universal schematics and deployment builders in an Nx workspace
-  @dev-thought/nx-deploy-it - Nx plugin to deploy applications on your favorite cloud provider
-  @offeringsolutions/nx-protractor-to-cypress - Nx plugin to replace protractor with cypress in an nx workspace
-  @nx-tools/nx-docker - Nx plugin to build docker images of your affected apps
-  @angular-custom-builders/lite-serve - Nx plugin to run the e2e test on an existing dist folder
-  @nx-plus/nuxt - Nx plugin adding first class support for Nuxt in your Nx workspace.
-  @nx-plus/vue - Nx plugin adding first class support for Vue in your Nx workspace.
-  @nx-plus/docusaurus - Nx plugin adding first class support for Docusaurus in your Nx workspace.
-  @twittwer/compodoc - Nx Plugin to integrate the generation of documentation with Compodoc in the Nx workflow
-  @nxext/stencil - Nx plugin to use StencilJs within nx workspaces
-  @joelcode/gcp-function - Nx plugin to generate, test, lint, build, serve, & deploy Google Cloud Function
-  @nx-go/nx-go - Nx plugin to use Go in a Nx workspace
-
-
->  NX   NOTE  Use "nx list [plugin]" to find out more
-
-    
-"""
-
 fun getPackageList(nxListOutput: String, from: String, to: String, trim: String): List<String> {
     val i = nxListOutput.indexOf(from) + from.length
     return nxListOutput.substring(i, nxListOutput.indexOf(to))
@@ -93,14 +43,9 @@ fun getPackageList(nxListOutput: String, from: String, to: String, trim: String)
         .toList()
 }
 
-fun main() {
-    val message = getInstalled()
-    println(message)
-}
-
-private fun getInstalled() = getPackageList(command, ">  NX  Installed plugins:", ">  NX  Also available:", " (")
-private fun getAlsoAvailable() = getPackageList(command, ">  NX  Also available:", ">  NX  Community plugins:", " (")
-private fun getCommunityPlugins() = getPackageList(
+private fun getInstalled(command: String) = getPackageList(command, ">  NX  Installed plugins:", ">  NX  Also available:", " (")
+private fun getAlsoAvailable(command: String) = getPackageList(command, ">  NX  Also available:", ">  NX  Community plugins:", " (")
+private fun getCommunityPlugins(command: String) = getPackageList(
     command,
     ">  NX  Community plugins:",
     ">  NX   NOTE  Use \"nx list [plugin]\" to find out more",
@@ -124,7 +69,12 @@ class NxDevToolsPackagingService(
     }
 
     override fun getAllPackages(): MutableList<RepoPackage> {
-        return (getInstalled() + getAlsoAvailable() + getCommunityPlugins())
+        val output = NxExecutionUtil(myProject).executeAndGetOutput("list") ?: return mutableListOf()
+        if (output.exitCode != 0) {
+            return mutableListOf()
+        }
+        val commandResult = output.stdout
+        return (getInstalled(commandResult) + getAlsoAvailable(commandResult) + getCommunityPlugins(commandResult))
             .map { RepoPackage(it, "", "") }
             .toMutableList()
     }
@@ -134,7 +84,12 @@ class NxDevToolsPackagingService(
     }
 
     override fun getInstalledPackages(): MutableCollection<InstalledPackage> {
-        val installed = getInstalled()
+        val output = NxExecutionUtil(myProject).executeAndGetOutput("list") ?: return mutableListOf()
+        if (output.exitCode != 0) {
+            return mutableListOf()
+        }
+        val commandResult = output.stdout
+        val installed = getInstalled(commandResult)
         return if (myProject.isDisposed) {
             mutableListOf()
         } else {

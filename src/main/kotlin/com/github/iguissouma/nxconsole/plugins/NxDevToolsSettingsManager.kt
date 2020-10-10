@@ -39,7 +39,6 @@ class NxDevToolsSettingsManager(val myProject: Project) : PersistentStateCompone
         )
     }
 
-
     private fun createSettings(
         nodeInterpreterRefName: String?,
         nxPkgPath: String?,
@@ -59,7 +58,6 @@ class NxDevToolsSettingsManager(val myProject: Project) : PersistentStateCompone
         }
     }
 
-
     private fun guessNxConfig(): String {
         val baseDir = myProject.baseDir
         if (baseDir != null && baseDir.isValid) {
@@ -70,7 +68,6 @@ class NxDevToolsSettingsManager(val myProject: Project) : PersistentStateCompone
         }
         return ""
     }
-
 
     private fun guessNxPackage(interpreterRef: NodeJsInterpreterRef): NodePackage {
         val interpreter = interpreterRef.resolve(myProject)

@@ -7,13 +7,16 @@ import com.intellij.psi.search.scope.packageSet.FilteredPackageSet
 import com.intellij.psi.search.scope.packageSet.NamedScope
 import com.intellij.ui.IconManager
 
-class NxProjectFilesScope : NamedScope(NAME, NxIcons.NRWL_ICON, object : FilteredPackageSet(NAME) {
-    override fun contains(file: VirtualFile, project: Project): Boolean {
-        return (file.path.contains("apps") || file.path.contains("libs")) &&
+class NxProjectFilesScope : NamedScope(
+    NAME,
+    NxIcons.NRWL_ICON,
+    object : FilteredPackageSet(NAME) {
+        override fun contains(file: VirtualFile, project: Project): Boolean {
+            return (file.path.contains("apps") || file.path.contains("libs")) &&
                 !file.path.contains("node_modules")
+        }
     }
-
-}) {
+) {
 
     companion object {
         val NAME = "Nx Apps&Libs"
@@ -24,14 +27,14 @@ private class NxProjectPackageSet(val type: String) : FilteredPackageSet("Nx ${t
 
     override fun contains(file: VirtualFile, project: Project): Boolean {
         return file.path.contains(type) &&
-                !file.path.contains("node_modules")
+            !file.path.contains("node_modules")
     }
 }
 
-
 class NxAppsFilesScope : NamedScope(
     NAME,
-    IconManager.getInstance().createOffsetIcon(NxIcons.NX_APPS_FOLDER), NxProjectPackageSet("apps")
+    IconManager.getInstance().createOffsetIcon(NxIcons.NX_APPS_FOLDER),
+    NxProjectPackageSet("apps")
 ) {
 
     companion object {
@@ -41,7 +44,8 @@ class NxAppsFilesScope : NamedScope(
 
 class NxLibsFilesScope : NamedScope(
     NAME,
-    IconManager.getInstance().createOffsetIcon(NxIcons.NX_LIBS_FOLDER), NxProjectPackageSet("libs")
+    IconManager.getInstance().createOffsetIcon(NxIcons.NX_LIBS_FOLDER),
+    NxProjectPackageSet("libs")
 ) {
 
     companion object {

@@ -1,6 +1,5 @@
 package com.github.iguissouma.nxconsole.plugins
 
-import com.intellij.lang.javascript.bower.BowerPackagingService
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
@@ -16,9 +15,7 @@ class NxDevToolsInstalledPackagesPanel(myProject: Project, myPackagesNotificatio
 
     init {
         myPackagesTable.setShowGrid(false)
-
     }
-
 
     override fun updatePackages(packageManagementService: PackageManagementService?) {
         val nxDevToolsService = ObjectUtils.tryCast(
@@ -46,7 +43,5 @@ class NxDevToolsInstalledPackagesPanel(myProject: Project, myPackagesNotificatio
                 }
             }
         }
-
     }
-
 }

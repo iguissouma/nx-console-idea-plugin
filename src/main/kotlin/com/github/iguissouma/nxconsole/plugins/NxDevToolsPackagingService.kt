@@ -30,9 +30,10 @@ import com.intellij.webcore.packaging.InstalledPackage
 import com.intellij.webcore.packaging.PackageManagementServiceEx
 import com.intellij.webcore.packaging.RepoPackage
 import java.io.File
-import java.util.*
+import java.util.Arrays
 
-const val command = """
+const val command =
+    """
 
 >  NX  Installed plugins:
 
@@ -95,7 +96,6 @@ fun getPackageList(nxListOutput: String, from: String, to: String, trim: String)
 fun main() {
     val message = getInstalled()
     println(message)
-
 }
 
 private fun getInstalled() = getPackageList(command, ">  NX  Installed plugins:", ">  NX  Also available:", " (")
@@ -124,14 +124,13 @@ class NxDevToolsPackagingService(
     }
 
     override fun getAllPackages(): MutableList<RepoPackage> {
-        return (getInstalled()+ getAlsoAvailable()+ getCommunityPlugins())
+        return (getInstalled() + getAlsoAvailable() + getCommunityPlugins())
             .map { RepoPackage(it, "", "") }
             .toMutableList()
     }
 
     override fun reloadAllPackages(): MutableList<RepoPackage> {
         return this.allPackages
-
     }
 
     override fun getInstalledPackages(): MutableCollection<InstalledPackage> {
@@ -169,12 +168,16 @@ class NxDevToolsPackagingService(
         if (baseDir != null) {
             ProgressManager.getInstance().run(
                 PackageInstaller(
-                    myProject, myInterpreter, repoPackage!!.name, version, VfsUtilCore.virtualToIoFile(baseDir),
-                    listener!!, extraOptions
+                    myProject,
+                    myInterpreter,
+                    repoPackage!!.name,
+                    version,
+                    VfsUtilCore.virtualToIoFile(baseDir),
+                    listener!!,
+                    extraOptions
                 )
             )
         }
-
     }
 
     override fun installPackage(
@@ -186,8 +189,13 @@ class NxDevToolsPackagingService(
     ) {
         ProgressManager.getInstance().run(
             PackageInstaller(
-                myProject, myInterpreter, repoPackage.name, version, workingDir,
-                listener!!, extraOptions
+                myProject,
+                myInterpreter,
+                repoPackage.name,
+                version,
+                workingDir,
+                listener!!,
+                extraOptions
             )
         )
     }
@@ -204,7 +212,6 @@ class NxDevToolsPackagingService(
         }
     }
 
-
     private fun uninstallPackage(installedPackage: NodeInstalledPackage, listener: Listener) {
         val args: MutableList<String> = mutableListOf()
         if (installedPackage.isGlobal) {
@@ -218,34 +225,38 @@ class NxDevToolsPackagingService(
         packageName: String,
         consumer: CatchingConsumer<MutableList<String>, Exception>?
     ) {
-        this.myManager.fetchPackageInfo(object : NodePackageInfoManager.PackageInfoConsumer(packageName) {
-            override fun onPackageInfo(packageInfo: NodePackageInfo?) {
-                if (packageInfo != null) {
-                    consumer!!.consume(packageInfo.versions)
+        this.myManager.fetchPackageInfo(
+            object : NodePackageInfoManager.PackageInfoConsumer(packageName) {
+                override fun onPackageInfo(packageInfo: NodePackageInfo?) {
+                    if (packageInfo != null) {
+                        consumer!!.consume(packageInfo.versions)
+                    }
+                }
+
+                override fun onException(e: java.lang.Exception) {
+                    consumer!!.consume(e)
                 }
             }
-
-            override fun onException(e: java.lang.Exception) {
-                consumer!!.consume(e)
-            }
-        })
+        )
     }
 
     override fun fetchPackageDetails(packageName: String?, consumer: CatchingConsumer<String, Exception>?) {
-        myManager.fetchPackageInfo(object : NodePackageInfoManager.PackageInfoConsumer(packageName!!) {
-            override fun onPackageInfo(packageInfo: NodePackageInfo?) {
-                if (packageInfo != null) {
-                    consumer!!.consume(packageInfo.formatHtmlDescription())
+        myManager.fetchPackageInfo(
+            object : NodePackageInfoManager.PackageInfoConsumer(packageName!!) {
+                override fun onPackageInfo(packageInfo: NodePackageInfo?) {
+                    if (packageInfo != null) {
+                        consumer!!.consume(packageInfo.formatHtmlDescription())
+                    }
                 }
-            }
 
-            override fun onException(e: java.lang.Exception) {
-                if (e is NodePackageInfoException) {
-                    consumer!!.consume(e.formatHtmlDescription())
+                override fun onException(e: java.lang.Exception) {
+                    if (e is NodePackageInfoException) {
+                        consumer!!.consume(e.formatHtmlDescription())
+                    }
+                    consumer!!.consume(e)
                 }
-                consumer!!.consume(e)
             }
-        })
+        )
     }
 
     override fun getID(): String? {
@@ -276,18 +287,23 @@ class NxDevToolsPackagingService(
         if (workingDir == null) {
             val message = JavaScriptBundle.message(
                 "node.packages.cannot_find_working_directory.text",
-                packageName, args
+                packageName,
+                args
             )
-           LOG.warn(message)
-            ApplicationManager.getApplication().invokeLater({
-                listener.operationFinished(
-                    packageName,
-                    ErrorDescription.fromMessage(message)
-                )
-            }, ModalityState.any())
+            LOG.warn(message)
+            ApplicationManager.getApplication().invokeLater(
+                {
+                    listener.operationFinished(
+                        packageName,
+                        ErrorDescription.fromMessage(message)
+                    )
+                },
+                ModalityState.any()
+            )
         } else {
             val commandLine = PackageInstaller.computeAndReportIfFailed<GeneralCommandLine, ExecutionException>(
-                listener, packageName
+                listener,
+                packageName
             ) {
                 NpmUtil.createNpmCommandLine(
                     myProject,
@@ -310,18 +326,20 @@ class NxDevToolsPackagingService(
                 } catch (var14: ExecutionException) {
                     errorMessageRef.set(var14.message)
                 } finally {
-                    ApplicationManager.getApplication().invokeLater({
-                        listener.operationFinished(
-                            packageName,
-                            ErrorDescription.fromMessage(errorMessageRef.get() as String)
-                        )
-                        LocalFileSystem.getInstance().refresh(true)
-                    }, ModalityState.any())
+                    ApplicationManager.getApplication().invokeLater(
+                        {
+                            listener.operationFinished(
+                                packageName,
+                                ErrorDescription.fromMessage(errorMessageRef.get() as String)
+                            )
+                            LocalFileSystem.getInstance().refresh(true)
+                        },
+                        ModalityState.any()
+                    )
                 }
             }
         }
     }
-
 
     private fun guessWorkingDir(pkg: NodeInstalledPackage?): File? {
         if (pkg != null) {
@@ -338,20 +356,20 @@ class NxDevToolsPackagingService(
     }
 
     override fun fetchLatestVersion(pkg: InstalledPackage, consumer: CatchingConsumer<String, Exception>) {
-        myManager.fetchPackageInfo(object : NodePackageInfoManager.PackageInfoConsumer(pkg.name, false) {
-            override fun onPackageInfo(packageInfo: NodePackageInfo?) {
-                if (packageInfo != null) {
-                    consumer.consume(packageInfo.latestVersion)
-                } else {
-                    consumer.consume(null as String?)
+        myManager.fetchPackageInfo(
+            object : NodePackageInfoManager.PackageInfoConsumer(pkg.name, false) {
+                override fun onPackageInfo(packageInfo: NodePackageInfo?) {
+                    if (packageInfo != null) {
+                        consumer.consume(packageInfo.latestVersion)
+                    } else {
+                        consumer.consume(null as String?)
+                    }
+                }
+
+                override fun onException(e: java.lang.Exception) {
+                    consumer.consume(e)
                 }
             }
-
-            override fun onException(e: java.lang.Exception) {
-                consumer.consume(e)
-            }
-        })
+        )
     }
-
-
 }

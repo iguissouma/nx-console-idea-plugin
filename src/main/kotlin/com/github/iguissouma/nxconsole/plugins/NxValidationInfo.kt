@@ -10,7 +10,6 @@ class NxValidationInfo(val component: Component?, errorHtmlDescriptionTemplate: 
     private val myErrorHtmlDescription: @Nls String?
     val linkText: @Nls String?
 
-
     fun getErrorHtmlDescription(): String {
         val var10000 = myErrorHtmlDescription
         return var10000!!

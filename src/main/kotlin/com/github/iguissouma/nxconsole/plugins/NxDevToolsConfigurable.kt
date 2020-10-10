@@ -1,8 +1,6 @@
 package com.github.iguissouma.nxconsole.plugins
 
 import com.github.iguissouma.nxconsole.NxBundle
-import com.intellij.lang.javascript.bower.BowerSettingsManager
-import com.intellij.lang.javascript.bower.BowerView
 import com.intellij.openapi.options.Configurable.NoScroll
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
@@ -13,7 +11,7 @@ class NxDevToolsConfigurable(val myProject: Project) :
 
     private var myView: NxDevToolsView? = null
 
-    companion object{
+    companion object {
         const val ID = "nx.dev.tools.settings"
     }
 
@@ -27,7 +25,6 @@ class NxDevToolsConfigurable(val myProject: Project) :
         val viewSettings = view.getSettings()
         val storedSettings = NxDevToolsSettingsManager.getInstance(this.myProject).mySettings
         return viewSettings != storedSettings
-
     }
 
     override fun reset() {
@@ -47,7 +44,6 @@ class NxDevToolsConfigurable(val myProject: Project) :
         val view: NxDevToolsView = getView()
         val settings = view.getSettings()
         NxDevToolsSettingsManager.getInstance(myProject).mySettings = settings
-
     }
 
     override fun getDisplayName(): String {
@@ -57,5 +53,4 @@ class NxDevToolsConfigurable(val myProject: Project) :
     override fun getId(): String {
         return ID
     }
-
 }

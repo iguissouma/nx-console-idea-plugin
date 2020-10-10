@@ -17,20 +17,21 @@ class NxDevToolsPackagesView(val myProject: Project) {
     var myComponent: JPanel? = null
     var myCurrentSettings: NxDevToolsSettings? = null
 
-    init{
+    init {
         val panel = JPanel(BorderLayout(0, 0))
         panel.border =
             IdeBorderFactory.createTitledBorder(
                 NxBundle.message(
                     "nx.packages.view.plugins"
-                ), false, JBUI.insetsTop(8)
+                ),
+                false,
+                JBUI.insetsTop(8)
             ).setShowLine(false)
         myPackagesNotificationPanel = PackagesNotificationPanel()
         myPackagesPanel = NxDevToolsInstalledPackagesPanel(myProject, myPackagesNotificationPanel!!)
         panel.add(myPackagesPanel, "Center")
         panel.add(myPackagesNotificationPanel?.component, "South")
         myComponent = panel
-
     }
 
     fun onSettingsChanged(settings: NxDevToolsSettings, errors: List<NxValidationInfo>) {
@@ -40,18 +41,16 @@ class NxDevToolsPackagesView(val myProject: Project) {
             myPackagesNotificationPanel!!.hide()
             myPackagesNotificationPanel!!.removeAllLinkHandlers()
             if (errors.isEmpty()) {
-                service = NxDevToolsPackagingService(this.myProject, settings,NodeJsInterpreterManager.getInstance(myProject).interpreter!!)
-                //this.checkVersion(settings)
+                service = NxDevToolsPackagingService(this.myProject, settings, NodeJsInterpreterManager.getInstance(myProject).interpreter!!)
+                // this.checkVersion(settings)
             } else {
-                //this.showErrors(errors)
+                // this.showErrors(errors)
             }
             myPackagesPanel!!.updatePackages(service)
         }
     }
 
-
     fun getComponent(): JComponent {
         return myComponent!!
     }
-
 }

@@ -7,7 +7,6 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.lang.javascript.JavaScriptBundle
-import com.intellij.lang.javascript.bower.BowerPackagesView
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -59,17 +58,17 @@ class NxDevToolsView(val myProject: Project) {
         myNxPackageField!!.addSelectionListener { pkg: NodePackage? -> this.updateLaterIfAllowed() }
         this.listenForChanges(this.myNxJsonField?.getChildComponent() as JTextComponent)
         myComponent = createResult(panel, myPackagesView!!.getComponent())
-
-
     }
 
     private fun listenForChanges(textComponent: JTextComponent) {
 
-        textComponent.document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(e: DocumentEvent) {
-                this@NxDevToolsView.updateLaterIfAllowed()
+        textComponent.document.addDocumentListener(
+            object : DocumentAdapter() {
+                override fun textChanged(e: DocumentEvent) {
+                    this@NxDevToolsView.updateLaterIfAllowed()
+                }
             }
-        })
+        )
     }
 
     private fun updateLaterIfAllowed() {
@@ -78,11 +77,9 @@ class NxDevToolsView(val myProject: Project) {
         }
     }
 
-
     private fun updateLater() {
         UIUtil.invokeLaterIfNeeded { this.update() }
     }
-
 
     private fun update() {
         ApplicationManager.getApplication().assertIsDispatchThread()
@@ -102,8 +99,6 @@ class NxDevToolsView(val myProject: Project) {
         return emptyList<NxValidationInfo>()
     }
 
-
-
     private fun createNxJsonField(project: Project): TextFieldWithBrowseButton? {
         val textFieldWithBrowseButton = TextFieldWithBrowseButton()
         SwingHelper.installFileCompletionAndBrowseDialog(
@@ -116,7 +111,6 @@ class NxDevToolsView(val myProject: Project) {
 
         return textFieldWithBrowseButton
     }
-
 
     private fun createResult(top: JComponent, bottom: JComponent): JPanel? {
         val panel = JPanel(GridBagLayout())
@@ -138,7 +132,6 @@ class NxDevToolsView(val myProject: Project) {
         }
     }
 
-
     fun getSettings(): NxDevToolsSettings {
 
         return NxDevToolsSettings(myProject).apply {
@@ -147,5 +140,4 @@ class NxDevToolsView(val myProject: Project) {
             myNxJsonPath = PathShortener.getAbsolutePath(myNxJsonField?.getTextField()!!)
         }
     }
-
 }

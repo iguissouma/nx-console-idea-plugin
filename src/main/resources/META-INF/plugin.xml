@@ -49,6 +49,16 @@
         <!--scope provider-->
         <customScopesProvider implementation="com.github.iguissouma.nxconsole.scopes.NxProjectsScopesProvider" order="last"/>
 
+        <!--settings-->
+        <projectConfigurable id="Settings.Nx.DevTools"
+                             instance="com.github.iguissouma.nxconsole.plugins.NxDevToolsConfigurable"
+                             key="settings.nx.dev.tools.configurable.name"
+                             bundle="messages.NxBundle"
+        />
+        <projectService serviceImplementation="com.github.iguissouma.nxconsole.plugins.NxDevToolsSettingsManager"/>
+
+
+
     </extensions>
 
     <projectListeners>
@@ -86,5 +96,10 @@
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
             <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
         </action>
+
+       <!--plugins-->
+        <action id="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction"
+                class="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction" text="Nx Plugins"
+                description="nx plugins"/>
     </actions>
 </idea-plugin>

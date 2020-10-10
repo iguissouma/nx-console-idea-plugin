@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 ### Added
+## [0.6.0] - 2020-10-07
+### Added
+- Nx scopes Apps&Libs
+- Nx format:write before commit
+- Nx settings and plugins management
 ## [0.5.0] - 2020-10-03
 ### Added
 - Move Nx action

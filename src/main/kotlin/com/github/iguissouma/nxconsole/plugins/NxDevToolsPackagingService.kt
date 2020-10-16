@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.plugins
 
+import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.vcs.checkin.NxExecutionUtil
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -14,7 +15,6 @@ import com.intellij.javascript.nodejs.settings.NodeInstalledPackage
 import com.intellij.javascript.nodejs.settings.NodeInstalledPackagesProvider
 import com.intellij.javascript.nodejs.settings.NodePackageInfoManager
 import com.intellij.javascript.nodejs.settings.NodePackageManagementService
-import com.intellij.lang.javascript.JavaScriptBundle
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmCommand
 import com.intellij.lang.javascript.modules.PackageInstaller
 import com.intellij.openapi.application.ApplicationManager
@@ -31,7 +31,7 @@ import com.intellij.webcore.packaging.InstalledPackage
 import com.intellij.webcore.packaging.PackageManagementServiceEx
 import com.intellij.webcore.packaging.RepoPackage
 import java.io.File
-import java.util.Arrays
+import java.util.*
 
 fun getPackageList(nxListOutput: String, from: String, to: String, trim: String): List<String> {
     val i = nxListOutput.indexOf(from) + from.length
@@ -240,8 +240,8 @@ class NxDevToolsPackagingService(
     ) {
         val workingDir: File? = this.guessWorkingDir(pkg)
         if (workingDir == null) {
-            val message = JavaScriptBundle.message(
-                "node.packages.cannot_find_working_directory.text",
+            val message = NxBundle.message(
+                "nx.node.packages.cannot_find_working_directory.text",
                 packageName,
                 args
             )

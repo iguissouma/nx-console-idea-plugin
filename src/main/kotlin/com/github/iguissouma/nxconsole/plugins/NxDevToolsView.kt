@@ -6,7 +6,6 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageField
-import com.intellij.lang.javascript.JavaScriptBundle
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -47,7 +46,7 @@ class NxDevToolsView(val myProject: Project) {
         myNormalForeground = (this.myNxJsonField?.getChildComponent() as JTextField).foreground
         val panel: JPanel = FormBuilder.createFormBuilder().setAlignLabelOnRight(true)
             .addLabeledComponent(
-                JavaScriptBundle.message("node.interpreter.mnenonic"),
+                NxBundle.message("nx.node.interpreter.mnenonic"),
                 myNodeInterpreterField!!
             ).addLabeledComponent(
                 NxBundle.message("nx.package"),

@@ -1,14 +1,12 @@
 package com.github.iguissouma.nxconsole.plugins
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.util.text.HtmlChunk
-import org.jetbrains.annotations.Nls
 import java.awt.Component
 
-class NxValidationInfo(val component: Component?, errorHtmlDescriptionTemplate: @Nls String, linkText: @Nls String) {
+class NxValidationInfo(val component: Component?, errorHtmlDescriptionTemplate: String, linkText: String) {
 
-    private val myErrorHtmlDescription: @Nls String?
-    val linkText: @Nls String?
+    private val myErrorHtmlDescription: String?
+    val linkText: String?
 
     fun getErrorHtmlDescription(): String {
         val var10000 = myErrorHtmlDescription
@@ -26,7 +24,7 @@ class NxValidationInfo(val component: Component?, errorHtmlDescriptionTemplate: 
         if (!errorHtmlDescriptionTemplate.contains("{{LINK}}")) {
             LOG.warn("Cannot find {{LINK}} in $errorHtmlDescriptionTemplate")
         }
-        val linkHtml = HtmlChunk.link(linkText, linkText).toString()
+        val linkHtml = """<a href="$linkText"></a>"""
         myErrorHtmlDescription = errorHtmlDescriptionTemplate.replace("{{LINK}}", linkHtml)
         this.linkText = linkText
     }

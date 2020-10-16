@@ -24,7 +24,8 @@ class NxValidationInfo(val component: Component?, errorHtmlDescriptionTemplate: 
         if (!errorHtmlDescriptionTemplate.contains("{{LINK}}")) {
             LOG.warn("Cannot find {{LINK}} in $errorHtmlDescriptionTemplate")
         }
-        val linkHtml = """<a href="$linkText"></a>"""
+        val linkHtml =
+            """<a href="$linkText"></a>"""
         myErrorHtmlDescription = errorHtmlDescriptionTemplate.replace("{{LINK}}", linkHtml)
         this.linkText = linkText
     }

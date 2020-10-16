@@ -31,7 +31,7 @@ import com.intellij.webcore.packaging.InstalledPackage
 import com.intellij.webcore.packaging.PackageManagementServiceEx
 import com.intellij.webcore.packaging.RepoPackage
 import java.io.File
-import java.util.*
+import java.util.Arrays
 
 fun getPackageList(nxListOutput: String, from: String, to: String, trim: String): List<String> {
     val i = nxListOutput.indexOf(from) + from.length

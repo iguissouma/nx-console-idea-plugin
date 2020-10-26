@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 ### Added
+## [0.7.0] - 2020-10-26
+### Added
+- Nx Graph Show Affected Action
 ## [0.6.0] - 2020-10-07
 ### Added
 - Nx scopes Apps&Libs

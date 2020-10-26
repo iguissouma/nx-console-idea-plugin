@@ -32,6 +32,7 @@
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
 
         <!--dep-graph-->
+        <projectService serviceImplementation="com.github.iguissouma.nxconsole.graph.NxGraphConfiguration"/>
         <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>
 
         <!--ui-->
@@ -100,6 +101,13 @@
        <!--plugins-->
         <action id="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction"
                 class="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction" text="Nx Plugins"
-                description="nx plugins"/>
+                description="Nx plugins"/>
+
+
+        <!--graph actions-->
+        <action id="Nx.GRAPH.ShowAffectedAction" class="com.github.iguissouma.nxconsole.graph.actions.NxGraphShowAffectedAction"
+                text="Show Affected" icon="/actions/diagramDiff.svg">
+        </action>
+
     </actions>
 </idea-plugin>

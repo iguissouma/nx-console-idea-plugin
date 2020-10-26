@@ -1,7 +1,7 @@
 package com.github.iguissouma.nxconsole.plugins
 
 import com.github.iguissouma.nxconsole.NxBundle
-import com.github.iguissouma.nxconsole.vcs.checkin.NxExecutionUtil
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler

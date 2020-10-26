@@ -115,6 +115,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
         val depGraphJsonFile = depGraph.readText()
         val listPersonType = object : TypeToken<Map<String, Any>>() {}.type
         val graph: Map<String, Any> = Gson().fromJson(depGraphJsonFile, listPersonType)
+        val affectedProjectsProperty = graph["affectedProjects"] as? List<String> ?: return
         val graphProperty = graph["graph"] as? Map<*, *> ?: return
         (graphProperty["nodes"] as Map<*, *>).forEach {
             // val findFileByUrl = VirtualFileManager.getInstance().findFileByUrl(nxJsonFile.parent?.virtualFile?.path + "/apps/api")
@@ -125,10 +126,13 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
                 LocalFileSystem.getInstance()
                     .findFileByIoFile(File(nxJsonFile.parent?.virtualFile?.path + "/" + root))
             }
+            val affected = if (NxGraphConfiguration.getInstance(myProject).NX_SHOW_AFFECTED)
+                affectedProjectsProperty.contains(it.key)
+            else false
             if (map["type"] as String in listOf("e2e", "app")) {
-                addNode(AppNode(it.key as String, findFileByIoFile))
+                addNode(AppNode(it.key as String, affected, findFileByIoFile))
             } else {
-                addNode(LibNode(it.key as String, findFileByIoFile))
+                addNode(LibNode(it.key as String, affected, findFileByIoFile))
             }
         }
         (graphProperty["dependencies"] as Map<*, *>).forEach { entry ->

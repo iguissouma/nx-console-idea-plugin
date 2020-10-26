@@ -14,6 +14,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataProvider
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.graph.GraphManager
 import com.intellij.openapi.graph.builder.GraphBuilder
@@ -22,7 +23,6 @@ import com.intellij.openapi.graph.builder.util.GraphViewUtil
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.util.Comparing
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -63,9 +63,14 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             val graphComponent = myBuilder.view.jComponent
             layout = BorderLayout()
 
+            val commonToolbarActions = GraphViewUtil.getCommonToolbarActions()
+            val group = DefaultActionGroup()
+            group.addAll(commonToolbarActions)
+            group.addSeparator()
+            group.add(ActionManager.getInstance().getAction("Nx.GRAPH.ShowAffectedAction"))
             val toolbar = ActionManager.getInstance().createActionToolbar(
                 ActionPlaces.TOOLBAR,
-                GraphViewUtil.getCommonToolbarActions(),
+                group,
                 true
             )
             toolbar.setTargetComponent(graphComponent)
@@ -73,7 +78,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             add(toolbar.component, BorderLayout.NORTH)
             add(graphComponent, BorderLayout.CENTER)
 
-            val nxDepGraphTask = object : Task.Backgroundable(nxJsonFile.project, "loading nx-depgraph...", false) {
+            val nxDepGraphTask = object : Task.Backgroundable(nxJsonFile.project, "Loading nx depgraph...", false) {
                 override fun run(indicator: ProgressIndicator) {
                     // ApplicationManager.getApplication().runReadAction{
                     ApplicationManager.getApplication().invokeLater {
@@ -96,7 +101,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                                     // TODO check if json can be out of monorepo
                                     // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
                                     val commandLine =
-                                        GeneralCommandLine("", moduleExe, "dep-graph", "--file=.nxdeps.json")
+                                        GeneralCommandLine("", moduleExe, "affected:dep-graph", "--file=.nxdeps.json")
                                     configurator.configure(commandLine)
                                     grabCommandOutput(
                                         nxJsonFile.project,
@@ -151,10 +156,9 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
     }
 
     override fun getData(dataId: String): Any? {
-        if (Comparing.equal(dataId, NX_DESIGNER_COMPONENT)) {
+        if (dataId == NX_DESIGNER_COMPONENT) {
             return this
         }
-
         return null
     }
 

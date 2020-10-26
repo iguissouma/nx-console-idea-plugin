@@ -1,13 +1,7 @@
 package com.github.iguissouma.nxconsole.vcs.checkin
 
 import com.github.iguissouma.nxconsole.NxBundle
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.CapturingProcessHandler
-import com.intellij.execution.process.ProcessOutput
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
@@ -18,7 +12,6 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.vcsUtil.VcsFileUtil
-import java.io.File
 
 class NxReformatCodeProcessor(val myProject: Project, val psiFiles: Array<PsiFile>, val myPostRunnable: Runnable) {
 
@@ -52,34 +45,5 @@ class NxReformatCodeProcessor(val myProject: Project, val psiFiles: Array<PsiFil
     private fun getBasePathAsVirtualFile(project: Project): VirtualFile? {
         val basePath = project.basePath
         return if (basePath == null) null else LocalFileSystem.getInstance().findFileByPath(basePath)
-    }
-}
-
-class NxExecutionUtil(val project: Project) {
-
-    fun execute(command: String, vararg args: String): Boolean {
-        val output = executeAndGetOutput(command, *args)
-        return output?.exitCode == 0
-    }
-
-    fun executeAndGetOutput(command: String, vararg args: String): ProcessOutput? {
-        val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return null
-        val configurator = NodeCommandLineConfigurator.find(nodeJsInterpreter)
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(
-            modules,
-            "@nrwl/cli",
-            project.baseDir, // TODO change deprecation
-            null
-        )
-        val module = modules.firstOrNull() ?: return null
-        val moduleExe =
-            "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
-        val commandLine =
-            GeneralCommandLine("", moduleExe, command, *args)
-        commandLine.withWorkDirectory(project.basePath)
-        configurator.configure(commandLine)
-        val handler = CapturingProcessHandler(commandLine)
-        return handler.runProcess()
     }
 }

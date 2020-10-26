@@ -51,7 +51,7 @@ class NxDepGraphPresentationModel(val project: Project, graph: Graph2D) :
     override fun getEdgeRealizer(e: BasicNxEdge?): EdgeRealizer {
         val edgeRealizer: EdgeRealizer = GraphManager.getGraphManager().createPolyLineEdgeRealizer()
         edgeRealizer.lineType = if (e?.type == "dynamic") LineType.DASHED_1 else LineType.LINE_1
-        edgeRealizer.lineColor = Color.GRAY
+        edgeRealizer.lineColor = if (e?.source?.affected == true && e.target.affected) Color.RED else Color.GRAY
         edgeRealizer.arrow = Arrow.STANDARD
         return edgeRealizer
     }

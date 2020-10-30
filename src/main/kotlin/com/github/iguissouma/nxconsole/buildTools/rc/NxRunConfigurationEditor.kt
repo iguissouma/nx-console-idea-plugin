@@ -21,6 +21,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.PopupMenuListenerAdapter
+import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.util.execution.ParametersListUtil
@@ -39,10 +40,13 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     private var nodeInterpreterField: NodeJsInterpreterField = NodeJsInterpreterField(project, false)
     private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
+    private val argumentsEditor = createArgumentsEditor()
+
     private val panel: JPanel = FormBuilder.createFormBuilder()
         .setAlignLabelOnRight(false).setHorizontalGap(10).setVerticalGap(4)
-        .addLabeledComponent("&nx.json:", nxJsonField)
+        .addLabeledComponent("&Nx.json:", nxJsonField)
         .addLabeledComponent("&Tasks:", ComponentWithEmptyBrowseButton.wrap<TextFieldWithHistory>(this.tasksField))
+        .addLabeledComponent("A&rguments:", argumentsEditor)
         .addComponent(JSeparator(), 8)
         .addLabeledComponent("Node &interpreter:", this.nodeInterpreterField, 8)
         .addLabeledComponent("&Package nx-cli:", this.nxPackageField)
@@ -50,6 +54,10 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
 
     init {
         PathShortener.enablePathShortening(this.nxJsonField.childComponent.textEditor, null)
+    }
+
+    private fun createArgumentsEditor(): RawCommandLineEditor {
+        return RawCommandLineEditor()
     }
 
     private fun createTasksField(
@@ -79,9 +87,10 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
                             lastNxJsonRef.set(nxJson)
                             try {
                                 val structure =
-                                    NxService.getInstance(this@NxRunConfigurationEditor.project).fetchBuildfileStructure(
-                                        nxJson
-                                    )
+                                    NxService.getInstance(this@NxRunConfigurationEditor.project)
+                                        .fetchBuildfileStructure(
+                                            nxJson
+                                        )
                                 SwingHelper.setHistory(field, JsbtUtil.encodeNames(structure.taskNames), false)
                             } catch (var4: JsbtTaskFetchException) {
                                 SwingHelper.setHistory(field, emptyList(), false)
@@ -124,6 +133,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             this.nxPackageField.selected = defaultPackage
         }
         tasksField.setTextAndAddToHistory(ParametersListUtil.join(settings.tasks))
+        argumentsEditor.text = settings.arguments
 
         val dialogWrapper = DialogWrapper.findInstance(this.panel)
         if (dialogWrapper is SingleConfigurableEditor || dialogWrapper is GruntBeforeRunTaskDialog) {
@@ -142,7 +152,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         return NxRunSettings(
             interpreterRef = nodeInterpreterField.interpreterRef,
             nxFilePath = PathShortener.getAbsolutePath(this.nxJsonField.childComponent.textEditor),
-            tasks = tasks
+            tasks = tasks,
+            arguments = this.argumentsEditor.text
         )
     }
 

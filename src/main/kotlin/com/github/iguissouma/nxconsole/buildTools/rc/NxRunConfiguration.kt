@@ -56,6 +56,7 @@ class NxRunConfiguration(
             this.runSettings.apply {
                 nxFilePath = readFromXml.nxFileSystemIndependentPath
                 tasks = readFromXml.tasks
+                arguments = readFromXml.arguments
             }
         }
     }

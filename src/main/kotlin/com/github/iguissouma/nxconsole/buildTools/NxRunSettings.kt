@@ -9,7 +9,8 @@ import org.jdom.Element
 class NxRunSettings(
     val interpreterRef: NodeJsInterpreterRef = NodeJsInterpreterRef.createProjectRef(),
     var nxFilePath: String? = null,
-    var tasks: List<String> = emptyList()
+    var tasks: List<String> = emptyList(),
+    var arguments: String? = null
 ) {
 
     val nxFileSystemIndependentPath: String?
@@ -25,9 +26,9 @@ class NxRunSettings(
             )
         }
         this.writeTasks(parent)
-        /*if (!this.myArguments.isEmpty()) {
-            JDOMExternalizerUtil.writeCustomField(parent, "arguments", this.myArguments)
-        }*/
+        if (this.arguments?.isNotEmpty() == true) {
+            JDOMExternalizerUtil.writeCustomField(parent, "arguments", this.arguments)
+        }
     }
 
     private fun writeTasks(parent: Element) {
@@ -36,6 +37,7 @@ class NxRunSettings(
             JDOMExternalizerUtil.addChildrenWithValueAttribute(tasksElement, "task", this.tasks)
             parent.addContent(tasksElement)
         }
+
     }
 
     fun readFromXml(parent: Element?): NxRunSettings? {
@@ -44,10 +46,12 @@ class NxRunSettings(
         }
         val interpreterRefName = JDOMExternalizerUtil.readCustomField(parent, "node-interpreter")
         val interpreterRef = createInterpreterRef(interpreterRefName)
+        val arguments = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "arguments"))
         return NxRunSettings(
             interpreterRef = interpreterRef,
             nxFilePath = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
-            tasks = readTasks(parent)
+            tasks = readTasks(parent),
+            arguments = arguments
         )
     }
 

@@ -19,6 +19,7 @@ import com.intellij.javascript.nodejs.library.yarn.YarnPnpNodePackage
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.buildTools.TypeScriptErrorConsoleFilter
 import com.intellij.openapi.project.Project
+import com.intellij.util.execution.ParametersListUtil
 import com.intellij.webcore.util.CommandLineUtil
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -55,6 +56,7 @@ class NxRunProfileState(
 
         commandLine.addParameters("run")
         commandLine.addParameters(this.runSettings.tasks)
+        commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
 
         NodeCommandLineConfigurator.find(interpreter).configure(commandLine)
     }

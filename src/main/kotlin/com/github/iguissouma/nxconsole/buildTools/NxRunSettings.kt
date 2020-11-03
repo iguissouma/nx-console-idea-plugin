@@ -37,7 +37,6 @@ class NxRunSettings(
             JDOMExternalizerUtil.addChildrenWithValueAttribute(tasksElement, "task", this.tasks)
             parent.addContent(tasksElement)
         }
-
     }
 
     fun readFromXml(parent: Element?): NxRunSettings? {

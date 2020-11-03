@@ -77,9 +77,11 @@ object NxJsonUtil {
                         .map { it to projectsFromAngular.findProperty(it) }
                         .map { it.first to (it.second?.value as? JsonObject)?.findProperty("architect") }
                         .map {
-                            it.first to ((it.second?.value as? JsonObject)?.propertyList?.map { property ->
-                                NxTask(structure, property.name)
-                            }?.toList() ?: listOf())
+                            it.first to (
+                                (it.second?.value as? JsonObject)?.propertyList?.map { property ->
+                                    NxTask(structure, property.name)
+                                }?.toList() ?: listOf()
+                                )
                         }.toMap()
                 }
                 val listOf = listOf("Generate & Run Target", "Common Nx Commands", "Projects")

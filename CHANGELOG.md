@@ -2,8 +2,10 @@
 
 # Nx Console Idea Plugin Changelog
 
-## [Unreleased]
+## [0.8.0] - 2020-11-03
 ### Added
+- Arguments field for run configuration
+- fix Crash at the startup #3
 ## [0.7.0] - 2020-10-26
 ### Added
 - Nx Graph Show Affected Action

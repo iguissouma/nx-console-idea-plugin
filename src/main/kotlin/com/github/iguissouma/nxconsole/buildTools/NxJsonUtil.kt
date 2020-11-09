@@ -139,6 +139,10 @@ object NxJsonUtil {
             if (angularJson != null && angularJson.isValid && !angularJson.isDirectory) {
                 return angularJson
             }
+            val workspaceJson = dir.findChild("workspace.json")
+            if (workspaceJson != null && workspaceJson.isValid && !workspaceJson.isDirectory) {
+                return workspaceJson
+            }
         }
         return null
     }
@@ -204,7 +208,7 @@ object NxJsonUtil {
 
     @Contract("null -> false")
     fun isAngularJsonFile(file: PsiFile?): Boolean {
-        return file is JsonFile && "angular.json" == file.getName()
+        return file is JsonFile && ("angular.json" == file.getName() || "workspace.json" == file.getName())
     }
 
     fun findContainingTopLevelProperty(element: PsiElement?): JsonProperty? {

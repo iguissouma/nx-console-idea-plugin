@@ -1,7 +1,9 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
 # Nx Console Idea Plugin Changelog
-
+## [0.9.0] - 2020-11-09
+### Added
+- Support for `workspace.json` file for non angular preset
 ## [0.8.0] - 2020-11-03
 ### Added
 - Arguments field for run configuration

@@ -10,7 +10,6 @@ import com.intellij.openapi.application.ApplicationManager
 import org.angular2.cli.AngularCliSchematicsRegistryService
 import org.angular2.cli.Schematic
 
-
 class NxNewGenerateActionGroup : ActionGroup(
     "Nx Generate (Ui)...",
     "Nx generate (ui)",

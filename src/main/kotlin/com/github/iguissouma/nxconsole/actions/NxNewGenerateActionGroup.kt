@@ -1,12 +1,15 @@
 package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import org.angular2.cli.AngularCliSchematicsRegistryService
 import org.angular2.cli.Schematic
+
 
 class NxNewGenerateActionGroup : ActionGroup(
     "Nx Generate (Ui)...",
@@ -20,8 +23,15 @@ class NxNewGenerateActionGroup : ActionGroup(
         // val psiFile = event?.getData(LangDataKeys.PSI_FILE) ?: return emptyArray()
         val virtualFile = event?.getData(LangDataKeys.VIRTUAL_FILE) ?: return emptyArray()
         val project = event.project ?: return emptyArray()
+        val nxJson = NxJsonUtil.findChildNxJsonFile(project.baseDir) ?: return emptyArray()
         if (schematics.isEmpty()) {
-            schematics = AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+            ApplicationManager.getApplication().executeOnPooledThread {
+                val schematicsInWorkspace = AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                ApplicationManager.getApplication().invokeLater {
+                    schematics.clear()
+                    schematicsInWorkspace.forEach { schematics.add(it) }
+                }
+            }
         }
         return schematics.map { NxNewGenerateAction(it, virtualFile, it.name, it.description, NxIcons.NRWL_ICON) }
             .toTypedArray()

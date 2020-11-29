@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2017",
+    "outDir": "../../gen/nxCli"
+  },
+  "compileOnSave": true,
+  "include": [
+    "*.ts"
+  ]
+}

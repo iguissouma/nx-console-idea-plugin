@@ -3,13 +3,13 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
+import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import org.angular2.cli.Schematic
 import javax.swing.Icon
 
 class NxNewGenerateAction(

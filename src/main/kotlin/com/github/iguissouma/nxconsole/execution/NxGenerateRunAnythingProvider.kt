@@ -1,6 +1,8 @@
 package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.schematics.NxCliSchematicsRegistryService
+import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.ide.actions.runAnything.RunAnythingAction
 import com.intellij.ide.actions.runAnything.RunAnythingAction.EXECUTOR_KEY
@@ -18,8 +20,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import org.angular2.cli.AngularCliFilter
-import org.angular2.cli.AngularCliSchematicsRegistryService
-import org.angular2.cli.Schematic
 import javax.swing.Icon
 
 class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
@@ -152,7 +152,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
             ApplicationManager.getApplication().executeOnPooledThread {
                 ApplicationManager.getApplication().invokeLater {
                     val mySchematics = runCatching {
-                        AngularCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                        NxCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
                     }.getOrNull() ?: emptyList()
                     schematics.clear()
                     schematics.addAll(mySchematics)

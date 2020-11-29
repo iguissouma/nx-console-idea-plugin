@@ -2,6 +2,8 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.schematics.Option
+import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.diff.util.FileEditorBase
 import com.intellij.icons.AllIcons
 import com.intellij.ide.FileIconProvider
@@ -42,8 +44,6 @@ import com.intellij.ui.layout.panel
 import com.intellij.vcs.log.impl.VcsLogContentUtil
 import com.intellij.vcs.log.impl.VcsLogTabsManager
 import org.angular2.cli.AngularCliFilter
-import org.angular2.cli.Option
-import org.angular2.cli.Schematic
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
@@ -168,8 +168,7 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         val filter = AngularCliFilter(project, project.baseDir.path)
 
         centerPanel = panel {
-
-            titledRow("Arguments") {
+            /*titledRow("Arguments") {
                 schematic.arguments.forEachIndexed { index, option ->
                     addRow(option)
                 }
@@ -178,6 +177,9 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
                 schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
                     addRow(option)
                 }
+            }*/
+            schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
+                addRow(option)
             }
         }.apply {
             border = EmptyBorder(10, 10, 4, 15)

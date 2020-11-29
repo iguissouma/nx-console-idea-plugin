@@ -43,11 +43,20 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.13.1")
 }
 
+sourceSets["main"].java {
+    srcDir("src/main/gen")
+}
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
 
     tasks {
+
+        buildPlugin {
+            from("$projectDir/src/main/gen")
+        }
+
         buildSearchableOptions {
             enabled = false
         }
@@ -83,6 +92,16 @@ detekt {
     }
 }
 
+/*tasks.getByName<org.jetbrains.intellij.tasks.PrepareSandboxTask>("prepareSandbox").doLast {
+    val pluginServerDir = "${intellij.sandboxDirectory}/plugins/${intellij.pluginName}/"
+
+    mkdir(pluginServerDir)
+    copy {
+        from("$projectDir/src/main/gen")
+        into(pluginServerDir)
+    }
+}*/
+
 tasks {
     // Set the compatibility versions to 1.8
     withType<JavaCompile> {
@@ -97,6 +116,17 @@ tasks {
 
     withType<Detekt> {
         jvmTarget = "1.8"
+    }
+
+    prepareSandbox {
+        doLast {
+            val pluginServerDir = "${intellij.sandboxDirectory}/plugins/${intellij.pluginName}/"
+            mkdir(pluginServerDir)
+            copy {
+                from("$projectDir/src/main/gen")
+                into(pluginServerDir)
+            }
+        }
     }
 
     patchPluginXml {

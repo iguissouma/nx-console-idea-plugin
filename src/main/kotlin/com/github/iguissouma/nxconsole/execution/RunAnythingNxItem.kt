@@ -1,12 +1,12 @@
 package com.github.iguissouma.nxconsole.execution
 
+import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
 import com.intellij.openapi.util.text.StringUtil.notNullize
 import com.intellij.openapi.util.text.StringUtil.shortenTextWithEllipsis
 import com.intellij.openapi.util.text.StringUtil.substringAfterLast
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
-import org.angular2.cli.Schematic
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.Icon

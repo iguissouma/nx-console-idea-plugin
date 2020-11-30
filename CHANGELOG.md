@@ -2,12 +2,15 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.11.0] - 2020-11-29
+### Added
+- Support Generate Schematics on non-angular monorepo preset
 ## [0.10.0] - 2020-11-14
 ### Added
 - Show generate ui from explorer context menu
 ## [0.9.0] - 2020-11-09
 ### Added
-- Support for `workspace.json` file for non angular preset
+- Support for `workspace.json` file for non-angular preset
 ## [0.8.0] - 2020-11-03
 ### Added
 - Arguments field for run configuration

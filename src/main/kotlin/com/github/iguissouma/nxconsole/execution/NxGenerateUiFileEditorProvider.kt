@@ -300,7 +300,7 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         comboBox.addActionListener {
             modelUI[option.name ?: ""] = (comboBox.selectedItem as? String) ?: ""
         }
-        comboBox()
+        comboBox(comment = option.description)
     }
 
     private inline fun Row.buildTextField(option: Option) {

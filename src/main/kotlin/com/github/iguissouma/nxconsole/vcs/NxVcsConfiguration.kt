@@ -8,13 +8,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "NxVcsManagerConfiguration", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
-class NxVcsConfiguration(val project: Project) : PersistentStateComponent<NxVcsConfiguration> {
+class NxVcsConfiguration : PersistentStateComponent<NxVcsConfiguration> {
 
     var NX_REFORMAT_BEFORE_PROJECT_COMMIT = false
 
-    override fun getState(): NxVcsConfiguration {
-        return NxVcsConfiguration.getInstance(project)
-    }
+    override fun getState() = this
 
     override fun loadState(state: NxVcsConfiguration) {
         XmlSerializerUtil.copyBean(state, this)

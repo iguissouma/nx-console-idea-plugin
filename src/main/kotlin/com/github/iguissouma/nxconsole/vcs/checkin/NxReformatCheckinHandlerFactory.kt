@@ -23,7 +23,7 @@ class NxReformatBeforeCheckinHandler(val myProject: Project, val panel: CheckinP
     CheckinHandler(),
     CheckinMetaHandler {
 
-    private val settings get() = NxVcsConfiguration.getInstance(myProject)
+    private val settings get() = NxVcsConfiguration.getInstance(project = myProject)
 
     override fun getBeforeCheckinConfigurationPanel(): RefreshableOnComponent =
         BooleanCommitOption(

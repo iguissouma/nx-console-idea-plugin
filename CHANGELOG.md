@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.12.0] - 2020-12-07
+### Fixed
+- Fix configurable settings exceptions
 ## [0.11.0] - 2020-11-29
 ### Added
 - Support Generate Schematics on non-angular monorepo preset

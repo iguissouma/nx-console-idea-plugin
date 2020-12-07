@@ -8,13 +8,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "NxGraphConfiguration", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
-class NxGraphConfiguration(val project: Project) : PersistentStateComponent<NxGraphConfiguration> {
+class NxGraphConfiguration : PersistentStateComponent<NxGraphConfiguration> {
 
     var NX_SHOW_AFFECTED = false
 
-    override fun getState(): NxGraphConfiguration {
-        return NxGraphConfiguration.getInstance(project)
-    }
+    override fun getState(): NxGraphConfiguration = this
 
     override fun loadState(state: NxGraphConfiguration) {
         XmlSerializerUtil.copyBean(state, this)

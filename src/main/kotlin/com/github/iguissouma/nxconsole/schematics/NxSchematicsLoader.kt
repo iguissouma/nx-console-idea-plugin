@@ -3,8 +3,6 @@ package com.github.iguissouma.nxconsole.schematics
 import com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
@@ -13,7 +11,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import org.angular2.lang.Angular2LangUtil.ANGULAR_CLI_PACKAGE
 import java.io.File
 
 private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
@@ -58,17 +55,6 @@ private fun loadSchematicsInfoJson(
     return grabCommandOutput(commandLine, cli.parent.path)
 }
 
-private fun loadBlueprintHelpOutput(configurator: NodeCommandLineConfigurator, cli: VirtualFile): String {
-    val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-    NodeModuleSearchUtil.findModulesWithName(modules, ANGULAR_CLI_PACKAGE, cli, null)
-
-    val module = modules.firstOrNull() ?: return ""
-    val moduleExe = "${module.virtualFile!!.path}${File.separator}bin${File.separator}ng"
-    val commandLine = GeneralCommandLine("", moduleExe, "help", "generate")
-    configurator.configure(commandLine)
-    return grabCommandOutput(commandLine, cli.parent.path)
-}
-
 private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {
     if (workingDir != null) {
         commandLine.withWorkDirectory(workingDir)
@@ -91,7 +77,7 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
                 )
             }
         }
-        return output.stdout.also { println(it) }
+        return output.stdout
     } else if (myLogErrors.get()) {
         LOG.error(
             "Failed to load schematics info.\n" +

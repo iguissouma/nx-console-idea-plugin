@@ -24,7 +24,7 @@ interface NxCliSchematicsRegistryService {
         project: Project,
         cliFolder: VirtualFile
     ): Collection<Schematic> {
-        return getSchematics(project, cliFolder, false, true)
+        return getSchematics(project, cliFolder, false, false)
     }
 
     companion object {

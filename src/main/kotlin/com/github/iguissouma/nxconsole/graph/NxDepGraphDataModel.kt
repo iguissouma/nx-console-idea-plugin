@@ -126,7 +126,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
                 LocalFileSystem.getInstance()
                     .findFileByIoFile(File(nxJsonFile.parent?.virtualFile?.path + "/" + root))
             }
-            val affected = if (NxGraphConfiguration.getInstance(myProject).NX_SHOW_AFFECTED)
+            val affected = if (NxGraphConfiguration.getInstance(project = nxJsonFile.project).NX_SHOW_AFFECTED)
                 affectedProjectsProperty.contains(it.key)
             else false
             if (map["type"] as String in listOf("e2e", "app")) {

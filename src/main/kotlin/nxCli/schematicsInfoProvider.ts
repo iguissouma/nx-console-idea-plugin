@@ -3,10 +3,11 @@ import {join} from "path";
 
 const projectLocation = process.argv[2];
 
-readAllSchematicCollections(
-    projectLocation,
-    join('tools', 'schematics')
-).then(
-    (result) => console.log(JSON.stringify(result)),
-    (error) => console.log("No schematics." + error),
-);
+(async function () {
+    let allSchematics = await readAllSchematicCollections(
+        projectLocation,
+        join('tools', 'schematics')
+    )
+    console.info(JSON.stringify(allSchematics, null, 2))
+
+})().catch(err => console.error(err.stack || err))

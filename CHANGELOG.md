@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.13.0] - 2020-12-13
+### Fixed
+- Fix Generate.nx file is not updating
 ## [0.12.0] - 2020-12-07
 ### Fixed
 - Fix configurable settings exceptions

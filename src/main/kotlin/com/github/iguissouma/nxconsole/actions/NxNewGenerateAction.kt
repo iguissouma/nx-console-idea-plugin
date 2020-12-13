@@ -37,6 +37,11 @@ class NxNewGenerateAction(
             args.add(projectArgument)
         }
         val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(project, schematic, args))
-        FileEditorManager.getInstance(project).openFile(vFile, true)
+        val fem = FileEditorManager.getInstance(project)
+        // close file if isOpened to display another schematic
+        if (fem.isFileOpen(vFile)) {
+            fem.closeFile(vFile)
+        }
+        fem.openFile(vFile, true)
     }
 }

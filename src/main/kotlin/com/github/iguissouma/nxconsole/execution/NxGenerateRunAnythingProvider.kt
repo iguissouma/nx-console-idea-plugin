@@ -94,7 +94,12 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
             val schematic = hasSchematic(context, commandLine)
             if (schematic != null) {
                 val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(project, schematic, args))
-                FileEditorManager.getInstance(project).openFile(vFile, true)
+                // close file if isOpened to display another schematic
+                val fem = FileEditorManager.getInstance(project)
+                if (fem.isFileOpen(vFile)) {
+                    fem.closeFile(vFile)
+                }
+                fem.openFile(vFile, true)
             }
         }
 

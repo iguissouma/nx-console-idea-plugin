@@ -1,10 +1,11 @@
 package com.github.iguissouma.nxconsole.actions
 
-import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
+import com.github.iguissouma.nxconsole.cli.config.NxConfig
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.schematics.Schematic
-import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -26,13 +27,14 @@ class NxNewGenerateAction(
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val args = mutableListOf<String>()
-        val pathArgument = "--path=${VfsUtilCore.getRelativePath(virtualFile, project.baseDir)}"
-        val nxJson = NxJsonUtil.findChildNxJsonFile(project.baseDir) ?: return
-        args.add(pathArgument)
-        val nxProjectsProperty = NxJsonUtil.findProjectsProperty(project, nxJson)
-        val projectsList = (nxProjectsProperty?.value as? JsonObject)?.propertyList?.map { it.name } ?: emptyList()
-        val projectArgument = projectsList.firstOrNull { virtualFile.path.contains("/$it/") }
-            ?.let { "--project=$it" }
+        val nxConfig: NxConfig = NxConfigProvider.getNxConfig(project, virtualFile) ?: return
+        val relativePath = VfsUtilCore.getRelativePath(virtualFile, nxConfig.angularJsonFile.parent)
+        val pathArgument = relativePath?.let { "--path=$relativePath" }
+        if (pathArgument != null) {
+            args.add(pathArgument)
+        }
+        val nxProject: NxProject? = nxConfig.getProject(virtualFile)
+        val projectArgument = nxProject?.let { "--project=${it.name}" }
         if (projectArgument != null) {
             args.add(projectArgument)
         }

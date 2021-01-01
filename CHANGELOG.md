@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.14.0] - 2021-01-01
+### Fixed
+- Fix run configuration using @nrwl/cli installed locally
 ## [0.13.0] - 2020-12-13
 ### Fixed
 - Fix Generate.nx file is not updating

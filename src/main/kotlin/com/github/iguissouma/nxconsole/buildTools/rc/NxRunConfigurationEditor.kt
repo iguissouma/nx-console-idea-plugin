@@ -128,7 +128,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         }
 
         val defaultPackage =
-            NodePackage.findDefaultPackage(project, "nx", NodeJsInterpreterRef.createProjectRef().resolve(project))
+            NodePackage.findDefaultPackage(project, "@nrwl/cli", NodeJsInterpreterRef.createProjectRef().resolve(project))
         if (defaultPackage != null) {
             this.nxPackageField.selected = defaultPackage
         }

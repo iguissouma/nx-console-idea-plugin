@@ -30,7 +30,7 @@ class NxRunConfiguration(
     }
 
     private fun getNxPackage(project: Project, runSettings: NxRunSettings): NodePackage? {
-        return NodePackage.findDefaultPackage(project, "nx", NodeJsInterpreterRef.createProjectRef().resolve(project))
+        return NodePackage.findDefaultPackage(project, "@nrwl/cli", NodeJsInterpreterRef.createProjectRef().resolve(project))
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

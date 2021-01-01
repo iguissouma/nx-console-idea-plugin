@@ -32,7 +32,8 @@ class NxConfigProvider private constructor() {
             } ?: return null
             val psiFile = PsiManager.getInstance(project).findFile(angularCliJson) ?: return null
             return CachedValuesManager.getManager(project).getCachedValue(
-                psiFile, NX_CLI_CONFIG_KEY,
+                psiFile,
+                NX_CLI_CONFIG_KEY,
                 {
                     val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(angularCliJson)
                     val config =

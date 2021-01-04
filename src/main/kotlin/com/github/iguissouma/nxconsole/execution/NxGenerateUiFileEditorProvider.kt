@@ -263,7 +263,7 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         }*/
     }
 
-    private fun ignoredOptions() = listOf("dryRun", "linter", "strict", "force", "importantPath")
+    private fun ignoredOptions() = emptyList<String>()
 
     private fun LayoutBuilder.addRow(option: Option) {
         row(option.takeIf { it.type == "string" }?.let { "${it.name}:" }) {

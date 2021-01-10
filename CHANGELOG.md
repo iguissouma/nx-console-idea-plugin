@@ -2,6 +2,11 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.15.0] - 2021-01-10
+### Added
+- Ability to switch between generators(schematics)
+- Assigned shortcut for Run(cmd+enter) Dry Run(shift+enter) from the Generate UI
+- Support autocompletion in project and pth fields
 ## [0.14.0] - 2021-01-01
 ### Fixed
 - Fix run configuration using @nrwl/cli installed locally

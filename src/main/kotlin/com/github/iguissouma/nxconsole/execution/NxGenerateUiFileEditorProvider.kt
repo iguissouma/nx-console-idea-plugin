@@ -2,8 +2,12 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.NxProject
+import com.github.iguissouma.nxconsole.schematics.NxCliSchematicsRegistryService
 import com.github.iguissouma.nxconsole.schematics.Option
 import com.github.iguissouma.nxconsole.schematics.Schematic
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.diff.util.FileEditorBase
 import com.intellij.icons.AllIcons
 import com.intellij.ide.FileIconProvider
@@ -13,36 +17,50 @@ import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction
+import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.SideBorder
+import com.intellij.ui.TextFieldWithAutoCompletion
+import com.intellij.ui.TextFieldWithAutoCompletionListProvider
+import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.LayoutBuilder
 import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.panel
+import com.intellij.util.ui.SwingHelper
 import com.intellij.vcs.log.impl.VcsLogContentUtil
 import com.intellij.vcs.log.impl.VcsLogTabsManager
+import com.intellij.webcore.ui.PathShortener
 import org.angular2.cli.AngularCliFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -53,6 +71,7 @@ import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JTextField
 import javax.swing.LayoutFocusTraversalPolicy
 import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
@@ -65,7 +84,7 @@ class NxUiFileType : FileType {
     override fun getName(): String = "NxUi"
     override fun getDescription(): String = ""
     override fun getDefaultExtension(): String = ".nx"
-    override fun getIcon(): Icon? = NxIcons.NRWL_ICON
+    override fun getIcon(): Icon = NxIcons.NRWL_ICON
     override fun isBinary(): Boolean = true
     override fun isReadOnly(): Boolean = true
     override fun getCharset(file: VirtualFile, content: ByteArray): String? = null
@@ -121,13 +140,19 @@ internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(ta
     }
 }
 
-class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String>) : JPanel(BorderLayout()) {
+class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableList<String>) :
+    JPanel(BorderLayout()),
+    Disposable {
 
+    private var mainPanel: JPanel? = null
     var hasFocus = false
+    var focusedComponent = null
 
     var centerPanel: DialogPanel? = null
 
-    var modelUI = (schematic.arguments + schematic.options)
+    var modelUI = createModelUI()
+
+    private fun createModelUI() = (schematic.arguments + schematic.options)
         .filterNot { it.name == null }
         .map { it.name!! to it.default }.toMap().toMutableMap()
 
@@ -167,29 +192,16 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         val module = modules.firstOrNull()
         val filter = AngularCliFilter(project, project.baseDir.path)
 
-        centerPanel = panel {
-            /*titledRow("Arguments") {
-                schematic.arguments.forEachIndexed { index, option ->
-                    addRow(option)
-                }
-            }
-            titledRow("Options") {
-                schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
-                    addRow(option)
-                }
-            }*/
-            schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
-                addRow(option)
-            }
-        }.apply {
-            border = EmptyBorder(10, 10, 4, 15)
-            // requestFocusInWindow(true)
-        }
+        centerPanel = createSchematicPanel()
 
         val actionGroup = DefaultActionGroup()
-        val run: AnAction = object : AnAction("Run", "", AllIcons.Actions.Run_anything) {
+        val run: AnAction = object : AnAction("Run", "", AllIcons.Actions.Execute) {
             init {
-                // shortcutSet = CustomShortcutSet(*KeymapManager.getInstance().activeKeymap.getShortcuts("Refresh"))
+                // shortcutSet = CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER")
+                registerCustomShortcutSet(
+                    CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER"),
+                    this@NxUiPanel
+                )
             }
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -204,9 +216,10 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
             }
         }
 
-        val dryRun: AnAction = object : AnAction("Dry Run", "", AllIcons.RunConfigurations.RemoteDebug) {
+        val dryRun: AnAction = object : AnAction("Dry Run", "", AllIcons.Actions.StartDebugger) {
             init {
-                // shortcutSet = CustomShortcutSet(*KeymapManager.getInstance().activeKeymap.getShortcuts("Run"))
+                // shortcutSet = CustomShortcutSet.fromString("shift ENTER")
+                registerCustomShortcutSet(CustomShortcutSet.fromString("shift ENTER"), this@NxUiPanel)
             }
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -221,8 +234,71 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
                 )
             }
         }
+
+        val chooseSchematic: AnAction = object : ComboBoxAction() {
+
+            override fun update(e: AnActionEvent) {
+                val project = e.project ?: return
+                val presentation = e.presentation
+                presentation.isEnabled = isEnabled
+                presentation.text = this@NxUiPanel.schematic.name
+                templatePresentation.text = this@NxUiPanel.schematic.name
+                super.update(e)
+            }
+
+            private inner class ChangeSchematicAction constructor(val schematic: Schematic) : DumbAwareAction() {
+
+                override fun actionPerformed(e: AnActionEvent) {
+                }
+
+                init {
+                    templatePresentation.setText(schematic.name)
+                }
+            }
+
+            inner class OptionAction<T>(val value: T, name: String, val set: (T) -> Unit) : DumbAwareAction(name) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    set(value)
+                }
+            }
+
+            override fun createPopupActionGroup(button: JComponent?): DefaultActionGroup {
+                val group = DefaultActionGroup()
+                val schematicsInWorkspace =
+                    NxCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                schematicsInWorkspace.forEach {
+                    group.add(
+                        object : DumbAwareAction(it.name) {
+
+                            override fun actionPerformed(e: AnActionEvent) {
+                                println(it.name)
+                                selectSchematic(it)
+                                centerPanel = this@NxUiPanel.createSchematicPanel()
+
+                                this@NxUiPanel.mainPanel?.remove(1)
+                                this@NxUiPanel.mainPanel?.add(JBScrollPane(centerPanel), BorderLayout.CENTER)
+                                // setPopupTitle(it.name)
+                                // this@NxUiPanel.validate()
+                                // this@NxUiPanel.repaint()
+
+                                (button as ComboBoxButton).text = it.name
+                                this@NxUiPanel.modelUI = createModelUI()
+                                this@NxUiPanel.validate()
+                                this@NxUiPanel.repaint()
+                            }
+                        }
+                    )
+                }
+                return group
+            }
+
+            private fun selectSchematic(schematic: Schematic) {
+                this@NxUiPanel.schematic = schematic
+            }
+        }
         // Add an empty action and disable it permanently for displaying file name.
-        actionGroup.add(TextLabelAction("  nx generate ${schematic.name}"))
+        actionGroup.add(TextLabelAction("  nx generate "))
+        actionGroup.addAction(chooseSchematic)
         actionGroup.addAction(run)
         actionGroup.addAction(dryRun)
 
@@ -234,11 +310,11 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         actionToolbar.setMinimumButtonSize(Dimension(22, 22))
         actionToolbar.component.isOpaque = true
 
-        val mainPanel = JPanel(BorderLayout())
-        mainPanel.add(actionToolbar.component, BorderLayout.NORTH)
+        mainPanel = JPanel(BorderLayout())
+        mainPanel!!.add(actionToolbar.component, BorderLayout.NORTH)
         val jbScrollPane = JBScrollPane(centerPanel)
-        mainPanel.add(jbScrollPane, BorderLayout.CENTER)
-        actionToolbar.setTargetComponent(jbScrollPane)
+        mainPanel!!.add(jbScrollPane, BorderLayout.CENTER)
+        // actionToolbar.setTargetComponent(jbScrollPane)
 
         isFocusCycleRoot = true
         focusTraversalPolicy = LayoutFocusTraversalPolicy()
@@ -263,6 +339,27 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         }*/
     }
 
+    private fun createSchematicPanel(): DialogPanel {
+        return panel {
+            /*titledRow("Arguments") {
+                schematic.arguments.forEachIndexed { index, option ->
+                    addRow(option)
+                }
+            }
+            titledRow("Options") {
+                schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
+                    addRow(option)
+                }
+            }*/
+            schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
+                addRow(option)
+            }
+        }.apply {
+            border = EmptyBorder(10, 10, 4, 15)
+            // requestFocusInWindow(true)
+        }
+    }
+
     private fun ignoredOptions() = emptyList<String>()
 
     private fun LayoutBuilder.addRow(option: Option) {
@@ -273,11 +370,43 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
 
     private inline fun <T : JComponent> Row.buildComponentForOption(option: Option) {
         when {
+            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
+                "project".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "projectName".equals(option.name, ignoreCase = true)
+                ) -> buildProjectTextField(option)
+            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
+                "path".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "directory".equals(option.name, ignoreCase = true)
+                ) -> buildDirectoryTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
             option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
             else -> buildTextField(option)
         }
+    }
+
+    private inline fun Row.buildDirectoryTextField(option: Option) {
+
+        val directoryTextField = TextFieldWithHistoryWithBrowseButton()
+        SwingHelper.installFileCompletionAndBrowseDialog(project, directoryTextField, "Select Test File", FileChooserDescriptorFactory.createSingleFolderDescriptor())
+        val textField = directoryTextField.childComponent.textEditor
+        PathShortener.enablePathShortening(textField, JTextField(project.basePath))
+        textField.text = modelUI[option.name] as? String ?: ""
+        val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
+            private fun updateValue() {
+                modelUI[option.name ?: ""] = textField.text
+            }
+
+            override fun textChanged(e: DocumentEvent) {
+                updateValue()
+            }
+        }
+        textField.document.addDocumentListener(docListener)
+        directoryTextField(comment = option.description)
     }
 
     private inline fun Row.buildCheckboxField(option: Option) {
@@ -330,6 +459,26 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
         }
     }
 
+    private inline fun Row.buildProjectTextField(option: Option) {
+        val textField = SchematicProjectOptionsTextField(
+            project = project,
+            NxConfigProvider.getNxConfig(project, project.baseDir)?.projects ?: emptyList()
+        )
+        textField.text = modelUI[option.name] as? String ?: ""
+        textField.document.addDocumentListener(
+            object : DocumentListener {
+                private fun updateValue() {
+                    modelUI[option.name ?: ""] = textField.text
+                }
+                override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
+                    updateValue()
+                }
+            }
+        )
+
+        textField(comment = option.description, constraints = arrayOf(CCFlags.growX))
+    }
+
     private fun computeArgsFromModelUi(): List<String> {
         return modelUI
             .filterKeys { it !in ignoredOptions() }
@@ -363,6 +512,9 @@ class NxUiPanel(project: Project, schematic: Schematic, args: MutableList<String
             templatePresentation.setText(text, false)
             templatePresentation.isEnabled = false
         }
+    }
+
+    override fun dispose() {
     }
 }
 
@@ -459,4 +611,36 @@ fun parseArguments(args: Array<String>): MutableList<String> {
         }
     }
     return options
+}
+
+class SchematicProjectOptionsTextField(
+    project: Project?,
+    options: List<NxProject>
+) : TextFieldWithAutoCompletion<NxProject>(project, SchematicProjectCompletionProvider(options), false, null)
+
+private class SchematicProjectCompletionProvider(options: List<NxProject>) :
+    TextFieldWithAutoCompletionListProvider<NxProject>(
+        options
+    ) {
+
+    override fun getLookupString(item: NxProject): String {
+        return item.name
+    }
+
+    override fun getTypeText(item: NxProject): String? {
+        return item.type?.name?.toLowerCase()
+    }
+
+    override fun compare(item1: NxProject, item2: NxProject): Int {
+        return StringUtil.compare(item1.name, item2.name, false)
+    }
+
+    override fun createLookupBuilder(item: NxProject): LookupElementBuilder {
+        return super.createLookupBuilder(item)
+            .withTypeIconRightAligned(true)
+    }
+
+    override fun getIcon(item: NxProject): Icon {
+        return if (item.type == NxProject.AngularProjectType.APPLICATION) NxIcons.NX_APP_FOLDER else NxIcons.NX_LIB_FOLDER
+    }
 }

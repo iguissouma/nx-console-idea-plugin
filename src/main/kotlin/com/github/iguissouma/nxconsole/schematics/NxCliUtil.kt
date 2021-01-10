@@ -1,10 +1,23 @@
 package com.github.iguissouma.nxconsole.schematics
 
+import com.github.iguissouma.nxconsole.NxBundle
+import com.intellij.javascript.nodejs.CompletionModuleInfo
+import com.intellij.javascript.nodejs.NodeModuleSearchUtil
+import com.intellij.javascript.nodejs.packageJson.notification.PackageJsonGetDependenciesAction
+import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationDisplayType
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.annotations.NonNls
 
 object NxCliUtil {
+    private val NX_CLI_PACKAGE: String = "@nrwl/cli"
+    private const val NOTIFICATION_GROUP_ID = "NX CLI"
+
+    private val NOTIFICATION_GROUP =
+        NotificationGroup(NOTIFICATION_GROUP_ID, NotificationDisplayType.BALLOON, true)
 
     fun findCliJson(dir: VirtualFile?): VirtualFile? {
         if (dir == null || !dir.isValid) return null
@@ -28,11 +41,36 @@ object NxCliUtil {
         } else null
     }
 
-    @NonNls
     private val ANGULAR_JSON_NAMES: List<String> = listOf(
         "angular.json",
         ".angular-cli.json",
         "angular-cli.json",
         "workspace.json"
     )
+
+    fun hasNxCLIPackageInstalled(project: Project, cli: VirtualFile): Boolean {
+        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
+        NodeModuleSearchUtil.findModulesWithName(modules, NX_CLI_PACKAGE, cli, null)
+        return modules.isNotEmpty() && modules[0].virtualFile != null
+    }
+
+    fun notifyNxCliNotInstalled(
+        project: Project,
+        cliFolder: VirtualFile,
+        message: String
+    ) {
+        val packageJson = PackageJsonUtil.findChildPackageJsonFile(cliFolder)
+        val notification: Notification =
+            // TODO use NotificationGroupManager
+            NOTIFICATION_GROUP.createNotification(
+                message,
+                NxBundle.message("nx.notify.cli.required-package-not-installed"),
+                NotificationType.WARNING,
+                null
+            )
+        if (packageJson != null) {
+            notification.addAction(PackageJsonGetDependenciesAction(project, packageJson, notification))
+        }
+        notification.notify(project)
+    }
 }

@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.16.0] - 2021-01-10
+### Added
+- Support for the new Nx v11 `workspace.json` format
 ## [0.15.0] - 2021-01-10
 ### Added
 - Ability to switch between generators(schematics)

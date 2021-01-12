@@ -211,3 +211,27 @@ function getPrimitiveValue(value) {
     }
 }
 exports.getPrimitiveValue = getPrimitiveValue;
+function renameProperty(obj, from, to) {
+    obj[to] = obj[from];
+    delete obj[from];
+}
+function toLegacyWorkspaceFormat(w) {
+    Object.values(w.projects || {}).forEach((project) => {
+        if (project.targets) {
+            renameProperty(project, 'targets', 'architect');
+        }
+        if (project.generators) {
+            renameProperty(project, 'generators', 'schematics');
+        }
+        Object.values(project.architect || {}).forEach((target) => {
+            if (target.executor) {
+                renameProperty(target, 'executor', 'builder');
+            }
+        });
+    });
+    if (w.generators) {
+        renameProperty(w, 'generators', 'schematics');
+    }
+    return w;
+}
+exports.toLegacyWorkspaceFormat = toLegacyWorkspaceFormat;

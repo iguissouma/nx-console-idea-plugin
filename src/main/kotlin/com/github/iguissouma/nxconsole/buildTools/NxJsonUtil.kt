@@ -17,6 +17,7 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ObjectUtils
 import org.jetbrains.annotations.Contract
+import org.jetbrains.annotations.Nullable
 
 object NxJsonUtil {
 
@@ -75,7 +76,7 @@ object NxJsonUtil {
                     val propertyList = projectsFromNx.propertyList
                     structure.myNxProjectsTask = propertyList.map { it.name }
                         .map { it to projectsFromAngular.findProperty(it) }
-                        .map { it.first to (it.second?.value as? JsonObject)?.findProperty("architect") }
+                        .map { it.first to findArchitectOrTargetsProperty(it.second) }
                         .map {
                             it.first to (
                                 (it.second?.value as? JsonObject)?.propertyList?.map { property ->
@@ -90,6 +91,13 @@ object NxJsonUtil {
                 structure
             }
         }
+    }
+
+    private fun findArchitectOrTargetsProperty(
+        property: JsonProperty?
+    ): @Nullable JsonProperty? {
+        val jsonObject: JsonObject = property?.value as? JsonObject ?: return null
+        return jsonObject.findProperty("targets") ?: return jsonObject.findProperty("architect")
     }
 
     fun invalidFile(packageJson: VirtualFile): JsbtTaskFetchException {
@@ -174,13 +182,13 @@ object NxJsonUtil {
         )
     }
 
-    fun isArchitectProperty(property: JsonProperty?): Boolean {
-        val architectProperty = PsiTreeUtil.getParentOfType(
+    fun isChildOfTargetsProperty(property: JsonProperty?): Boolean {
+        val property = PsiTreeUtil.getParentOfType(
             property,
             JsonProperty::class.java,
             true
         )
-        return architectProperty != null && "architect" == architectProperty.name
+        return property != null && ("targets" == property.name || "architect" == property.name)
     }
 
     fun isInsideNxJsonFile(element: PsiElement): Boolean {

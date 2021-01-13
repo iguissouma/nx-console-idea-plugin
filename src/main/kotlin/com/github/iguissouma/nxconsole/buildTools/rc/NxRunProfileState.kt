@@ -32,7 +32,7 @@ class NxRunProfileState(
 
     override fun executeSync(configurator: CommandLineDebugConfigurator?): ExecutionResult {
         val interpreter: NodeJsInterpreter = this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
-        val commandLine = NodeCommandLineUtil.createCommandLine()
+        val commandLine = NodeCommandLineUtil.createCommandLine(true)
         NodeCommandLineUtil.configureCommandLine(
             commandLine,
             configurator
@@ -57,7 +57,7 @@ class NxRunProfileState(
         commandLine.addParameters("run")
         commandLine.addParameters(this.runSettings.tasks)
         commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
-
+        NodeCommandLineUtil.configureUsefulEnvironment(commandLine)
         NodeCommandLineConfigurator.find(interpreter).configure(commandLine)
     }
 

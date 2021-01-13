@@ -7,8 +7,11 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.impl.BeforeRunTaskAwareConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.javascript.JSRunProfileWithCompileBeforeLaunchOption
 import com.intellij.javascript.nodejs.debug.NodeDebugRunConfiguration
+import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.options.SettingsEditor
@@ -20,7 +23,10 @@ class NxRunConfiguration(
     project: Project,
     factory: ConfigurationFactory,
     name: String
-) : LocatableConfigurationBase<Any>(project, factory, name), NodeDebugRunConfiguration {
+) : LocatableConfigurationBase<Any>(project, factory, name),
+    NodeDebugRunConfiguration,
+    JSRunProfileWithCompileBeforeLaunchOption,
+    BeforeRunTaskAwareConfiguration {
 
     var runSettings: NxRunSettings = NxRunSettings()
 
@@ -64,5 +70,12 @@ class NxRunConfiguration(
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
         runSettings.writeToXml(element)
+    }
+    override fun getInterpreter(): NodeJsInterpreter? {
+        return this.runSettings.interpreterRef.resolve(this.project)
+    }
+
+    override fun useRunExecutor(): Boolean {
+        return true
     }
 }

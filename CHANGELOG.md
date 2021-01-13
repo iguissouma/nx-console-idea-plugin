@@ -2,7 +2,10 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
-## [0.16.0] - 2021-01-10
+## [0.17.0] - 2021-01-13
+### Added
+- Add debug support for node process when running Nx Targets
+## [0.16.0] - 2021-01-11
 ### Added
 - Support for the new Nx v11 `workspace.json` format
 ## [0.15.0] - 2021-01-10

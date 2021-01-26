@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.buildTools.rc
 
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.github.iguissouma.nxconsole.buildTools.NxService
+import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBrowseButton
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackage
@@ -41,6 +42,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
     private val argumentsEditor = createArgumentsEditor()
+    private val envVarsComponent: EnvironmentVariablesTextFieldWithBrowseButton =
+        EnvironmentVariablesTextFieldWithBrowseButton()
 
     private val panel: JPanel = FormBuilder.createFormBuilder()
         .setAlignLabelOnRight(false).setHorizontalGap(10).setVerticalGap(4)
@@ -50,6 +53,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         .addComponent(JSeparator(), 8)
         .addLabeledComponent("Node &interpreter:", this.nodeInterpreterField, 8)
         .addLabeledComponent("&Package nx-cli:", this.nxPackageField)
+        .addLabeledComponent("Environment:", this.envVarsComponent)
         .panel
 
     init {
@@ -135,6 +139,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         tasksField.setTextAndAddToHistory(ParametersListUtil.join(settings.tasks))
         argumentsEditor.text = settings.arguments
 
+        envVarsComponent.data = settings.envData
+
         val dialogWrapper = DialogWrapper.findInstance(this.panel)
         if (dialogWrapper is SingleConfigurableEditor || dialogWrapper is GruntBeforeRunTaskDialog) {
             this.nodeInterpreterField.setPreferredWidthToFitText()
@@ -153,7 +159,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             interpreterRef = nodeInterpreterField.interpreterRef,
             nxFilePath = PathShortener.getAbsolutePath(this.nxJsonField.childComponent.textEditor),
             tasks = tasks,
-            arguments = this.argumentsEditor.text
+            arguments = this.argumentsEditor.text,
+            envData = this.envVarsComponent.data
         )
     }
 

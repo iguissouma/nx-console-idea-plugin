@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.buildTools
 
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.openapi.util.io.FileUtil
@@ -10,7 +11,8 @@ class NxRunSettings(
     val interpreterRef: NodeJsInterpreterRef = NodeJsInterpreterRef.createProjectRef(),
     var nxFilePath: String? = null,
     var tasks: List<String> = emptyList(),
-    var arguments: String? = null
+    var arguments: String? = null,
+    var envData: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
 
     val nxFileSystemIndependentPath: String?
@@ -29,6 +31,7 @@ class NxRunSettings(
         if (this.arguments?.isNotEmpty() == true) {
             JDOMExternalizerUtil.writeCustomField(parent, "arguments", this.arguments)
         }
+        this.envData.writeExternal(parent)
     }
 
     private fun writeTasks(parent: Element) {
@@ -50,7 +53,8 @@ class NxRunSettings(
             interpreterRef = interpreterRef,
             nxFilePath = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
             tasks = readTasks(parent),
-            arguments = arguments
+            arguments = arguments,
+            envData = EnvironmentVariablesData.readExternal(parent)
         )
     }
 

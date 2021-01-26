@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.18.0] - 2021-01-26
+### Added
+- Add environment field in run configuration
 ## [0.17.0] - 2021-01-13
 ### Added
 - Add debug support for node process when running Nx Targets

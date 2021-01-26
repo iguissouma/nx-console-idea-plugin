@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.buildTools.rc
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
@@ -33,10 +34,11 @@ class NxRunProfileState(
     override fun executeSync(configurator: CommandLineDebugConfigurator?): ExecutionResult {
         val interpreter: NodeJsInterpreter = this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
         val commandLine = NodeCommandLineUtil.createCommandLine(true)
+        val envData = this.runSettings.envData
         NodeCommandLineUtil.configureCommandLine(
             commandLine,
             configurator
-        ) { debugMode: Boolean? -> this.configureCommandLine(commandLine, interpreter) }
+        ) { debugMode: Boolean? -> this.configureCommandLine(commandLine, interpreter, envData) }
         val processHandler: ProcessHandler = NodeCommandLineUtil.createProcessHandler(commandLine, true)
         ProcessTerminatedListener.attach(processHandler)
         val console: ConsoleView = this.createConsole(processHandler, commandLine.workDirectory)
@@ -44,7 +46,11 @@ class NxRunProfileState(
         return DefaultExecutionResult(console, processHandler)
     }
 
-    private fun configureCommandLine(commandLine: GeneralCommandLine, interpreter: NodeJsInterpreter) {
+    private fun configureCommandLine(
+        commandLine: GeneralCommandLine,
+        interpreter: NodeJsInterpreter,
+        envData: EnvironmentVariablesData
+    ) {
 
         commandLine.withCharset(StandardCharsets.UTF_8)
         CommandLineUtil.setWorkingDirectory(commandLine, File(this.runSettings.nxFilePath).parentFile, false)
@@ -57,6 +63,8 @@ class NxRunProfileState(
         commandLine.addParameters("run")
         commandLine.addParameters(this.runSettings.tasks)
         commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
+        envData.configureCommandLine(commandLine, true)
+
         NodeCommandLineUtil.configureUsefulEnvironment(commandLine)
         NodeCommandLineConfigurator.find(interpreter).configure(commandLine)
     }

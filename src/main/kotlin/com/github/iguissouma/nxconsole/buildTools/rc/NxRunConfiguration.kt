@@ -63,6 +63,7 @@ class NxRunConfiguration(
                 nxFilePath = readFromXml.nxFileSystemIndependentPath
                 tasks = readFromXml.tasks
                 arguments = readFromXml.arguments
+                envData = readFromXml.envData
             }
         }
     }

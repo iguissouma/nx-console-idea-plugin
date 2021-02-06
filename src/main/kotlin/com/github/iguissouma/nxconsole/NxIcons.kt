@@ -4,6 +4,7 @@ import com.intellij.openapi.util.IconLoader
 
 object NxIcons {
     val NRWL_ICON = IconLoader.getIcon("/icons/nrwl.svg")
+    val NX_PLUGINS_ICON = IconLoader.getIcon("/icons/nx_plugins.svg")
     val NX_APP_FOLDER = IconLoader.getIcon("/icons/appFolder.svg")
     val NX_APPS_FOLDER = IconLoader.getIcon("/icons/appsFolder.svg")
     val NX_LIB_FOLDER = IconLoader.getIcon("/icons/libForlder.svg")

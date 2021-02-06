@@ -2,6 +2,10 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.19.0] - 2021-02-04
+### Added
+- Add Nx plugin project generator
+- Support build 211.*
 ## [0.18.0] - 2021-01-26
 ### Added
 - Add environment field in run configuration

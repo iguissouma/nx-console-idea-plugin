@@ -9,6 +9,6 @@ class NxProjectTemplateFactory : ProjectTemplatesFactory() {
     override fun getGroups(): Array<String> = arrayOf(WebModuleBuilder.GROUP_NAME)
 
     override fun createTemplates(group: String?, context: WizardContext): Array<ProjectTemplate> {
-        return arrayOf(NxCliProjectGenerator())
+        return arrayOf(NxCliProjectGenerator(), NxPluginsCliProjectGenerator())
     }
 }

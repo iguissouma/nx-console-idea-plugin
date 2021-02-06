@@ -158,7 +158,7 @@ tasks {
     }
 
     runPluginVerifier {
-        ideVersions(listOf("IU-202.7660.26", "IU-203.5784.10"))
+        ideVersions(listOf("IU-202.7660.26", "IU-203.5784.10", "IU-211.4961.33"))
     }
 
     publishPlugin {

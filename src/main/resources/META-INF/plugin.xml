@@ -13,6 +13,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <directoryProjectGenerator
                 implementation="com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator"/>  <!-- works in WebStorm and other SmallIDEs -->
+        <directoryProjectGenerator
+                implementation="com.github.iguissouma.nxconsole.cli.NxPluginsCliProjectGenerator"/>  <!-- works in WebStorm and other SmallIDEs -->
         <projectTemplatesFactory implementation="com.github.iguissouma.nxconsole.cli.NxProjectTemplateFactory"/> <!-- works in IntelliJ IDEA -->
 
 

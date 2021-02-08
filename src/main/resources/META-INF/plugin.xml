@@ -8,7 +8,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.json</depends>
-    <depends>AngularJS</depends>
+    <depends optional="true">AngularJS</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <directoryProjectGenerator

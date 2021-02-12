@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.schematics.NxCliSchematicsRegistryService
@@ -61,7 +62,6 @@ import com.intellij.util.ui.SwingHelper
 import com.intellij.vcs.log.impl.VcsLogContentUtil
 import com.intellij.vcs.log.impl.VcsLogTabsManager
 import com.intellij.webcore.ui.PathShortener
-import org.angular2.cli.AngularCliFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
@@ -190,7 +190,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
         val workingDir = project.baseDir
 
         val module = modules.firstOrNull()
-        val filter = AngularCliFilter(project, project.baseDir.path)
+        val filter = NxCliFilter(project, project.baseDir.path)
 
         centerPanel = createSchematicPanel()
 

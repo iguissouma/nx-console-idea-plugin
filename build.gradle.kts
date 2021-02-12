@@ -75,7 +75,7 @@ intellij {
 //  Plugin Dependencies:
 //  https://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_dependencies.html
 //
-    setPlugins("JavaScriptLanguage", "JavaScriptDebugger", "AngularJS", "gradle")
+    setPlugins("JavaScriptLanguage", "JavaScriptDebugger")
 }
 
 // Configure detekt plugin.

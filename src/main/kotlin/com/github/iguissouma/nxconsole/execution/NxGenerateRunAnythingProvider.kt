@@ -1,6 +1,7 @@
 package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.schematics.NxCliSchematicsRegistryService
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.execution.executors.DefaultDebugExecutor
@@ -19,7 +20,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
-import org.angular2.cli.AngularCliFilter
 import javax.swing.Icon
 
 class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
@@ -76,7 +76,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         val workingDir = project.baseDir
 
         val module = modules.firstOrNull() ?: return false
-        val filter = AngularCliFilter(project, project.baseDir.path)
+        val filter = NxCliFilter(project, project.baseDir.path)
 
         val args = mutableListOf(*commandLine.parameters.toTypedArray())
         if (executor is DefaultDebugExecutor && "--dryRun" !in args) {

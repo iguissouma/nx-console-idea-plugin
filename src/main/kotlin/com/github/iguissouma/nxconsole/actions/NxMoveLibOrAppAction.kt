@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
+import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
@@ -28,7 +29,6 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.JBLabelDecorator
 import com.intellij.ui.layout.panel
-import org.angular2.cli.AngularCliFilter
 import java.awt.Dimension
 import java.io.File
 import javax.swing.JComponent
@@ -66,7 +66,7 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                 val modules: MutableList<CompletionModuleInfo> = mutableListOf()
                 NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
                 val module = modules.firstOrNull() ?: return
-                val filter = AngularCliFilter(project, project.baseDir.path)
+                val filter = NxCliFilter(project, project.baseDir.path)
                 val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
                 val args = arrayOf(
                     "@nrwl/workspace:move",

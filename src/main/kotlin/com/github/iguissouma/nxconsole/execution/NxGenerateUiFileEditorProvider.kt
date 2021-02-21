@@ -2,6 +2,12 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
+import com.github.iguissouma.nxconsole.buildTools.NxService
+import com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType
+import com.github.iguissouma.nxconsole.buildTools.rc.NxRunConfiguration
+import com.github.iguissouma.nxconsole.builders.NxBuilderOptions
+import com.github.iguissouma.nxconsole.builders.NxCliBuildersRegistryService
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
@@ -10,6 +16,8 @@ import com.github.iguissouma.nxconsole.schematics.Option
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.diff.util.FileEditorBase
+import com.intellij.execution.Executor
+import com.intellij.execution.RunManager
 import com.intellij.icons.AllIcons
 import com.intellij.ide.FileIconProvider
 import com.intellij.ide.actions.SplitAction
@@ -45,6 +53,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
+import com.intellij.testFramework.runInEdtAndGet
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.SideBorder
@@ -75,6 +84,16 @@ import javax.swing.JTextField
 import javax.swing.LayoutFocusTraversalPolicy
 import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
+import com.intellij.execution.executors.DefaultRunExecutor
+
+import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.executors.DefaultDebugExecutor
+
+import com.intellij.execution.runners.ExecutionUtil
+import javax.swing.JSpinner
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+
 
 class NxUiIconProvider : FileIconProvider {
     override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? = (file as? NxUiFile)?.fileType?.icon
@@ -140,15 +159,378 @@ internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(ta
     }
 }
 
-class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableList<String>) :
-    JPanel(BorderLayout()),
+open class NxUiPanel(val project: Project, args: MutableList<String>) : JPanel(BorderLayout()),
     Disposable {
 
+    var centerPanel: DialogPanel? = null
+    override fun dispose() {
+
+    }
+}
+
+class NxBuildersUiPanel(
+    project: Project,
+    var command: String,
+    var target: String,
+    var architect: NxProject.Architect,
+    args: MutableList<String>
+) :
+    NxUiPanel(project, args) {
     private var mainPanel: JPanel? = null
     var hasFocus = false
     var focusedComponent = null
 
-    var centerPanel: DialogPanel? = null
+    var modelUI = createModelUI()
+
+    private fun createModelUI() = emptyMap<String, Any>().toMutableMap()
+
+    var builderOptions = listOf<NxBuilderOptions>()
+
+    init {
+
+        centerPanel = createCenterPanel()
+        val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+
+        builderOptions = runInEdtAndGet {
+            NxCliBuildersRegistryService.getInstance()
+                .readBuilderSchema(
+                    project,
+                    nxConfig?.angularJsonFile!!, architect.builder!!
+                ) ?: emptyList()
+        }
+
+
+        centerPanel = createCenterPanel()
+
+        val actionGroup = DefaultActionGroup()
+        val run: AnAction = object : AnAction("Run", "", AllIcons.Actions.Execute) {
+            init {
+                // shortcutSet = CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER")
+                registerCustomShortcutSet(
+                    CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER"),
+                    this@NxBuildersUiPanel
+                )
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                val runManager = RunManager.getInstance(project)
+                val runnerAndConfigurationSettings: RunnerAndConfigurationSettings = runnerAndConfigurationSettings()
+                runManager.selectedConfiguration = runnerAndConfigurationSettings
+                val executor: Executor = DefaultRunExecutor.getRunExecutorInstance()
+                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor);
+            }
+        }
+
+        val dryRun: AnAction = object : AnAction("Dry Run", "", AllIcons.Actions.StartDebugger) {
+            init {
+                // shortcutSet = CustomShortcutSet.fromString("shift ENTER")
+                registerCustomShortcutSet(CustomShortcutSet.fromString("shift ENTER"), this@NxBuildersUiPanel)
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                val runManager = RunManager.getInstance(project)
+                val runnerAndConfigurationSettings: RunnerAndConfigurationSettings = runnerAndConfigurationSettings()
+                runManager.selectedConfiguration = runnerAndConfigurationSettings
+                val executor: Executor = DefaultDebugExecutor.getDebugExecutorInstance()
+                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor);
+            }
+        }
+
+        val chooseTarget: AnAction = object : ComboBoxAction() {
+
+            override fun update(e: AnActionEvent) {
+                val project = e.project ?: return
+                val presentation = e.presentation
+                presentation.isEnabled = isEnabled
+                presentation.text = this@NxBuildersUiPanel.target
+                templatePresentation.text = this@NxBuildersUiPanel.target
+                super.update(e)
+            }
+
+            private inner class ChangeTargetAction constructor(val target: String) : DumbAwareAction() {
+
+                override fun actionPerformed(e: AnActionEvent) {
+                }
+
+                init {
+                    templatePresentation.setText(target)
+                }
+            }
+
+            inner class OptionAction<T>(val value: T, name: String, val set: (T) -> Unit) : DumbAwareAction(name) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    set(value)
+                }
+            }
+
+            override fun createPopupActionGroup(button: JComponent?): DefaultActionGroup {
+                val group = DefaultActionGroup()
+                val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return group
+
+                nxConfig.projects.filter { it.architect.containsKey(command) }.forEach {
+                    group.add(
+                        object : DumbAwareAction(it.name) {
+
+                            override fun actionPerformed(e: AnActionEvent) {
+                                println(it.name)
+                                selectTarget(it.name)
+                                centerPanel = this@NxBuildersUiPanel.createCenterPanel()
+
+                                this@NxBuildersUiPanel.mainPanel?.remove(1)
+                                this@NxBuildersUiPanel.mainPanel?.add(JBScrollPane(centerPanel), BorderLayout.CENTER)
+
+                                (button as ComboBoxButton).text = it.name
+                                //this@NxBuildersUiPanel.modelUI = createModelUI()
+                                this@NxBuildersUiPanel.validate()
+                                this@NxBuildersUiPanel.repaint()
+                            }
+                        }
+                    )
+                }
+                return group
+            }
+
+            private fun selectTarget(target: String) {
+                this@NxBuildersUiPanel.target = target
+            }
+        }
+        // Add an empty action and disable it permanently for displaying file name.
+        actionGroup.add(NxGeneratorsUiPanel.TextLabelAction("  nx $command "))
+        actionGroup.addAction(chooseTarget)
+        actionGroup.addAction(run)
+        actionGroup.addAction(dryRun)
+
+        val actionToolbar =
+            ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR, actionGroup, true)
+        actionToolbar.setMinimumButtonSize(ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE)
+        actionToolbar.layoutPolicy = ActionToolbar.AUTO_LAYOUT_POLICY
+        actionToolbar.component.border = IdeBorderFactory.createBorder(SideBorder.TOP + SideBorder.BOTTOM)
+        actionToolbar.setMinimumButtonSize(Dimension(22, 22))
+        actionToolbar.component.isOpaque = true
+
+        mainPanel = JPanel(BorderLayout())
+        mainPanel!!.add(actionToolbar.component, BorderLayout.NORTH)
+        val jbScrollPane = JBScrollPane(centerPanel)
+        mainPanel!!.add(jbScrollPane, BorderLayout.CENTER)
+
+        isFocusCycleRoot = true
+        focusTraversalPolicy = LayoutFocusTraversalPolicy()
+
+        add(mainPanel)
+    }
+
+    private fun runnerAndConfigurationSettings(): RunnerAndConfigurationSettings {
+        val runManager = RunManager.getInstance(project)
+        val configurationSettings: List<RunnerAndConfigurationSettings> =
+            runManager.getConfigurationSettingsList(NxConfigurationType.getInstance())
+        var runnerAndConfigurationSettings: RunnerAndConfigurationSettings? = null
+        val name = "$target:$command"
+        for (cfg in configurationSettings) {
+            val nxRunConfiguration: NxRunConfiguration = cfg.configuration as NxRunConfiguration
+            if (nxRunConfiguration.runSettings.tasks.contains(name)) {
+                nxRunConfiguration.runSettings.apply {
+                    arguments = computeArgsFromModelUi().joinToString(separator = " ")
+                }
+                runnerAndConfigurationSettings = cfg
+            }
+        }
+        if (runnerAndConfigurationSettings == null) {
+            runnerAndConfigurationSettings =
+                runManager.createConfiguration(
+                    name,
+                    NxConfigurationType::class.java
+                )
+            val configuration: NxRunConfiguration =
+                runnerAndConfigurationSettings.configuration as NxRunConfiguration
+            configuration.runSettings = NxRunSettings().apply {
+                nxFilePath = NxService.getInstance(project).detectFirstBuildfileInContentRoots(false)?.path
+                tasks = listOf(name)
+                arguments = computeArgsFromModelUi().joinToString(separator = " ")
+            }
+            runManager.addConfiguration(runnerAndConfigurationSettings)
+        }
+        return runnerAndConfigurationSettings
+    }
+
+    private fun createCenterPanel(): DialogPanel {
+        return panel {
+            builderOptions.filter { it.name !in ignoredOptions() }.forEach { option ->
+                addRow(option)
+            }
+        }.apply {
+            border = EmptyBorder(10, 10, 4, 15)
+        }
+    }
+
+    private fun computeArgsFromModelUi(): List<String> {
+        return modelUI
+            .filterKeys { it !in ignoredOptions() }
+            .filterValues {(it is Number) or (it is Boolean && it) or (it is String && it.isNotBlank()) }
+            .map {
+                if (it.value is Boolean) {
+                    "--${it.key}"
+                } else {
+                    "--${it.key}=${it.value}"
+                }
+            }
+    }
+
+
+    private fun ignoredOptions() = emptyList<String>()
+
+
+    private fun LayoutBuilder.addRow(option: NxBuilderOptions) {
+        row(option.takeIf { it.type == "string" || it.type == "number" || it.type == "array" }?.let { "${it.name}:" }) {
+            buildComponentForOption<JComponent>(option)
+        }
+    }
+
+    private inline fun <T : JComponent> Row.buildComponentForOption(option: NxBuilderOptions) {
+        when {
+            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
+                    "project".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "projectName".equals(option.name, ignoreCase = true)
+                    ) -> buildProjectTextField(option)
+            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
+                    "path".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "directory".equals(option.name, ignoreCase = true)
+                    ) -> buildDirectoryTextField(option)
+            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
+            (option.type?.toLowerCase() == "string" || option.type?.toLowerCase() == "enum") && option.enum.isNotEmpty() -> buildSelectField(
+                option
+            )
+            option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
+            option.type?.toLowerCase() == "number" -> buildNumberField(option)
+            else -> buildTextField(option)
+        }
+    }
+
+    private inline fun Row.buildDirectoryTextField(option: NxBuilderOptions) {
+
+        val directoryTextField = TextFieldWithHistoryWithBrowseButton()
+        SwingHelper.installFileCompletionAndBrowseDialog(
+            project,
+            directoryTextField,
+            "Select Test File",
+            FileChooserDescriptorFactory.createSingleFolderDescriptor()
+        )
+        val textField = directoryTextField.childComponent.textEditor
+        PathShortener.enablePathShortening(textField, JTextField(project.basePath))
+        textField.text = modelUI[option.name] as? String ?: ""
+        val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
+            private fun updateValue() {
+                modelUI[option.name ?: ""] = textField.text
+            }
+
+            override fun textChanged(e: DocumentEvent) {
+                updateValue()
+            }
+        }
+        textField.document.addDocumentListener(docListener)
+        directoryTextField(comment = option.description)
+    }
+
+    private inline fun Row.buildCheckboxField(option: NxBuilderOptions) {
+        // return checkBox(option.name?:"", option.default as? Boolean ?: false, option.description ?: "")
+        val key = option.name ?: ""
+        checkBox(
+            text = option.name ?: "",
+            comment = option.description ?: "",
+            isSelected = modelUI[key] as? Boolean ?: option.default.toBoolean(),
+            // getter = { modelUI[key] as? Boolean ?: false },
+            // setter = { modelUI[key] = it },
+            actionListener = { e: ActionEvent, cb: JCheckBox -> modelUI[key] = !(modelUI[key] as? Boolean ?: false) }
+        )
+    }
+
+    private inline fun Row.buildNumberField(option: NxBuilderOptions) {
+        val spinner = JSpinner().apply {
+            editor = JSpinner.NumberEditor(this, "#")
+        }
+        if (option.default.isNotBlank()) {
+            option.default.toIntOrNull()?.run{
+                spinner.value = this
+            }
+        }
+        spinner.addChangeListener(object : ChangeListener {
+            override fun stateChanged(e: ChangeEvent?) {
+                modelUI[option.name] = spinner.value ?: ""
+            }
+        })
+        spinner(comment = option.description)
+    }
+
+    private inline fun Row.buildSelectField(option: NxBuilderOptions) {
+        val model: DefaultComboBoxModel<String> = DefaultComboBoxModel(option.enum.toTypedArray())
+        val comboBox = ComboBox(model)
+        comboBox.selectedItem = modelUI[option.name] ?: option.enum.first()
+        comboBox.addActionListener {
+            modelUI[option.name ?: ""] = (comboBox.selectedItem as? String) ?: ""
+        }
+        comboBox(comment = option.description)
+    }
+
+    private inline fun Row.buildTextField(option: NxBuilderOptions) {
+        val jTextField = JBTextField()
+        // jTextField.emptyText.text = option.description ?: ""
+        //option.default?.let {
+        // jTextField.text = it as? String ?: ""
+        //}
+        jTextField.text = modelUI[option.name] as? String ?: option.default
+        val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
+            private fun updateValue() {
+                modelUI[option.name ?: ""] = jTextField.text
+            }
+
+            override fun textChanged(e: DocumentEvent) {
+                updateValue()
+            }
+        }
+        jTextField.document.addDocumentListener(docListener)
+
+        // add focus on first input text field
+        if (!hasFocus) {
+            jTextField(comment = option.description).focused()
+            hasFocus = true
+        } else {
+            jTextField(comment = option.description)
+        }
+    }
+
+    private inline fun Row.buildProjectTextField(option: NxBuilderOptions) {
+        val textField = SchematicProjectOptionsTextField(
+            project = project,
+            NxConfigProvider.getNxConfig(project, project.baseDir)?.projects ?: emptyList()
+        )
+        textField.text = modelUI[option.name] as? String ?: ""
+        textField.document.addDocumentListener(
+            object : DocumentListener {
+                private fun updateValue() {
+                    modelUI[option.name ?: ""] = textField.text
+                }
+
+                override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
+                    updateValue()
+                }
+            }
+        )
+
+        textField(comment = option.description, constraints = arrayOf(CCFlags.growX))
+    }
+
+
+}
+
+class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: MutableList<String>) :
+    NxUiPanel(project, args) {
+
+    private var mainPanel: JPanel? = null
+    var hasFocus = false
+    var focusedComponent = null
 
     var modelUI = createModelUI()
 
@@ -192,7 +574,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
         val module = modules.firstOrNull()
         val filter = NxCliFilter(project, project.baseDir.path)
 
-        centerPanel = createSchematicPanel()
+        centerPanel = createCenterPanel()
 
         val actionGroup = DefaultActionGroup()
         val run: AnAction = object : AnAction("Run", "", AllIcons.Actions.Execute) {
@@ -200,7 +582,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
                 // shortcutSet = CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER")
                 registerCustomShortcutSet(
                     CustomShortcutSet.fromString(if (SystemInfo.isMac) "meta ENTER" else "control ENTER"),
-                    this@NxUiPanel
+                    this@NxGeneratorsUiPanel
                 )
             }
 
@@ -219,7 +601,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
         val dryRun: AnAction = object : AnAction("Dry Run", "", AllIcons.Actions.StartDebugger) {
             init {
                 // shortcutSet = CustomShortcutSet.fromString("shift ENTER")
-                registerCustomShortcutSet(CustomShortcutSet.fromString("shift ENTER"), this@NxUiPanel)
+                registerCustomShortcutSet(CustomShortcutSet.fromString("shift ENTER"), this@NxGeneratorsUiPanel)
             }
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -241,8 +623,8 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
                 val project = e.project ?: return
                 val presentation = e.presentation
                 presentation.isEnabled = isEnabled
-                presentation.text = this@NxUiPanel.schematic.name
-                templatePresentation.text = this@NxUiPanel.schematic.name
+                presentation.text = this@NxGeneratorsUiPanel.schematic.name
+                templatePresentation.text = this@NxGeneratorsUiPanel.schematic.name
                 super.update(e)
             }
 
@@ -273,18 +655,15 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
                             override fun actionPerformed(e: AnActionEvent) {
                                 println(it.name)
                                 selectSchematic(it)
-                                centerPanel = this@NxUiPanel.createSchematicPanel()
+                                centerPanel = this@NxGeneratorsUiPanel.createCenterPanel()
 
-                                this@NxUiPanel.mainPanel?.remove(1)
-                                this@NxUiPanel.mainPanel?.add(JBScrollPane(centerPanel), BorderLayout.CENTER)
-                                // setPopupTitle(it.name)
-                                // this@NxUiPanel.validate()
-                                // this@NxUiPanel.repaint()
+                                this@NxGeneratorsUiPanel.mainPanel?.remove(1)
+                                this@NxGeneratorsUiPanel.mainPanel?.add(JBScrollPane(centerPanel), BorderLayout.CENTER)
 
                                 (button as ComboBoxButton).text = it.name
-                                this@NxUiPanel.modelUI = createModelUI()
-                                this@NxUiPanel.validate()
-                                this@NxUiPanel.repaint()
+                                this@NxGeneratorsUiPanel.modelUI = createModelUI()
+                                this@NxGeneratorsUiPanel.validate()
+                                this@NxGeneratorsUiPanel.repaint()
                             }
                         }
                     )
@@ -293,7 +672,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
             }
 
             private fun selectSchematic(schematic: Schematic) {
-                this@NxUiPanel.schematic = schematic
+                this@NxGeneratorsUiPanel.schematic = schematic
             }
         }
         // Add an empty action and disable it permanently for displaying file name.
@@ -314,56 +693,27 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
         mainPanel!!.add(actionToolbar.component, BorderLayout.NORTH)
         val jbScrollPane = JBScrollPane(centerPanel)
         mainPanel!!.add(jbScrollPane, BorderLayout.CENTER)
-        // actionToolbar.setTargetComponent(jbScrollPane)
 
         isFocusCycleRoot = true
         focusTraversalPolicy = LayoutFocusTraversalPolicy()
-        // isFocusable = true
-        // isRequestFocusEnabled = true
 
         add(mainPanel)
-        // panel.isFocusable = true
-
-        /*UIUtil.invokeLaterIfNeeded {
-            //panel.requestFocusInWindow()
-            //panel.preferredFocusedComponent?.requestFocus()
-            //panel.preferredFocusedComponent?.grabFocus()
-            //panel.preferredFocusedComponent?.let { IdeFocusManager.getInstance(project).requestFocus(it, true) }
-            centerPanel.preferredFocusedComponent?.let {
-                IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
-                    IdeFocusManager.getGlobalInstance().requestFocus(it, true)
-                }
-            }
-
-
-        }*/
     }
 
-    private fun createSchematicPanel(): DialogPanel {
+    private fun createCenterPanel(): DialogPanel {
         return panel {
-            /*titledRow("Arguments") {
-                schematic.arguments.forEachIndexed { index, option ->
-                    addRow(option)
-                }
-            }
-            titledRow("Options") {
-                schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
-                    addRow(option)
-                }
-            }*/
             schematic.options.filter { it.name !in ignoredOptions() }.forEach { option ->
                 addRow(option)
             }
         }.apply {
             border = EmptyBorder(10, 10, 4, 15)
-            // requestFocusInWindow(true)
         }
     }
 
     private fun ignoredOptions() = emptyList<String>()
 
     private fun LayoutBuilder.addRow(option: Option) {
-        row(option.takeIf { it.type == "string" }?.let { "${it.name}:" }) {
+        row(option.takeIf { it.type == "string" || it.type == "number" }?.let { "${it.name}:" }) {
             buildComponentForOption<JComponent>(option)
         }
     }
@@ -371,17 +721,17 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
     private inline fun <T : JComponent> Row.buildComponentForOption(option: Option) {
         when {
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "project".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "projectName".equals(option.name, ignoreCase = true)
-                ) -> buildProjectTextField(option)
+                    "project".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "projectName".equals(option.name, ignoreCase = true)
+                    ) -> buildProjectTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "path".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "directory".equals(option.name, ignoreCase = true)
-                ) -> buildDirectoryTextField(option)
+                    "path".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "directory".equals(option.name, ignoreCase = true)
+                    ) -> buildDirectoryTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
             option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
@@ -415,7 +765,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
         checkBox(
             text = option.name ?: "",
             comment = option.description ?: "",
-            isSelected = modelUI[key] as? Boolean ?: false,
+            isSelected = modelUI[key] as? Boolean ?:  option.default.toString().toBoolean(),
             // getter = { modelUI[key] as? Boolean ?: false },
             // setter = { modelUI[key] = it },
             actionListener = { e: ActionEvent, cb: JCheckBox -> modelUI[key] = !(modelUI[key] as? Boolean ?: false) }
@@ -435,10 +785,10 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
     private inline fun Row.buildTextField(option: Option) {
         val jTextField = JBTextField()
         // jTextField.emptyText.text = option.description ?: ""
-        option.default?.let {
-            // jTextField.text = it as? String ?: ""
-        }
-        jTextField.text = modelUI[option.name] as? String ?: ""
+        //option.default?.let {
+        //    jTextField.text = it as? String ?: ""
+        //}
+        jTextField.text = modelUI[option.name] as? String ?: (option.default as String? ?: "")
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {
                 modelUI[option.name ?: ""] = jTextField.text
@@ -470,6 +820,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
                 private fun updateValue() {
                     modelUI[option.name ?: ""] = textField.text
                 }
+
                 override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {
                     updateValue()
                 }
@@ -484,10 +835,10 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
             .filterKeys { it !in ignoredOptions() }
             .filterValues { (it is Boolean && it) or (it is String && it.isNotBlank()) }
             .map {
-                if (it.value is String) {
-                    "--${it.key}=${it.value}"
-                } else {
+                if (it.value is Boolean) {
                     "--${it.key}"
+                } else {
+                    "--${it.key}=${it.value}"
                 }
             }
     }
@@ -495,7 +846,7 @@ class NxUiPanel(val project: Project, var schematic: Schematic, args: MutableLis
     /**
      * An disabled action for displaying text in action toolbar.
      */
-    private class TextLabelAction internal constructor(text: String) : AnAction(null as String?) {
+    class TextLabelAction internal constructor(text: String) : AnAction(null as String?) {
         override fun actionPerformed(e: AnActionEvent) {
             // Do nothing
         }

@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.cli.config
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -11,23 +12,9 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
 
     abstract val sourceDir: VirtualFile?
 
-    abstract val indexHtmlFile: VirtualFile?
-
-    abstract val globalStyleSheets: List<VirtualFile>
-
-    abstract val stylePreprocessorIncludeDirs: List<VirtualFile>
-
-    abstract val cssResolveRootDir: VirtualFile?
-
-    abstract val tsConfigFile: VirtualFile?
-
-    abstract val karmaConfigFile: VirtualFile?
-
-    abstract val protractorConfigFile: VirtualFile?
-
-    // abstract val tsLintConfigurations: List<NxLintConfiguration>
-
     abstract val type: AngularProjectType?
+
+    abstract val architect: Map<String, Architect>
 
     internal open fun resolveFile(filePath: String?): VirtualFile? {
         return filePath?.let { path ->
@@ -52,15 +39,6 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
       |       type: $type
       |       rootDir: $rootDir
       |       sourceDir: $sourceDir
-      |       indexHtml: $indexHtmlFile
-      |       tsConfig: $tsConfigFile
-      |       globalStyleSheets: $globalStyleSheets
-      |       stylePreprocessorIncludeDirs: $stylePreprocessorIncludeDirs
-      |       karmaConfigFile: $karmaConfigFile
-      |       protractorConfigFile: $protractorConfigFile
-      |       tsLintConfigurations: [
-      |         ${emptyList<String>().joinToString(",\n         ") { it.toString() }}
-      |       ]
       |     }
     """.trimMargin()
     }
@@ -72,11 +50,40 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
         @JsonProperty("library")
         LIBRARY
     }
+
+    class Architect {
+        val name: String? = null
+        val project: String? = null
+        @JsonProperty("builder")
+        @JsonAlias(value = ["executor"])
+        val builder: String? = null
+        val description: String? = null
+        //val configurations: List<ArchitectConfiguration> = emptyList()
+        val configurations: Map<String, Any> = emptyMap()
+        val options: Map<String, Any> = emptyMap()
+    }
+
+    class ArchitectConfiguration {
+        val name: String? = null
+        val defaultValues: List<DefaultValue> = emptyList()
+    }
+
+    class DefaultValue {
+        val name: String? = null
+        val defaultValue: String? = null
+    }
+
+
+    class Option {
+        val name: String? = null
+        val description: String? = null
+
+    }
 }
 
 internal class NxProjectImpl(
     override val name: String,
-    private val ngProject: AngularJsonProject,
+    val ngProject: AngularJsonProject,
     angularCliFolder: VirtualFile,
     project: Project
 ) :
@@ -86,41 +93,14 @@ internal class NxProjectImpl(
 
     override val sourceDir get() = ngProject.sourceRoot?.let { angularCliFolder.findFileByRelativePath(it) } ?: rootDir
 
-    override val cssResolveRootDir: VirtualFile? get() = rootDir
-
-    override val indexHtmlFile get() = resolveFile(ngProject.targets?.build?.options?.index)
-
-    override val globalStyleSheets
-        get() = ngProject.targets?.build?.options?.styles
-            ?.mapNotNull { rootDir?.findFileByRelativePath(it) }
-            ?: emptyList()
-
-    override val stylePreprocessorIncludeDirs
-        get() = ngProject.targets?.build?.options?.stylePreprocessorOptions?.includePaths
-            ?.mapNotNull { angularCliFolder.findFileByRelativePath(it) }
-            ?: emptyList()
-
-    override val tsConfigFile: VirtualFile?
-        get() = resolveFile(ngProject.targets?.build?.options?.tsConfig)
-
-    override val karmaConfigFile get() = resolveFile(ngProject.targets?.test?.options?.karmaConfig)
-
-    override val protractorConfigFile get() = resolveFile(ngProject.targets?.e2e?.options?.protractorConfig)
-
-  /*override val tsLintConfigurations = ngProject.targets?.lint?.let { lint ->
-    val result = mutableListOf<NxLintConfiguration>()
-    lint.options?.let { result.add(NxLintConfiguration(this, it)) }
-    lint.configurations.mapTo(result) { (name, config) ->
-      NxLintConfiguration(this, config, name)
-    }
-    result
-  } ?: emptyList<NxLintConfiguration>()*/
-
     override val type: AngularProjectType?
         get() = ngProject.projectType
+
+    override val architect: Map<String, Architect>
+        get() = ngProject.architect
 }
 
-internal class NxLegacyProjectImpl(
+internal class NxLegacyProjectImpl (
     private val angularJson: AngularJson,
     private val app: AngularJsonLegacyApp,
     angularCliFolder: VirtualFile,
@@ -134,34 +114,6 @@ internal class NxLegacyProjectImpl(
 
     override val sourceDir: VirtualFile? get() = app.root?.let { rootDir.findFileByRelativePath(it) }
 
-    override val cssResolveRootDir: VirtualFile? get() = sourceDir
-
-    override val indexHtmlFile: VirtualFile? get() = resolveFile(app.index)
-
-    override val globalStyleSheets: List<VirtualFile>
-        get() = app.styles
-            ?.mapNotNull { sourceDir?.findFileByRelativePath(it) }
-            ?: emptyList()
-
-    override val stylePreprocessorIncludeDirs: List<VirtualFile>
-        get() = app.stylePreprocessorOptions?.includePaths
-            ?.mapNotNull { sourceDir?.findFileByRelativePath(it) }
-            ?: emptyList()
-
-    override val tsConfigFile: VirtualFile?
-        get() = resolveFile(app.tsConfig)
-
-    override val karmaConfigFile: VirtualFile?
-        get() = resolveFile(angularJson.legacyTest?.karma?.config)
-
-    override val protractorConfigFile: VirtualFile?
-        get() = resolveFile(angularJson.legacyE2E?.protractor?.config)
-
-  /*override val tsLintConfigurations
-    get() = angularJson.legacyLint.map { config ->
-      NxLintConfiguration(this, config, null)
-    }*/
-
     override val type: AngularProjectType?
         get() = null
 
@@ -171,4 +123,7 @@ internal class NxLegacyProjectImpl(
                 ?: rootDir.findFileByRelativePath(it)
         }
     }
+
+    override val architect: Map<String, Architect>
+        get() = emptyMap()
 }

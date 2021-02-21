@@ -4,6 +4,7 @@ import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
+import com.github.iguissouma.nxconsole.execution.NxGeneratorsUiPanel
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.openapi.actionSystem.AnAction
@@ -38,7 +39,7 @@ class NxNewGenerateAction(
         if (projectArgument != null) {
             args.add(projectArgument)
         }
-        val vFile = DefaultNxUiFile("Generate.nx", NxUiPanel(project, schematic, args))
+        val vFile = DefaultNxUiFile("Generate.nx", NxGeneratorsUiPanel(project, schematic, args))
         val fem = FileEditorManager.getInstance(project)
         // close file if isOpened to display another schematic
         if (fem.isFileOpen(vFile)) {

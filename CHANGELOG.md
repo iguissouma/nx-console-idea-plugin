@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.21.0] - 2021-02-21
+### Added
+- Add Nx UI tasks
 ## [0.20.0] - 2021-02-09
 ### Added
 - Remove AngularJS plugin dependency

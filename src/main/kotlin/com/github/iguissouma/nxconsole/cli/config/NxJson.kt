@@ -48,7 +48,7 @@ internal class AngularJsonProject {
 
     @JsonProperty("targets")
     @JsonAlias(value = ["architect"])
-    val targets: AngularJsonTargets? = null
+    val architect:  Map<String, NxProject.Architect> = emptyMap()
 }
 
 internal class AngularJsonTargets {

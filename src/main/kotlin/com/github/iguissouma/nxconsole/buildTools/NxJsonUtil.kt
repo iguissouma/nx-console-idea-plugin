@@ -95,7 +95,7 @@ object NxJsonUtil {
 
     private fun findArchitectOrTargetsProperty(
         property: JsonProperty?
-    ): @Nullable JsonProperty? {
+    ): JsonProperty? {
         val jsonObject: JsonObject = property?.value as? JsonObject ?: return null
         return jsonObject.findProperty("targets") ?: return jsonObject.findProperty("architect")
     }

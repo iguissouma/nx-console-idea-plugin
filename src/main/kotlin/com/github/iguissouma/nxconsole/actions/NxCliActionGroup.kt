@@ -44,7 +44,8 @@ class NxCliActionGroup : ActionGroup(
                             virtualFile,
                             it.name,
                             it.name,
-                            NxIcons.NRWL_ICON
+                            if (it.type == NxProject.AngularProjectType.APPLICATION) NxIcons.NX_APP_FOLDER
+                            else NxIcons.NX_LIB_FOLDER
                         )
                     }.toTypedArray()
                 }

@@ -186,10 +186,11 @@ class NxBuildersUiPanel(
 
     var builderOptions = listOf<NxBuilderOptions>()
 
+    val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+
     init {
 
         centerPanel = createCenterPanel()
-        val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
 
         builderOptions = runInEdtAndGet {
             NxCliBuildersRegistryService.getInstance()
@@ -240,39 +241,33 @@ class NxBuildersUiPanel(
 
             override fun update(e: AnActionEvent) {
                 val project = e.project ?: return
+                nxConfig ?: return
                 val presentation = e.presentation
                 presentation.isEnabled = isEnabled
                 presentation.text = this@NxBuildersUiPanel.target
                 templatePresentation.text = this@NxBuildersUiPanel.target
+                val t = nxConfig.projects.first { it.name == target }
+                presentation.icon =
+                    if (t.type == NxProject.AngularProjectType.APPLICATION) NxIcons.NX_APP_FOLDER
+                    else NxIcons.NX_LIB_FOLDER
                 super.update(e)
-            }
-
-            private inner class ChangeTargetAction constructor(val target: String) : DumbAwareAction() {
-
-                override fun actionPerformed(e: AnActionEvent) {
-                }
-
-                init {
-                    templatePresentation.setText(target)
-                }
-            }
-
-            inner class OptionAction<T>(val value: T, name: String, val set: (T) -> Unit) : DumbAwareAction(name) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    set(value)
-                }
             }
 
             override fun createPopupActionGroup(button: JComponent?): DefaultActionGroup {
                 val group = DefaultActionGroup()
-                val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return group
-
+                if (nxConfig == null) {
+                    return group
+                }
                 nxConfig.projects.filter { it.architect.containsKey(command) }.forEach {
                     group.add(
-                        object : DumbAwareAction(it.name) {
+                        object : DumbAwareAction(
+                            it.name,
+                            it.name,
+                            if (it.type == NxProject.AngularProjectType.APPLICATION) NxIcons.NX_APP_FOLDER
+                            else NxIcons.NX_LIB_FOLDER
+                        ) {
 
                             override fun actionPerformed(e: AnActionEvent) {
-                                println(it.name)
                                 selectTarget(it.name)
                                 centerPanel = this@NxBuildersUiPanel.createCenterPanel()
 

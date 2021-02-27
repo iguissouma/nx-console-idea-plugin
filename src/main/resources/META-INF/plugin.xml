@@ -99,6 +99,13 @@
             </action>
         </group>
 
+        <action id="nx.refactoring.delete" class="com.github.iguissouma.nxconsole.actions.NxDeleteLibOrAppAction"
+                text="Remove Nx App or Lib">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+        </action>
+
         <!--NxShowAffectedAction-->
         <action id="ShowAffectedAction" class="com.github.iguissouma.nxconsole.actions.NxShowAffectedAction"
                 text="Nx Show Affected">

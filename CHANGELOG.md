@@ -2,6 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.22.0] - 2021-02-28
+### Added
+- Add Nx remove Library or App Action
 ## [0.21.0] - 2021-02-21
 ### Added
 - Add Nx UI tasks

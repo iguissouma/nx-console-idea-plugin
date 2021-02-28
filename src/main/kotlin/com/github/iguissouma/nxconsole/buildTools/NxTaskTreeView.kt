@@ -119,7 +119,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
 
     override fun getPresentableTaskName(node: DefaultMutableTreeNode): String? {
         val script = NxTask.getUserObject(node)
-        return script?.name
+        return script?.name ?: node.userObject as? String
     }
 
     override fun createTaskSetFromSelectedNodes(): JsbtTaskSet? {

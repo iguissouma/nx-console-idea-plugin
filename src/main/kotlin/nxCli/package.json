@@ -4,7 +4,8 @@
   "dependencies": {
     "@angular/cli": "11.0.0-rc.2",
     "@types/node": "~12.12.5",
-    "typescript": "~3.6.4"
+    "typescript": "~3.6.4",
+    "@nrwl/workspace": "^11.5.1"
   },
   "scripts": {
     "build": "tsc"

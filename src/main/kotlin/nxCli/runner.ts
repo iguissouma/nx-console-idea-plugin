@@ -1,6 +1,6 @@
 import * as path from "path";
 
-rerouteModulesToProject("@nrwl/cli", "@angular-devkit/core", "@angular-devkit/schematics", "json5");
+rerouteModulesToProject("@nrwl/workspace", "@nrwl/cli", "@angular-devkit/core", "@angular-devkit/schematics", "json5");
 
 const projectLocation = path.dirname(process.argv[2]);
 const scriptToRun = process.argv[3];

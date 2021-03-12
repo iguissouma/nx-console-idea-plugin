@@ -141,5 +141,9 @@
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </group>
 
+        <action id="NxLoadUnloadModules" class="com.github.iguissouma.nxconsole.actions.NxLoadUnloadModulesAction">
+            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
+        </action>
+
     </actions>
 </idea-plugin>

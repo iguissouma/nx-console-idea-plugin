@@ -122,8 +122,7 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
         loadedModulesTree.fillTree(moduleDescriptions.values.filter { it.name in loadedModules })
         unloadedModulesTree.fillTree(moduleDescriptions.values.filter { it.name in unloadedModules })
         if (selectedModuleName != null) {
-            initiallyFocusedTree = loadedModulesTree
-            if (selectedModuleName in loadedModules) unloadedModulesTree else loadedModulesTree
+            initiallyFocusedTree = if (selectedModuleName in unloadedModules) unloadedModulesTree else loadedModulesTree
             initiallyFocusedTree.selectNodes(setOf(selectedModuleName))
         } else {
             initiallyFocusedTree = loadedModulesTree

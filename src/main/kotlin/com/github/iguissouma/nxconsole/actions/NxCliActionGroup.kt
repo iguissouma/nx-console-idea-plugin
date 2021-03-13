@@ -1,19 +1,12 @@
 package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
-import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
-import com.github.iguissouma.nxconsole.cli.config.NxProjectImpl
-import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
-import com.github.iguissouma.nxconsole.execution.NxUiPanel
-import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.util.containers.toArray
 
 class NxCliActionGroup : ActionGroup(
     "Nx Task (Ui)...",
@@ -26,8 +19,8 @@ class NxCliActionGroup : ActionGroup(
         val virtualFile = event.getData(LangDataKeys.VIRTUAL_FILE) ?: project.baseDir
         val nxConfig = NxConfigProvider.getNxConfig(project, virtualFile) ?: return emptyArray()
         return listOf(
-            //"Generate",
-            //"Run",
+            // "Generate",
+            // "Run",
             "Build",
             "Serve",
             "Test",

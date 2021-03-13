@@ -58,7 +58,7 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
         @JsonAlias(value = ["executor"])
         val builder: String? = null
         val description: String? = null
-        //val configurations: List<ArchitectConfiguration> = emptyList()
+        // val configurations: List<ArchitectConfiguration> = emptyList()
         val configurations: Map<String, Any> = emptyMap()
         val options: Map<String, Any> = emptyMap()
     }
@@ -73,11 +73,9 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
         val defaultValue: String? = null
     }
 
-
     class Option {
         val name: String? = null
         val description: String? = null
-
     }
 }
 
@@ -100,7 +98,7 @@ internal class NxProjectImpl(
         get() = ngProject.architect
 }
 
-internal class NxLegacyProjectImpl (
+internal class NxLegacyProjectImpl(
     private val angularJson: AngularJson,
     private val app: AngularJsonLegacyApp,
     angularCliFolder: VirtualFile,

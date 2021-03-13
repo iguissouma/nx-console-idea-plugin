@@ -17,7 +17,6 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ObjectUtils
 import org.jetbrains.annotations.Contract
-import org.jetbrains.annotations.Nullable
 
 object NxJsonUtil {
 

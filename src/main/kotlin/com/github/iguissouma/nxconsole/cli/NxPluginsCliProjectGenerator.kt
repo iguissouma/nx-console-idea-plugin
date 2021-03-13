@@ -20,17 +20,14 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ProjectGeneratorPeer
-import com.intellij.ui.components.JBTextField
 import com.intellij.util.PathUtil
 import com.intellij.util.ui.UIUtil
+import java.awt.BorderLayout
 import java.io.File
 import javax.swing.Icon
-import javax.swing.JPanel
-import java.awt.BorderLayout
-
 import javax.swing.JComponent
+import javax.swing.JPanel
 import javax.swing.JTextField
-
 
 class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
     private val LOG = Logger.getInstance(NxPluginsCliProjectGenerator::class.java)
@@ -38,7 +35,6 @@ class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
     private val PACKAGE_NAME = "create-nx-plugin"
     private val COMMAND = "create-nx-plugin"
     private val NX_PLUGIN_NAME_KEY = Key.create<String>("nx.project.generator.plugin.name")
-
 
     override fun getName(): String {
         return NxBundle.message("nx.plugins.project.generator.name")
@@ -105,7 +101,8 @@ class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
             override fun createPanel(): JPanel {
                 val panel = super.createPanel()
                 val component = LabeledComponent.create(
-                    pluginNameTextField, NxBundle.message("nx.plugins.project.generator.plugin.name")
+                    pluginNameTextField,
+                    NxBundle.message("nx.plugins.project.generator.plugin.name")
                 )
                 component.anchor = panel.getComponent(0) as JComponent
                 component.labelLocation = BorderLayout.WEST
@@ -118,7 +115,8 @@ class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
                 settingsStep.addSettingsField(
                     UIUtil.replaceMnemonicAmpersand(
                         NxBundle.message("nx.plugins.project.generator.plugin.name")
-                    ), pluginNameTextField
+                    ),
+                    pluginNameTextField
                 )
             }
 
@@ -134,5 +132,4 @@ class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
         super.onGettingSmartAfterProjectGeneration(project, baseDir)
         CreateRunConfigurationUtil.npmConfiguration(project, "start")
     }
-
 }

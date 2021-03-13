@@ -58,20 +58,16 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreePath
 
-
 class NxModuleDescription(val myName: String, val myDependencyModuleNames: MutableList<String> = mutableListOf()) :
     ModuleDescription {
     override fun getName(): String {
         return this.myName
     }
 
-
     override fun getDependencyModuleNames(): MutableList<String> {
         return this.myDependencyModuleNames
     }
-
 }
-
 
 class NxConfigureUnloadedModulesDialog(private val project: Project, selectedModuleName: String?) :
     DialogWrapper(project) {
@@ -131,15 +127,19 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     }
 
     private fun buildGraph(): Graph<NxModuleDescription> {
-        return GraphGenerator.generate(CachingSemiGraph.cache(object : InboundSemiGraph<NxModuleDescription> {
-            override fun getNodes(): Collection<NxModuleDescription> {
-                return moduleDescriptions.values
-            }
+        return GraphGenerator.generate(
+            CachingSemiGraph.cache(
+                object : InboundSemiGraph<NxModuleDescription> {
+                    override fun getNodes(): Collection<NxModuleDescription> {
+                        return moduleDescriptions.values
+                    }
 
-            override fun getIn(node: NxModuleDescription): Iterator<NxModuleDescription> {
-                return node.dependencyModuleNames.asIterable().mapNotNull { moduleDescriptions[it] }.iterator()
-            }
-        }))
+                    override fun getIn(node: NxModuleDescription): Iterator<NxModuleDescription> {
+                        return node.dependencyModuleNames.asIterable().mapNotNull { moduleDescriptions[it] }.iterator()
+                    }
+                }
+            )
+        )
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -185,7 +185,7 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
         mainPanel.add(treesPanel, BorderLayout.CENTER)
         statusLabel.text = XmlStringUtil.wrapInHtml(NxBundle.message("nx.module.unloaded.explanation"))
         mainPanel.add(statusLabel, BorderLayout.SOUTH)
-        //current label text looks better when it's split on 2.5 lines, so set size of the whole component accordingly
+        // current label text looks better when it's split on 2.5 lines, so set size of the whole component accordingly
         mainPanel.preferredSize = Dimension(
             Math.max(treesPanel.preferredSize.width, statusLabel.preferredSize.width * 2 / 5),
             treesPanel.preferredSize.height
@@ -195,12 +195,15 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
 
     private fun moveToLoaded() {
         val modulesToMove = includeMissingModules(
-            unloadedModulesTree.getSelectedModules(), loadedModulesTree.getAllModules(),
+            unloadedModulesTree.getSelectedModules(),
+            loadedModulesTree.getAllModules(),
             GraphAlgorithms.getInstance().invertEdgeDirections(dependentsGraph),
             NxBundle.message("nx.module.load.dependencies.dialog.title"),
             { selectedSize, additionalSize, additionalFirst ->
                 NxBundle.message(
-                    "nx.module.load.dependencies.dialog.text", selectedSize, additionalSize,
+                    "nx.module.load.dependencies.dialog.text",
+                    selectedSize,
+                    additionalSize,
                     additionalFirst
                 )
             },
@@ -212,12 +215,15 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
 
     private fun moveToUnloaded() {
         val modulesToMove = includeMissingModules(
-            loadedModulesTree.getSelectedModules(), unloadedModulesTree.getAllModules(),
+            loadedModulesTree.getSelectedModules(),
+            unloadedModulesTree.getAllModules(),
             dependentsGraph,
             NxBundle.message("nx.module.unload.dependents.dialog.title"),
             { selectedSize, additionalSize, additionalFirst ->
                 NxBundle.message(
-                    "nx.module.unload.dependents.dialog.text", selectedSize, additionalSize,
+                    "nx.module.unload.dependents.dialog.text",
+                    selectedSize,
+                    additionalSize,
                     additionalFirst
                 )
             },
@@ -228,16 +234,24 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     }
 
     private fun includeMissingModules(
-        selected: List<NxModuleDescription>, availableTargetModules: List<NxModuleDescription>,
+        selected: List<NxModuleDescription>,
+        availableTargetModules: List<NxModuleDescription>,
         dependenciesGraph: Graph<NxModuleDescription>,
-        dialogTitle: String, dialogMessage: (Int, Int, String) -> String, yesButtonText: String,
+        dialogTitle: String,
+        dialogMessage: (Int, Int, String) -> String,
+        yesButtonText: String,
         noButtonText: String
     ): Collection<NxModuleDescription> {
         val additional = computeDependenciesToMove(selected, availableTargetModules, dependenciesGraph)
         if (additional.isNotEmpty()) {
             val answer = Messages.showYesNoCancelDialog(
-                project, dialogMessage(selected.size, additional.size, additional.first().name),
-                dialogTitle, yesButtonText, noButtonText, CommonBundle.getCancelButtonText(), null
+                project,
+                dialogMessage(selected.size, additional.size, additional.first().name),
+                dialogTitle,
+                yesButtonText,
+                noButtonText,
+                CommonBundle.getCancelButtonText(),
+                null
             )
             if (answer == Messages.YES) {
                 return selected + additional
@@ -250,7 +264,8 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     }
 
     private fun computeDependenciesToMove(
-        modulesToMove: Collection<NxModuleDescription>, availableModules: Collection<NxModuleDescription>,
+        modulesToMove: Collection<NxModuleDescription>,
+        availableModules: Collection<NxModuleDescription>,
         graph: Graph<NxModuleDescription>
     ): Set<NxModuleDescription> {
         val result = LinkedHashSet<NxModuleDescription>()
@@ -291,9 +306,9 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     }
 
     override fun doOKAction() {
-        //ModuleManager.getInstance(project).setUnloadedModules(unloadedModulesTree.getAllModules().map { it.name })
+        // ModuleManager.getInstance(project).setUnloadedModules(unloadedModulesTree.getAllModules().map { it.name })
         ModuleManager.getInstance(project).modules.firstOrNull()?.run {
-            //val module: Module? = ModuleUtilCore.findModuleForFile(virtualFile, project)
+            // val module: Module? = ModuleUtilCore.findModuleForFile(virtualFile, project)
             /* ModuleRootModificationUtil.updateExcludedFolders(
                  this,
                  project.baseDir,
@@ -346,7 +361,7 @@ private class NxModuleDescriptionsTree(project: Project) {
     private val root = RootNode()
     private val model = DefaultTreeModel(root)
 
-    //private val helper = createModuleDescriptionHelper(project)
+    // private val helper = createModuleDescriptionHelper(project)
     internal val tree = Tree(model)
 
     init {
@@ -373,7 +388,8 @@ private class NxModuleDescriptionsTree(project: Project) {
         object : DoubleClickListener() {
             override fun onDoubleClick(event: MouseEvent): Boolean {
                 if (tree.selectionPaths?.all { (it?.lastPathComponent as? NxModuleDescriptionTreeNode)?.isLeaf == true }
-                        ?: false) {
+                    ?: false
+                ) {
                     action()
                     return true
                 }
@@ -384,18 +400,21 @@ private class NxModuleDescriptionsTree(project: Project) {
 
     private fun getAllModulesUnder(node: NxModuleDescriptionTreeNode): List<NxModuleDescription> {
         val modules = ArrayList<NxModuleDescription>()
-        TreeUtil.traverse(node, { node ->
-            if (node is NxModuleDescriptionNode) {
-                modules.add(node.moduleDescription)
+        TreeUtil.traverse(
+            node,
+            { node ->
+                if (node is NxModuleDescriptionNode) {
+                    modules.add(node.moduleDescription)
+                }
+                return@traverse true
             }
-            return@traverse true
-        })
+        )
         return modules
     }
 
     fun fillTree(modules: Collection<NxModuleDescription>) {
         removeAllNodes()
-        //helper.createModuleNodes(modules, root, model)
+        // helper.createModuleNodes(modules, root, model)
         modules.forEach {
             createModuleNode(it)
         }
@@ -406,7 +425,6 @@ private class NxModuleDescriptionsTree(project: Project) {
         val nxModuleDescriptionNode = NxModuleDescriptionNode(it)
         TreeUtil.insertNode(nxModuleDescriptionNode, root, model, nodeComparator)
         return nxModuleDescriptionNode
-
     }
 
     private fun expandRoot() {
@@ -421,7 +439,7 @@ private class NxModuleDescriptionsTree(project: Project) {
         val names = modules.mapTo(HashSet<String>()) { it.name }
         val toRemove = findNodes { it.moduleDescription.name in names }
         for (node in toRemove) {
-            //helper.removeNode(node, root, model)
+            // helper.removeNode(node, root, model)
             removeNode(node, root, model)
         }
         expandRoot()
@@ -433,12 +451,15 @@ private class NxModuleDescriptionsTree(project: Project) {
 
     private fun findNodes(condition: (NxModuleDescriptionNode) -> Boolean): List<NxModuleDescriptionNode> {
         val result = ArrayList<NxModuleDescriptionNode>()
-        TreeUtil.traverse(root, { node ->
-            if (node is NxModuleDescriptionNode && condition(node)) {
-                result.add(node)
+        TreeUtil.traverse(
+            root,
+            { node ->
+                if (node is NxModuleDescriptionNode && condition(node)) {
+                    result.add(node)
+                }
+                return@traverse true
             }
-            return@traverse true
-        })
+        )
         return result
     }
 
@@ -503,7 +524,7 @@ private val nodeComparator = compareBy(NaturalComparator.INSTANCE) { node: NxMod
 private interface NxModuleDescriptionTreeNode : MutableTreeNode {
     val text: String
     val icon: Icon
-    //val group: ModuleGroup?
+    // val group: ModuleGroup?
 }
 
 private class NxModuleDescriptionNode(val moduleDescription: NxModuleDescription/*, val moduleGrouper: ModuleGrouper*/) :
@@ -543,7 +564,6 @@ private class RootNode : DefaultMutableTreeNode(), NxModuleDescriptionTreeNode {
         get() = null*/
 }
 
-
 private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
 private val LOG: Logger = Logger.getInstance("#NxConfigureUnloadedModulesDialog.kt")
 
@@ -570,13 +590,13 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
             if (myLogErrors.get()) {
                 LOG.error(
                     "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr),
+                        shortenOutput(output.stderr),
                     Attachment("err-output", output.stderr)
                 )
             } else {
                 LOG.info(
                     "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr)
+                        shortenOutput(output.stderr)
                 )
             }
         }
@@ -584,14 +604,14 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
     } else if (myLogErrors.get()) {
         LOG.error(
             "Failed to load schematics info.\n" +
-                    shortenOutput(output.stderr),
+                shortenOutput(output.stderr),
             Attachment("err-output", output.stderr),
             Attachment("std-output", output.stdout)
         )
     } else {
         LOG.info(
             "Error while loading schematics info.\n" +
-                    shortenOutput(output.stderr)
+                shortenOutput(output.stderr)
         )
     }
     return ""

@@ -29,8 +29,11 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         val nxProjectToRemove = nxConfig.projects.firstOrNull { it.rootDir == appOrLibDirectory } ?: return
         val message = "Are you sure you want to remove ${ nxProjectToRemove.type?.name?.toLowerCase()?.capitalize() } ''${nxProjectToRemove.name}'' from the workspace?"
         val returnValue = Messages.showOkCancelDialog(
-            message, UIBundle.message("delete.dialog.title"), ApplicationBundle.message("button.delete"),
-            CommonBundle.getCancelButtonText(), Messages.getQuestionIcon()
+            message,
+            UIBundle.message("delete.dialog.title"),
+            ApplicationBundle.message("button.delete"),
+            CommonBundle.getCancelButtonText(),
+            Messages.getQuestionIcon()
         )
         if (returnValue != Messages.OK) return
         val modules: MutableList<CompletionModuleInfo> = mutableListOf()

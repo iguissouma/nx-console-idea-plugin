@@ -1,7 +1,10 @@
 package com.github.iguissouma.nxconsole.builders
 
 import com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.ProcessOutput
+import com.intellij.execution.util.ExecUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
@@ -10,18 +13,9 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import java.io.File
-import com.intellij.execution.util.ExecUtil
-import com.intellij.execution.ExecutionException;
-
-import com.intellij.execution.process.ProcessOutput
-
 import com.intellij.util.concurrency.AppExecutorUtil
-
+import java.io.File
 import java.util.concurrent.CompletableFuture
-
-
-
 
 private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
 private val LOG: Logger = Logger.getInstance("#NxSchematicsLoader.kt")
@@ -48,7 +42,7 @@ fun doLoad(project: Project, cli: VirtualFile, builderName: String, logErrors: B
         }
     }
 
-    return parse.toList()//.sortedBy { it.name }
+    return parse.toList() // .sortedBy { it.name }
 }
 
 class NxBuilderOptions {
@@ -64,8 +58,6 @@ class NxBuilderOptions {
     override fun toString(): String {
         return "NxBuilderOptions(name='$name', description='$description', type='$type', required=$required, aliases=$aliases, hidden=$hidden)"
     }
-
-
 }
 
 private fun loadBuildersInfoJson(
@@ -92,13 +84,13 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
             if (myLogErrors.get()) {
                 LOG.error(
                     "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr),
+                        shortenOutput(output.stderr),
                     Attachment("err-output", output.stderr)
                 )
             } else {
                 LOG.info(
                     "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr)
+                        shortenOutput(output.stderr)
                 )
             }
         }
@@ -106,14 +98,14 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
     } else if (myLogErrors.get()) {
         LOG.error(
             "Failed to load schematics info.\n" +
-                    shortenOutput(output.stderr),
+                shortenOutput(output.stderr),
             Attachment("err-output", output.stderr),
             Attachment("std-output", output.stdout)
         )
     } else {
         LOG.info(
             "Error while loading schematics info.\n" +
-                    shortenOutput(output.stderr)
+                shortenOutput(output.stderr)
         )
     }
     return ""

@@ -6,7 +6,6 @@ import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import one.util.streamex.StreamEx
 
 @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
 @Deprecated("Use AngularConfigProvider instead")

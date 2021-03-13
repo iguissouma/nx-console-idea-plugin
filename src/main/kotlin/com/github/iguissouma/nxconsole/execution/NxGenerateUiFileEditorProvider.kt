@@ -18,6 +18,10 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.diff.util.FileEditorBase
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
+import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.icons.AllIcons
 import com.intellij.ide.FileIconProvider
 import com.intellij.ide.actions.SplitAction
@@ -80,20 +84,13 @@ import javax.swing.Icon
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JSpinner
 import javax.swing.JTextField
 import javax.swing.LayoutFocusTraversalPolicy
 import javax.swing.border.EmptyBorder
-import javax.swing.event.DocumentEvent
-import com.intellij.execution.executors.DefaultRunExecutor
-
-import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.executors.DefaultDebugExecutor
-
-import com.intellij.execution.runners.ExecutionUtil
-import javax.swing.JSpinner
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
-
+import javax.swing.event.DocumentEvent
 
 class NxUiIconProvider : FileIconProvider {
     override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? = (file as? NxUiFile)?.fileType?.icon
@@ -159,12 +156,12 @@ internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(ta
     }
 }
 
-open class NxUiPanel(val project: Project, args: MutableList<String>) : JPanel(BorderLayout()),
+open class NxUiPanel(val project: Project, args: MutableList<String>) :
+    JPanel(BorderLayout()),
     Disposable {
 
     var centerPanel: DialogPanel? = null
     override fun dispose() {
-
     }
 }
 
@@ -196,10 +193,10 @@ class NxBuildersUiPanel(
             NxCliBuildersRegistryService.getInstance()
                 .readBuilderSchema(
                     project,
-                    nxConfig?.angularJsonFile!!, architect.builder!!
+                    nxConfig?.angularJsonFile!!,
+                    architect.builder!!
                 ) ?: emptyList()
         }
-
 
         centerPanel = createCenterPanel()
 
@@ -218,7 +215,7 @@ class NxBuildersUiPanel(
                 val runnerAndConfigurationSettings: RunnerAndConfigurationSettings = runnerAndConfigurationSettings()
                 runManager.selectedConfiguration = runnerAndConfigurationSettings
                 val executor: Executor = DefaultRunExecutor.getRunExecutorInstance()
-                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor);
+                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor)
             }
         }
 
@@ -233,7 +230,7 @@ class NxBuildersUiPanel(
                 val runnerAndConfigurationSettings: RunnerAndConfigurationSettings = runnerAndConfigurationSettings()
                 runManager.selectedConfiguration = runnerAndConfigurationSettings
                 val executor: Executor = DefaultDebugExecutor.getDebugExecutorInstance()
-                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor);
+                ExecutionUtil.runConfiguration(runnerAndConfigurationSettings, executor)
             }
         }
 
@@ -275,7 +272,7 @@ class NxBuildersUiPanel(
                                 this@NxBuildersUiPanel.mainPanel?.add(JBScrollPane(centerPanel), BorderLayout.CENTER)
 
                                 (button as ComboBoxButton).text = it.name
-                                //this@NxBuildersUiPanel.modelUI = createModelUI()
+                                // this@NxBuildersUiPanel.modelUI = createModelUI()
                                 this@NxBuildersUiPanel.validate()
                                 this@NxBuildersUiPanel.repaint()
                             }
@@ -360,7 +357,7 @@ class NxBuildersUiPanel(
     private fun computeArgsFromModelUi(): List<String> {
         return modelUI
             .filterKeys { it !in ignoredOptions() }
-            .filterValues {(it is Number) or (it is Boolean && it) or (it is String && it.isNotBlank()) }
+            .filterValues { (it is Number) or (it is Boolean && it) or (it is String && it.isNotBlank()) }
             .map {
                 if (it.value is Boolean) {
                     "--${it.key}"
@@ -370,9 +367,7 @@ class NxBuildersUiPanel(
             }
     }
 
-
     private fun ignoredOptions() = emptyList<String>()
-
 
     private fun LayoutBuilder.addRow(option: NxBuilderOptions) {
         row(option.takeIf { it.type == "string" || it.type == "number" || it.type == "array" }?.let { "${it.name}:" }) {
@@ -383,17 +378,17 @@ class NxBuildersUiPanel(
     private inline fun <T : JComponent> Row.buildComponentForOption(option: NxBuilderOptions) {
         when {
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                    "project".equals(
-                        option.name,
-                        ignoreCase = true
-                    ) || "projectName".equals(option.name, ignoreCase = true)
-                    ) -> buildProjectTextField(option)
+                "project".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "projectName".equals(option.name, ignoreCase = true)
+                ) -> buildProjectTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                    "path".equals(
-                        option.name,
-                        ignoreCase = true
-                    ) || "directory".equals(option.name, ignoreCase = true)
-                    ) -> buildDirectoryTextField(option)
+                "path".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "directory".equals(option.name, ignoreCase = true)
+                ) -> buildDirectoryTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
             (option.type?.toLowerCase() == "string" || option.type?.toLowerCase() == "enum") && option.enum.isNotEmpty() -> buildSelectField(
                 option
@@ -447,15 +442,17 @@ class NxBuildersUiPanel(
             editor = JSpinner.NumberEditor(this, "#")
         }
         if (option.default.isNotBlank()) {
-            option.default.toIntOrNull()?.run{
+            option.default.toIntOrNull()?.run {
                 spinner.value = this
             }
         }
-        spinner.addChangeListener(object : ChangeListener {
-            override fun stateChanged(e: ChangeEvent?) {
-                modelUI[option.name] = spinner.value ?: ""
+        spinner.addChangeListener(
+            object : ChangeListener {
+                override fun stateChanged(e: ChangeEvent?) {
+                    modelUI[option.name] = spinner.value ?: ""
+                }
             }
-        })
+        )
         spinner(comment = option.description)
     }
 
@@ -472,9 +469,9 @@ class NxBuildersUiPanel(
     private inline fun Row.buildTextField(option: NxBuilderOptions) {
         val jTextField = JBTextField()
         // jTextField.emptyText.text = option.description ?: ""
-        //option.default?.let {
+        // option.default?.let {
         // jTextField.text = it as? String ?: ""
-        //}
+        // }
         jTextField.text = modelUI[option.name] as? String ?: option.default
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {
@@ -516,8 +513,6 @@ class NxBuildersUiPanel(
 
         textField(comment = option.description, constraints = arrayOf(CCFlags.growX))
     }
-
-
 }
 
 class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: MutableList<String>) :
@@ -716,17 +711,17 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
     private inline fun <T : JComponent> Row.buildComponentForOption(option: Option) {
         when {
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                    "project".equals(
-                        option.name,
-                        ignoreCase = true
-                    ) || "projectName".equals(option.name, ignoreCase = true)
-                    ) -> buildProjectTextField(option)
+                "project".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "projectName".equals(option.name, ignoreCase = true)
+                ) -> buildProjectTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                    "path".equals(
-                        option.name,
-                        ignoreCase = true
-                    ) || "directory".equals(option.name, ignoreCase = true)
-                    ) -> buildDirectoryTextField(option)
+                "path".equals(
+                    option.name,
+                    ignoreCase = true
+                ) || "directory".equals(option.name, ignoreCase = true)
+                ) -> buildDirectoryTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
             option.type?.toLowerCase() == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
             option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
@@ -760,7 +755,7 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
         checkBox(
             text = option.name ?: "",
             comment = option.description ?: "",
-            isSelected = modelUI[key] as? Boolean ?:  option.default.toString().toBoolean(),
+            isSelected = modelUI[key] as? Boolean ?: option.default.toString().toBoolean(),
             // getter = { modelUI[key] as? Boolean ?: false },
             // setter = { modelUI[key] = it },
             actionListener = { e: ActionEvent, cb: JCheckBox -> modelUI[key] = !(modelUI[key] as? Boolean ?: false) }
@@ -780,9 +775,9 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
     private inline fun Row.buildTextField(option: Option) {
         val jTextField = JBTextField()
         // jTextField.emptyText.text = option.description ?: ""
-        //option.default?.let {
+        // option.default?.let {
         //    jTextField.text = it as? String ?: ""
-        //}
+        // }
         jTextField.text = modelUI[option.name] as? String ?: (option.default as String? ?: "")
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {

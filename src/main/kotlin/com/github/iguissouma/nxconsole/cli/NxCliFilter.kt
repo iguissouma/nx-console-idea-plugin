@@ -2,15 +2,17 @@ package com.github.iguissouma.nxconsole.cli
 
 import com.intellij.execution.filters.AbstractFileHyperlinkFilter
 import com.intellij.execution.filters.FileHyperlinkRawData
-import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.annotations.NonNls
 
-class NxCliFilter(project: Project?, baseDir: String?) : AbstractFileHyperlinkFilter(
-    project!!, baseDir
-), DumbAware {
+class NxCliFilter(project: Project?, baseDir: String?) :
+    AbstractFileHyperlinkFilter(
+        project!!,
+        baseDir
+    ),
+    DumbAware {
     override fun parse(line: String): List<FileHyperlinkRawData> {
         val create = parse(line, CREATE)
         return if (!create.isEmpty()) create else parse(line, UPDATE)

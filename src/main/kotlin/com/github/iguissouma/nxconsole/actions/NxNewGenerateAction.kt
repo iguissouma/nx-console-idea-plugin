@@ -5,7 +5,6 @@ import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
 import com.github.iguissouma.nxconsole.execution.NxGeneratorsUiPanel
-import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

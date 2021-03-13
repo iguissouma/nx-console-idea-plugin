@@ -2,6 +2,7 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.23.0]
 ## [0.23.0] - 2021-03-13
 ### Added
 - Add Nx Load/Unload App & Libs Action

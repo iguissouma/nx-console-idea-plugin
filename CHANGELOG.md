@@ -2,7 +2,9 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
-## [0.23.0]
+## [0.24.0]
+### Fixed
+- Fix loading generators in a React project
 ## [0.23.0] - 2021-03-13
 ### Added
 - Add Nx Load/Unload App & Libs Action

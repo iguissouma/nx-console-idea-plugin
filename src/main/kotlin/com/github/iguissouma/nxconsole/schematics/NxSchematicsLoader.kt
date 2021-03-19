@@ -52,7 +52,7 @@ private fun loadSchematicsInfoJson(
     if (includeHidden)
         commandLine.addParameter("--includeHidden")
     configurator.configure(commandLine)
-    return grabCommandOutput(commandLine, cli.parent.path)
+    return grabCommandOutput(commandLine, directory.path)
 }
 
 private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {

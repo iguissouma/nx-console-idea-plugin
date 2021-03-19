@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-rerouteModulesToProject("@nrwl/workspace", "@nrwl/cli", "@angular-devkit/core", "@angular-devkit/schematics", "json5");
+rerouteModulesToProject("@nrwl/workspace", "@nrwl/cli");
 const projectLocation = path.dirname(process.argv[2]);
 const scriptToRun = process.argv[3];
 //process.argv.splice(1, 2);

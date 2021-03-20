@@ -70,7 +70,7 @@ private fun loadBuildersInfoJson(
     val commandLine = GeneralCommandLine("", utilityExe, cli.path, "./buildersInfoProvider.js", builderName)
     // commandLine.addParameter(builderName)
     configurator.configure(commandLine)
-    return grabCommandOutput(commandLine, cli.parent.path)
+    return grabCommandOutput(commandLine, directory.path)
 }
 
 private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {

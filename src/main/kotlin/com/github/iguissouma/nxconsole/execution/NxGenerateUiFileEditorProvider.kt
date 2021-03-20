@@ -39,6 +39,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
+import com.intellij.openapi.application.Application
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditor
@@ -53,11 +55,11 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
-import com.intellij.testFramework.runInEdtAndGet
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.SideBorder
@@ -71,6 +73,7 @@ import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.LayoutBuilder
 import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.panel
+import com.intellij.util.ThrowableRunnable
 import com.intellij.util.ui.SwingHelper
 import com.intellij.vcs.log.impl.VcsLogContentUtil
 import com.intellij.vcs.log.impl.VcsLogTabsManager
@@ -79,6 +82,7 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.lang.Integer.min
+import java.lang.reflect.InvocationTargetException
 import javax.swing.DefaultComboBoxModel
 import javax.swing.Icon
 import javax.swing.JCheckBox
@@ -87,6 +91,7 @@ import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.JTextField
 import javax.swing.LayoutFocusTraversalPolicy
+import javax.swing.SwingUtilities
 import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
@@ -983,5 +988,67 @@ private class SchematicProjectCompletionProvider(options: List<NxProject>) :
 
     override fun getIcon(item: NxProject): Icon {
         return if (item.type == NxProject.AngularProjectType.APPLICATION) NxIcons.NX_APP_FOLDER else NxIcons.NX_LIB_FOLDER
+    }
+}
+
+
+class EdtTestUtil {
+    companion object {
+        @JvmStatic fun <V> runInEdtAndGet(computable: ThrowableComputable<V, Throwable>): V =
+            runInEdtAndGet { computable.compute() }
+
+        @JvmStatic fun runInEdtAndWait(runnable: ThrowableRunnable<Throwable>) {
+            runInEdtAndWait { runnable.run() }
+        }
+    }
+}
+
+/**
+ * Consider using Kotlin coroutines and `com.intellij.openapi.application.AppUIExecutor.onUiThread().coroutineDispatchingContext()`
+ * @see com.intellij.openapi.application.AppUIExecutor.onUiThread
+ */
+fun <V> runInEdtAndGet(compute: () -> V): V {
+    var v : V? = null
+    runInEdtAndWait { v = compute() }
+    return v!!
+}
+
+/**
+ * Consider using Kotlin coroutines and `com.intellij.openapi.application.AppUIExecutor.onUiThread().coroutineDispatchingContext()`
+ * @see com.intellij.openapi.application.AppUIExecutor.onUiThread
+ */
+fun runInEdtAndWait(runnable: () -> Unit) {
+    val app = ApplicationManager.getApplication()
+    if (app is Application) {
+        if (app.isDispatchThread) {
+            // reduce stack trace
+            runnable()
+        }
+        else {
+            var exception: Throwable? = null
+            app.invokeAndWait {
+                try {
+                    runnable()
+                }
+                catch (e: Throwable) {
+                    exception = e
+                }
+            }
+
+            exception?.let { throw it }
+        }
+        return
+    }
+
+    if (SwingUtilities.isEventDispatchThread()) {
+        runnable()
+    }
+    else {
+        try {
+            SwingUtilities.invokeAndWait { runnable() }
+        }
+        catch (e: InvocationTargetException) {
+            throw e.cause ?: e
+        }
     }
 }

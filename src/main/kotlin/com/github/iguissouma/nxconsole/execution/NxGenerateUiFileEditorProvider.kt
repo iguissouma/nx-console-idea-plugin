@@ -991,7 +991,6 @@ private class SchematicProjectCompletionProvider(options: List<NxProject>) :
     }
 }
 
-
 class EdtTestUtil {
     companion object {
         @JvmStatic fun <V> runInEdtAndGet(computable: ThrowableComputable<V, Throwable>): V =
@@ -1008,7 +1007,7 @@ class EdtTestUtil {
  * @see com.intellij.openapi.application.AppUIExecutor.onUiThread
  */
 fun <V> runInEdtAndGet(compute: () -> V): V {
-    var v : V? = null
+    var v: V? = null
     runInEdtAndWait { v = compute() }
     return v!!
 }
@@ -1023,14 +1022,12 @@ fun runInEdtAndWait(runnable: () -> Unit) {
         if (app.isDispatchThread) {
             // reduce stack trace
             runnable()
-        }
-        else {
+        } else {
             var exception: Throwable? = null
             app.invokeAndWait {
                 try {
                     runnable()
-                }
-                catch (e: Throwable) {
+                } catch (e: Throwable) {
                     exception = e
                 }
             }
@@ -1042,12 +1039,10 @@ fun runInEdtAndWait(runnable: () -> Unit) {
 
     if (SwingUtilities.isEventDispatchThread()) {
         runnable()
-    }
-    else {
+    } else {
         try {
             SwingUtilities.invokeAndWait { runnable() }
-        }
-        catch (e: InvocationTargetException) {
+        } catch (e: InvocationTargetException) {
             throw e.cause ?: e
         }
     }

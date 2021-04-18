@@ -60,8 +60,17 @@ class NxRunProfileState(
             commandLine.addParameter(getNxBinFile(this.nxPackage).absolutePath)
         }
 
-        commandLine.addParameters("run")
-        commandLine.addParameters(this.runSettings.tasks)
+        val tasks = this.runSettings.tasks
+        if (tasks.size >= 1) {
+            commandLine.addParameters("run-many")
+            val target = tasks.first().substringAfter(":")
+            commandLine.addParameter("--target=$target")
+            commandLine.addParameters("--projects=" + tasks.joinToString(",") { it.substringBefore(":") })
+        } else {
+            commandLine.addParameters("run")
+            commandLine.addParameters(tasks.firstOrNull() ?: "")
+        }
+
         commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
         envData.configureCommandLine(commandLine, true)
 

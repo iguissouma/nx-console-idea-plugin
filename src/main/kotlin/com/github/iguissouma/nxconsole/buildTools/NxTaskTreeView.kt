@@ -3,6 +3,8 @@ package com.github.iguissouma.nxconsole.buildTools
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findChildAngularJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findProjectProperty
+import com.github.iguissouma.nxconsole.cli.config.NxConfig
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.execution.PsiLocation
 import com.intellij.icons.AllIcons
 import com.intellij.json.psi.JsonObject
@@ -42,12 +44,21 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         }
         // buildfileTreeNode.add(generateAndRunTargetNode)
 
-        val nxCommonCommandTaskNode = DefaultMutableTreeNode("Common Nx Commands", true)
-        for (myScript in structure.myNxCommonCommandTask) {
-            val node = DefaultMutableTreeNode(myScript, false)
-            nxCommonCommandTaskNode.add(node)
+        val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+        // nxConfig?.projects?.map { it.name to it.architect.keys }
+        val groupByTasks = nxConfig?.projects?.flatMap { p -> p.architect.keys.map { it to p.name } }
+            ?.groupBy({ it.first }, { it.second })
+            ?.toSortedMap()
+
+        val tasksNode = DefaultMutableTreeNode("Tasks", true)
+        groupByTasks?.forEach {
+            val node = DefaultMutableTreeNode(it.key, true)
+            tasksNode.add(node)
+            it.value.forEach { e ->
+                node.add(DefaultMutableTreeNode(NxTask(structure, e), false))
+            }
         }
-        // buildfileTreeNode.add(nxCommonCommandTaskNode)
+        buildfileTreeNode.add(tasksNode)
 
         val nxProjectsTaskNode = DefaultMutableTreeNode("Projects", true)
         for (myScript: Map.Entry<String, List<NxTask>> in structure.myNxProjectsTask.entries) {
@@ -90,13 +101,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
             renderer.append(JsbtUtil.getRelativePath(project, structure.buildfile))
         } else if ("No scripts found" == node.userObject) {
             renderer.append("No scripts found", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-        } /*else if ("Generate And Run Target" == node.userObject) {
-      renderer.append("Generate And Run Target", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-    } else if ("Common Nx Commands" == node.userObject) {
-      renderer.append("Common Nx Commands", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-    } else if ("Projects" == node.userObject) {
-      renderer.append("Projects", SimpleTextAttributes.REGULAR_ATTRIBUTES)
-    } */ else {
+        } else {
             val script = NxTask.getUserObject(node)
             if (script != null) {
                 renderer.icon = AllIcons.Nodes.C_plocal
@@ -138,7 +143,11 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
                 }
                 resultStructure = structure
                 val parent = node.parent as DefaultMutableTreeNode
-                taskNames.add("${parent.userObject}:" + task.name)
+                if ((parent.parent as DefaultMutableTreeNode).userObject == "Tasks") {
+                    taskNames.add(task.name + ":${parent.userObject}")
+                } else {
+                    taskNames.add("${parent.userObject}:" + task.name)
+                }
             }
             return resultStructure?.let { JsbtTaskSet(it, taskNames) }
         }

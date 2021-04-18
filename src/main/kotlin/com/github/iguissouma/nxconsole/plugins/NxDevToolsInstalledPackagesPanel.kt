@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.util.ObjectUtils
 import com.intellij.webcore.packaging.InstalledPackagesPanel
+import com.intellij.webcore.packaging.ManagePackagesDialog
 import com.intellij.webcore.packaging.PackageManagementService
 import com.intellij.webcore.packaging.PackagesNotificationPanel
 import java.io.File
@@ -15,6 +16,12 @@ class NxDevToolsInstalledPackagesPanel(myProject: Project, myPackagesNotificatio
 
     init {
         myPackagesTable.setShowGrid(false)
+    }
+
+    override fun createManagePackagesDialog(): ManagePackagesDialog {
+        val createManagePackagesDialog = super.createManagePackagesDialog()
+        createManagePackagesDialog.setOptionsText("--save-dev --save-exact")
+        return createManagePackagesDialog
     }
 
     override fun updatePackages(packageManagementService: PackageManagementService?) {

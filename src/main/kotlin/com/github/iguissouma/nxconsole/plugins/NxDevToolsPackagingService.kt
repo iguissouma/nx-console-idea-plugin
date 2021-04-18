@@ -129,7 +129,7 @@ class NxDevToolsPackagingService(
                     version,
                     VfsUtilCore.virtualToIoFile(baseDir),
                     listener!!,
-                    extraOptions
+                    extraOptions ?: "--save-dev --save-exact"
                 )
             )
         }

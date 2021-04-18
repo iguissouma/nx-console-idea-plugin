@@ -64,6 +64,10 @@ class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {
             ?: emptyList()
     }
 
+    override fun clearProjectSchematicsCache() {
+        SCHEMATICS_CACHE_TRACKER.incModificationCount()
+    }
+
     private fun getCachedSchematics(dataHolder: UserDataHolder, key: Key<CachedSchematics>): CachedSchematics {
         var result = dataHolder.getUserData(key)
         if (result != null) {

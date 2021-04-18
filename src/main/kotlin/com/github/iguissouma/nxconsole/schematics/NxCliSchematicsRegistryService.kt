@@ -27,6 +27,11 @@ interface NxCliSchematicsRegistryService {
         return getSchematics(project, cliFolder, false, false)
     }
 
+    /**
+     * Clears cache for getSchematics method
+     */
+    fun clearProjectSchematicsCache()
+
     companion object {
         fun getInstance(): NxCliSchematicsRegistryService {
             return ApplicationManager.getApplication().getService(NxCliSchematicsRegistryService::class.java)

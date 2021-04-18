@@ -3,7 +3,6 @@ package com.github.iguissouma.nxconsole.buildTools
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findChildAngularJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findProjectProperty
-import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.execution.PsiLocation
 import com.intellij.icons.AllIcons

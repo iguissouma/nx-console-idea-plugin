@@ -115,6 +115,14 @@
             <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
         </action>
 
+        <!--NxReloadSchematicsAction-->
+        <!--<action id="NxReloadSchematicsAction" class="com.github.iguissouma.nxconsole.actions.NxReloadSchematicsAction"
+                text="Nx Reload Schematics">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+        </action>-->
+
        <!--plugins-->
         <action id="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction"
                 class="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction" text="Nx Plugins"

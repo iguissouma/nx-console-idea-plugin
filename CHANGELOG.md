@@ -2,6 +2,12 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.25.0] - 2021-04-18
+### Added
+- Add Grouped tasks in Nx tree view
+- Add Install plugins as devDependencies by default
+### Fixed
+- Fix loading generators in New context menu after adding new one
 ## [0.24.0]
 ## [0.24.0]
 ### Fixed

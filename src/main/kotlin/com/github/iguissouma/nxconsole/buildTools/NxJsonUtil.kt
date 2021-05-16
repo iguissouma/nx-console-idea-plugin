@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.buildTools
 
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonProperty
@@ -64,26 +65,21 @@ object NxJsonUtil {
         } else {
             val structure = NxFileStructure(nxJson)
             val angularJsonFile = findChildAngularJsonFile(nxJson.parent)
-            val nxProjectsProperty = findProjectsProperty(project, nxJson)
             if (angularJsonFile == null) {
                 structure
             } else {
-                val angularProjectsProperty = angularJsonFile.let { findProjectsProperty(project, it) }
-                val projectsFromAngular = ObjectUtils.tryCast(angularProjectsProperty?.value, JsonObject::class.java)
-                val projectsFromNx = ObjectUtils.tryCast(nxProjectsProperty?.value, JsonObject::class.java)
-                if (projectsFromNx != null && projectsFromAngular != null) {
-                    val propertyList = projectsFromNx.propertyList
-                    structure.myNxProjectsTask = propertyList.map { it.name }
-                        .map { it to projectsFromAngular.findProperty(it) }
-                        .map { it.first to findArchitectOrTargetsProperty(it.second) }
-                        .map {
-                            it.first to (
-                                (it.second?.value as? JsonObject)?.propertyList?.map { property ->
-                                    NxTask(structure, property.name)
-                                }?.toList() ?: listOf()
-                                )
-                        }.toMap()
-                }
+                val nxConfig = NxConfigProvider.getNxConfig(project, nxJson)
+                structure.myNxProjectsTask = nxConfig?.projects?.map { nxProject ->
+                    nxProject.name to nxProject.architect.keys.flatMap { task ->
+                        listOf(NxTask(
+                            structure,
+                            task
+                        )).plus(nxProject.architect[task]?.configurations?.keys?.map { NxTask(
+                            structure,
+                            "$task:$it"
+                        ) } ?: emptyList())
+                    }
+                }?.toMap() ?: emptyMap()
                 val listOf = listOf("Generate & Run Target", "Common Nx Commands", "Projects")
                 val scripts = listOf.map { NxTask(structure, it) }.toList()
                 structure.setScripts(scripts)

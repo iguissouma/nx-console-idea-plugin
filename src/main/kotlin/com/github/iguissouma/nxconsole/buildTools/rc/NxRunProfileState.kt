@@ -61,7 +61,7 @@ class NxRunProfileState(
         }
 
         val tasks = this.runSettings.tasks
-        if (tasks.size >= 1) {
+        if (tasks.size > 1) {
             commandLine.addParameters("run-many")
             val target = tasks.first().substringAfter(":")
             commandLine.addParameter("--target=$target")

@@ -49,31 +49,67 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
                         // findContainingProjectProperty(element)
                         // TODO check when it's not JsonStringLiteral
-                        val taskPropertyLiteral = element.parent as? JsonStringLiteral ?: return null
-                        val architectJsonObject = PsiTreeUtil.getParentOfType(
-                            taskPropertyLiteral,
-                            JsonObject::class.java
-                        )
-                        val projectJsonObject = PsiTreeUtil.getParentOfType(
-                            architectJsonObject,
-                            JsonObject::class.java
-                        ) ?: return null
-                        val projectProperty = PsiTreeUtil.getParentOfType(
-                            projectJsonObject,
-                            JsonProperty::class.java,
-                            false
-                        ) ?: return null
-
-                        val setting = NxRunSettings(
-                            nxFilePath = findChildNxJsonFile.path,
-                            tasks = listOf(
-                                "${projectProperty.name}:${
-                                taskPropertyLiteral.value
-                                }"
+                        val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
+                        if (NxJsonUtil.isChildOfTargetsProperty(propertyLiteral.parent as JsonProperty)) {
+                            val architectJsonObject = PsiTreeUtil.getParentOfType(
+                                propertyLiteral,
+                                JsonObject::class.java
                             )
-                        )
-                        sourceElement?.set(element)
-                        setting
+                            val projectJsonObject = PsiTreeUtil.getParentOfType(
+                                architectJsonObject,
+                                JsonObject::class.java
+                            ) ?: return null
+                            val projectProperty = PsiTreeUtil.getParentOfType(
+                                projectJsonObject,
+                                JsonProperty::class.java,
+                                false
+                            ) ?: return null
+
+                            val setting = NxRunSettings(
+                                nxFilePath = findChildNxJsonFile.path,
+                                tasks = listOf(
+                                    "${projectProperty.name}:${
+                                        propertyLiteral.value
+                                    }"
+                                )
+                            )
+                            sourceElement?.set(element)
+                            setting
+                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(propertyLiteral.parent as JsonProperty)) {
+                            val configurationJsonProperty = PsiTreeUtil.getParentOfType(
+                                propertyLiteral,
+                                JsonProperty::class.java
+                            )?: return null
+                            val configurationsJsonProperty = PsiTreeUtil.getParentOfType(
+                                configurationJsonProperty,
+                                JsonProperty::class.java
+                            )?: return null
+                            val architectJsonProperty = PsiTreeUtil.getParentOfType(
+                                configurationsJsonProperty,
+                                JsonProperty::class.java
+                            )?: return null
+                            val projectJsonProperty = PsiTreeUtil.getParentOfType(
+                                architectJsonProperty.parent.parent,
+                                JsonProperty::class.java
+                            ) ?: return null
+
+                            val setting = NxRunSettings(
+                                nxFilePath = findChildNxJsonFile.path,
+                                tasks = listOf(
+                                    "${projectJsonProperty.name}:${
+                                        architectJsonProperty.name
+                                    }:${
+                                        configurationJsonProperty.name
+                                    }"
+                                )
+                            )
+                            sourceElement?.set(element)
+                            setting
+                        } else {
+                            null
+                        }
+
+
                     }
                 } else {
                     val virtualNxJson = psiNxJson.virtualFile

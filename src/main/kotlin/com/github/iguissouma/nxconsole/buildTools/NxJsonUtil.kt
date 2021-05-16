@@ -243,4 +243,13 @@ object NxJsonUtil {
         val parent = property.parent
         return parent != null && parent.parent is JsonFile
     }
+
+    fun isChildOfConfigurationsProperty(property: JsonProperty): Boolean {
+        val property = PsiTreeUtil.getParentOfType(
+            property,
+            JsonProperty::class.java,
+            true
+        )
+        return property != null && ("configurations" == property.name)
+    }
 }

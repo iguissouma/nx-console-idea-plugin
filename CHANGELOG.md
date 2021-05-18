@@ -2,6 +2,7 @@
 
 # Nx Console Idea Plugin Changelog
 ## [Unreleased]
+## [0.26.0]
 ## [0.25.0]
 ## [0.25.0] - 2021-04-18
 ### Added

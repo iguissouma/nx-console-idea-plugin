@@ -69,7 +69,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${projectProperty.name}:${
-                                        propertyLiteral.value
+                                    propertyLiteral.value
                                     }"
                                 )
                             )
@@ -79,15 +79,15 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             val configurationJsonProperty = PsiTreeUtil.getParentOfType(
                                 propertyLiteral,
                                 JsonProperty::class.java
-                            )?: return null
+                            ) ?: return null
                             val configurationsJsonProperty = PsiTreeUtil.getParentOfType(
                                 configurationJsonProperty,
                                 JsonProperty::class.java
-                            )?: return null
+                            ) ?: return null
                             val architectJsonProperty = PsiTreeUtil.getParentOfType(
                                 configurationsJsonProperty,
                                 JsonProperty::class.java
-                            )?: return null
+                            ) ?: return null
                             val projectJsonProperty = PsiTreeUtil.getParentOfType(
                                 architectJsonProperty.parent.parent,
                                 JsonProperty::class.java
@@ -97,9 +97,9 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${projectJsonProperty.name}:${
-                                        architectJsonProperty.name
+                                    architectJsonProperty.name
                                     }:${
-                                        configurationJsonProperty.name
+                                    configurationJsonProperty.name
                                     }"
                                 )
                             )
@@ -108,8 +108,6 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         } else {
                             null
                         }
-
-
                     }
                 } else {
                     val virtualNxJson = psiNxJson.virtualFile

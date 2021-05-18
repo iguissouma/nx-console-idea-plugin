@@ -71,13 +71,19 @@ object NxJsonUtil {
                 val nxConfig = NxConfigProvider.getNxConfig(project, nxJson)
                 structure.myNxProjectsTask = nxConfig?.projects?.map { nxProject ->
                     nxProject.name to nxProject.architect.keys.flatMap { task ->
-                        listOf(NxTask(
-                            structure,
-                            task
-                        )).plus(nxProject.architect[task]?.configurations?.keys?.map { NxTask(
-                            structure,
-                            "$task:$it"
-                        ) } ?: emptyList())
+                        listOf(
+                            NxTask(
+                                structure,
+                                task
+                            )
+                        ).plus(
+                            nxProject.architect[task]?.configurations?.keys?.map {
+                                NxTask(
+                                    structure,
+                                    "$task:$it"
+                                )
+                            } ?: emptyList()
+                        )
                     }
                 }?.toMap() ?: emptyMap()
                 val listOf = listOf("Generate & Run Target", "Common Nx Commands", "Projects")

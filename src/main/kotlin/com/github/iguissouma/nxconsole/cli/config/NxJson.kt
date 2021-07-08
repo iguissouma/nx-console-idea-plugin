@@ -12,7 +12,7 @@ import java.io.IOException
 internal class AngularJson {
 
     @JsonProperty("projects")
-    val projects: Map<String, AngularJsonProject> = HashMap()
+    val projects: Map<String, Any> = HashMap()
 
     @JsonProperty("defaultProject")
     val defaultProject: String? = null

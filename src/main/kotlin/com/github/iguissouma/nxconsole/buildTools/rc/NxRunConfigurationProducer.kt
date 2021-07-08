@@ -3,9 +3,11 @@ package com.github.iguissouma.nxconsole.buildTools.rc
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findChildNxJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.getContainingAngularJsonFile
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.getContainingAngularStandaloneConfigJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.getContainingNxJsonFile
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.github.iguissouma.nxconsole.buildTools.NxService
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -44,7 +46,65 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                     val psiAngularJsonFile = getContainingAngularJsonFile(element)
                     val virtualAngularJson = psiAngularJsonFile?.virtualFile
                     if (virtualAngularJson == null) {
-                        null
+                        // check if we are in project.json
+                        val psiAngularStandaloneConfigJsonFile = getContainingAngularStandaloneConfigJsonFile(element)
+                        val virtualAngularStandaloneConfigJson = psiAngularStandaloneConfigJsonFile?.virtualFile
+                        val findChildNxJsonFile = findChildNxJsonFile(element.project.baseDir) ?: return null
+
+                        val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
+                        val nxProject =
+                            NxConfigProvider.getNxProject(element.project, virtualAngularStandaloneConfigJson!!)
+                        if (NxJsonUtil.isChildOfTargetsProperty(propertyLiteral.parent as JsonProperty)) {
+                            val architectJsonObject = PsiTreeUtil.getParentOfType(
+                                propertyLiteral,
+                                JsonObject::class.java
+                            )
+                            val projectJsonObject = PsiTreeUtil.getParentOfType(
+                                architectJsonObject,
+                                JsonObject::class.java
+                            ) ?: return null
+
+
+                            val setting = NxRunSettings(
+                                nxFilePath = findChildNxJsonFile.path,
+                                tasks = listOf(
+                                    "${nxProject?.name}:${
+                                        propertyLiteral.value
+                                    }"
+                                )
+                            )
+                            sourceElement?.set(element)
+                            setting
+                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(propertyLiteral.parent as JsonProperty)) {
+                            val configurationJsonProperty = PsiTreeUtil.getParentOfType(
+                                propertyLiteral,
+                                JsonProperty::class.java
+                            ) ?: return null
+                            val configurationsJsonProperty = PsiTreeUtil.getParentOfType(
+                                configurationJsonProperty,
+                                JsonProperty::class.java
+                            ) ?: return null
+                            val architectJsonProperty = PsiTreeUtil.getParentOfType(
+                                configurationsJsonProperty,
+                                JsonProperty::class.java
+                            ) ?: return null
+
+                            val setting = NxRunSettings(
+                                nxFilePath = findChildNxJsonFile.path,
+                                tasks = listOf(
+                                    "${nxProject?.name}:${
+                                        architectJsonProperty.name
+                                    }:${
+                                        configurationJsonProperty.name
+                                    }"
+                                )
+                            )
+                            sourceElement?.set(element)
+                            setting
+                        } else {
+                            null
+                        }
+
                     } else {
                         val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
                         // findContainingProjectProperty(element)

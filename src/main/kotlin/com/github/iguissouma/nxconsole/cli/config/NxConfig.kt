@@ -4,10 +4,14 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiManager
 import com.intellij.util.text.CharSequenceReader
 import one.util.streamex.StreamEx
+import java.nio.file.Path
 
 class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Project) {
 
@@ -31,7 +35,21 @@ class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Pr
         val angularJson = mapper.readValue(CharSequenceReader(text), AngularJson::class.java)
         if (angularJson.projects.isNotEmpty()) {
             projects = angularJson.projects.map { (name, ngProjectJson) ->
-                NxProjectImpl(name, ngProjectJson, angularCliFolder, project)
+                when (ngProjectJson) {
+                    is String -> {
+                        val path = angularCliFolder.path + "/" + ngProjectJson + "/project.json"
+                        val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of(path)) ?: error("cannot read project ...")
+                        val psiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
+                        NxProjectImpl(name, mapper.readValue(psiFile.text), angularCliFolder, project)
+                    }
+                    is Map<*, *> -> NxProjectImpl(
+                        name,
+                        mapper.readValue(mapper.writeValueAsString(ngProjectJson)),
+                        angularCliFolder,
+                        project
+                    )
+                    else -> error("cannot read project ...")
+                }
             }
             defaultProject = angularJson.defaultProject?.let { defaultProject ->
                 projects.find { it.name == defaultProject }

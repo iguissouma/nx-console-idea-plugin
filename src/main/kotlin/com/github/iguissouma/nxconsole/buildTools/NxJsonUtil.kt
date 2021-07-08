@@ -165,7 +165,7 @@ object NxJsonUtil {
     }
 
     fun findContainingPropertyInsideAngularJsonFile(element: PsiElement): JsonProperty? {
-        return if (isInsideAngularJsonFile(element)) PsiTreeUtil.getParentOfType(
+        return if (isInsideAngularJsonFile(element) || isInsideAngularStandaloneConfigJsonFile(element)) PsiTreeUtil.getParentOfType(
             element,
             JsonProperty::class.java,
             false
@@ -200,6 +200,10 @@ object NxJsonUtil {
         return getContainingAngularJsonFile(element) != null
     }
 
+    fun isInsideAngularStandaloneConfigJsonFile(element: PsiElement): Boolean {
+        return getContainingAngularStandaloneConfigJsonFile(element) != null
+    }
+
     fun getContainingNxJsonFile(element: PsiElement): JsonFile? {
         val file = element.containingFile
         return if (isNxJsonFile(file)) file as JsonFile else null
@@ -210,6 +214,12 @@ object NxJsonUtil {
         return if (isAngularJsonFile(file)) file as JsonFile else null
     }
 
+    fun getContainingAngularStandaloneConfigJsonFile(element: PsiElement): JsonFile? {
+        val file = element.containingFile
+        return if (isAngularStandaloneConfigJsonFile(file)) file as JsonFile else null
+    }
+
+
     @Contract("null -> false")
     fun isNxJsonFile(file: PsiFile?): Boolean {
         return file is JsonFile && "nx.json" == file.getName()
@@ -218,6 +228,11 @@ object NxJsonUtil {
     @Contract("null -> false")
     fun isAngularJsonFile(file: PsiFile?): Boolean {
         return file is JsonFile && ("angular.json" == file.getName() || "workspace.json" == file.getName())
+    }
+
+    @Contract("null -> false")
+    fun isAngularStandaloneConfigJsonFile(file: PsiFile?): Boolean {
+        return file is JsonFile && ("project.json" == file.getName())
     }
 
     fun findContainingTopLevelProperty(element: PsiElement?): JsonProperty? {

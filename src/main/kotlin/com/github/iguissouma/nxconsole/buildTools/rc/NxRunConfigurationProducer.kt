@@ -64,12 +64,11 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 JsonObject::class.java
                             ) ?: return null
 
-
                             val setting = NxRunSettings(
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${nxProject?.name}:${
-                                        propertyLiteral.value
+                                    propertyLiteral.value
                                     }"
                                 )
                             )
@@ -93,9 +92,9 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${nxProject?.name}:${
-                                        architectJsonProperty.name
+                                    architectJsonProperty.name
                                     }:${
-                                        configurationJsonProperty.name
+                                    configurationJsonProperty.name
                                     }"
                                 )
                             )
@@ -104,7 +103,6 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         } else {
                             null
                         }
-
                     } else {
                         val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
                         // findContainingProjectProperty(element)

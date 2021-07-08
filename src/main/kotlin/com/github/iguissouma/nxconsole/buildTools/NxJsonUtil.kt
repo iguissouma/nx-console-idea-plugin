@@ -219,7 +219,6 @@ object NxJsonUtil {
         return if (isAngularStandaloneConfigJsonFile(file)) file as JsonFile else null
     }
 
-
     @Contract("null -> false")
     fun isNxJsonFile(file: PsiFile?): Boolean {
         return file is JsonFile && "nx.json" == file.getName()

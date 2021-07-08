@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import com.intellij.util.text.CharSequenceReader
 import one.util.streamex.StreamEx
-import java.nio.file.Path
+import java.nio.file.Paths
 
 class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Project) {
 
@@ -37,9 +37,11 @@ class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Pr
             projects = angularJson.projects.map { (name, ngProjectJson) ->
                 when (ngProjectJson) {
                     is String -> {
-                        val path = angularCliFolder.path + "/" + ngProjectJson + "/project.json"
-                        val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of(path)) ?: error("cannot read project ...")
-                        val psiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
+                        val path = angularCliFolder.path + "/" + ngProjectJson + "/" + "project.json"
+                        val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(path))
+                            ?: error("cannot read project ...")
+                        val psiFile =
+                            PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
                         NxProjectImpl(name, mapper.readValue(psiFile.text), angularCliFolder, project)
                     }
                     is Map<*, *> -> NxProjectImpl(

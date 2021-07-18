@@ -78,6 +78,22 @@ class Option {
     @Expose
     var format: String? = null
 
+    @SerializedName("positional")
+    @Expose
+    var positional: Int? = null
+
+    @SerializedName("\$default")
+    @Expose
+    var _default: Map<String,Any>? = null
+
+    @SerializedName("tooltip")
+    @Expose
+    var tooltip: String? = null
+
+    @SerializedName("itemTooltips")
+    @Expose
+    var itemTooltips: Map<String, Any>? = null
+
     constructor()
 
     constructor(name: String) {

@@ -102,7 +102,7 @@ tasks {
 
     prepareSandbox {
         doLast {
-            val pluginServerDir = "${intellij.sandboxDir}/plugins/${intellij.pluginName}/"
+            val pluginServerDir = "${intellij.sandboxDir.get()}/plugins/${intellij.pluginName.get()}/"
             mkdir(pluginServerDir)
             copy {
                 from("$projectDir/src/main/gen")

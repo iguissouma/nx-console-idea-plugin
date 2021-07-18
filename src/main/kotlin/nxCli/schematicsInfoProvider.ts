@@ -5,8 +5,7 @@ const projectLocation = process.argv[2];
 
 (async function () {
     let allSchematics = await readAllSchematicCollections(
-        projectLocation,
-        join('tools', 'schematics')
+        projectLocation
     )
     console.info(JSON.stringify(allSchematics, null, 2))
 

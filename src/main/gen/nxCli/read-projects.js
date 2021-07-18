@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.readBuilderSchema = exports.readArchitect = exports.readArchitectDef = exports.readProjects = void 0;
 const path = require("path");
 const utils_1 = require("./utils");
 function readProjects(json) {

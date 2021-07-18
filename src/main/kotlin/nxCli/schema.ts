@@ -1,5 +1,33 @@
-import { Option } from './interface';
-export { Option } from './interface';
+import { Option as CliOption, OptionType } from '@angular/cli/models/interface';
+
+export interface Option extends Omit<CliOption, 'default'> {
+    tooltip?: string;
+    itemTooltips?: ItemTooltips;
+    items?: string[] | ItemsWithEnum;
+    default?: string[] | string | number | boolean | undefined;
+}
+
+export interface ItemTooltips {
+    [itemValue: string]: string;
+}
+
+export interface ItemsWithEnum {
+    enum: string[];
+    type: OptionType;
+}
+
+export type XPrompt = string | LongFormXPrompt;
+export interface LongFormXPrompt {
+    message: string;
+    type: 'confirmation' | 'input' | 'list';
+    multiselect?: boolean;
+    items?: (string | OptionItemLabelValue)[];
+}
+
+export interface OptionItemLabelValue {
+    label: string;
+    value: string;
+}
 
 export interface TaskExecutionMessage {
     command: string;
@@ -28,7 +56,7 @@ export interface Schematic {
     collection: string;
     name: string;
     description: string;
-    options: Option[];
+    options?: Option[];
 }
 
 export interface DefaultValue {
@@ -54,5 +82,7 @@ export interface Architect {
     builder: string;
     description: string;
     configurations: ArchitectConfiguration[];
-    options: Option[];
+    options: CliOption[];
 }
+
+export const WORKSPACE_GENERATOR_NAME_REGEX = /^workspace-(schematic|generator):(.+)/;

@@ -1,23 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.readSchematicOptions = exports.readAllSchematicCollections = void 0;
 const path_1 = require("path");
 const utils_1 = require("./utils");
-const utils_2 = require("./utils");
-async function readAllSchematicCollections(workspaceJsonPath, workspaceSchematicsPath) {
+async function readAllSchematicCollections(workspaceJsonPath) {
     const basedir = path_1.join(workspaceJsonPath, '..');
     let collections = await readSchematicCollectionsFromNodeModules(workspaceJsonPath);
-    if (utils_1.directoryExists(path_1.join(basedir, workspaceSchematicsPath))) {
-        collections = [
-            await readWorkspaceSchematicsCollection(basedir, workspaceSchematicsPath),
-            ...collections
-        ];
-    }
-    return collections.filter((collection) => !!collection && collection.schematics.length > 0);
+    collections = [
+        ...collections,
+        ...(await checkAndReadWorkspaceCollection(basedir, path_1.join('tools', 'schematics'))),
+        ...(await checkAndReadWorkspaceCollection(basedir, path_1.join('tools', 'generators'))),
+    ];
+    return collections.filter((collection) => collection && collection.schematics.length > 0);
 }
 exports.readAllSchematicCollections = readAllSchematicCollections;
+async function checkAndReadWorkspaceCollection(basedir, workspaceSchematicsPath) {
+    if (utils_1.directoryExists(path_1.join(basedir, workspaceSchematicsPath))) {
+        return readWorkspaceSchematicsCollection(basedir, workspaceSchematicsPath).then((val) => [val]);
+    }
+    return Promise.resolve([]);
+}
 function readWorkspaceJsonDefaults(workspaceJsonPath) {
-    const defaults = utils_2.toLegacyWorkspaceFormat(utils_1.readAndParseJson(workspaceJsonPath)).schematics ||
-        {};
+    const defaults = utils_1.toLegacyWorkspaceFormat(utils_1.readAndCacheJsonFile(workspaceJsonPath).json)
+        .schematics || {};
     const collectionDefaults = Object.keys(defaults).reduce((collectionDefaultsMap, key) => {
         if (key.includes(':')) {
             const [collectionName, schematicName] = key.split(':');
@@ -31,7 +36,7 @@ function readWorkspaceJsonDefaults(workspaceJsonPath) {
             if (!collectionDefaultsMap[collectionName]) {
                 collectionDefaultsMap[collectionName] = {};
             }
-            Object.keys(defaults[collectionName]).forEach(schematicName => {
+            Object.keys(defaults[collectionName]).forEach((schematicName) => {
                 collectionDefaultsMap[collectionName][schematicName] =
                     defaults[collectionName][schematicName];
             });
@@ -44,7 +49,7 @@ async function readSchematicCollectionsFromNodeModules(workspaceJsonPath) {
     const basedir = path_1.join(workspaceJsonPath, '..');
     const nodeModulesDir = path_1.join(basedir, 'node_modules');
     const packages = utils_1.listOfUnnestedNpmPackages(nodeModulesDir);
-    const schematicCollections = packages.filter(p => {
+    const schematicCollections = packages.filter((p) => {
         try {
             const packageJson = utils_1.readAndCacheJsonFile(path_1.join(p, 'package.json'), nodeModulesDir).json;
             return !!(packageJson.schematics || packageJson.generators);
@@ -60,8 +65,7 @@ async function readSchematicCollectionsFromNodeModules(workspaceJsonPath) {
             }
         }
     });
-    const defaults = readWorkspaceJsonDefaults(workspaceJsonPath);
-    return (await Promise.all(schematicCollections.map(c => readCollection(nodeModulesDir, c, defaults)))).filter((c) => Boolean(c));
+    return (await Promise.all(schematicCollections.map((c) => readCollection(nodeModulesDir, c)))).filter((c) => Boolean(c));
 }
 async function readWorkspaceSchematicsCollection(basedir, workspaceSchematicsPath) {
     const collectionDir = path_1.join(basedir, workspaceSchematicsPath);
@@ -72,46 +76,47 @@ async function readWorkspaceSchematicsCollection(basedir, workspaceSchematicsPat
     }
     else {
         const schematics = await Promise.all(utils_1.listFiles(collectionDir)
-            .filter(f => path_1.basename(f) === 'schema.json')
+            .filter((f) => path_1.basename(f) === 'schema.json')
             .map(async (f) => {
             const schemaJson = utils_1.readAndCacheJsonFile(f, '');
             return {
-                name: schemaJson.json.id,
+                name: schemaJson.json.id || schemaJson.json.$id,
                 collection: collectionName,
                 options: await utils_1.normalizeSchema(schemaJson.json),
-                description: ''
+                description: '',
             };
         }));
         return { name: collectionName, schematics };
     }
 }
-async function readCollection(basedir, collectionName, defaults) {
+async function readCollection(basedir, collectionName) {
     try {
         const packageJson = utils_1.readAndCacheJsonFile(path_1.join(collectionName, 'package.json'), basedir);
         const collection = utils_1.readAndCacheJsonFile(packageJson.json.schematics || packageJson.json.generators, path_1.dirname(packageJson.path));
-        return readCollectionSchematics(collectionName, collection.path, collection.json, defaults);
+        return readCollectionSchematics(collectionName, collection.path, collection.json);
     }
     catch (e) {
         // this happens when package is misconfigured. We decided to ignore such a case.
         return null;
     }
 }
-async function readCollectionSchematics(collectionName, collectionPath, collectionJson, defaults) {
+async function readCollectionSchematics(collectionName, collectionPath, collectionJson) {
     const schematicCollection = {
         name: collectionName,
         schematics: []
     };
     try {
-        Object.entries(collectionJson.schematics || collectionJson.generators).forEach(async ([k, v]) => {
+        Object.entries(Object.assign({}, collectionJson.schematics || collectionJson.generators)).forEach(async ([k, v]) => {
             try {
                 if (canAdd(k, v)) {
+                    // added not in nx console
                     const schematicSchema = utils_1.readAndCacheJsonFile(v.schema, path_1.dirname(collectionPath));
-                    const projectDefaults = defaults && defaults[collectionName] && defaults[collectionName][k];
+                    const options = await utils_1.normalizeSchema(schematicSchema.json);
                     schematicCollection.schematics.push({
                         name: k,
                         collection: collectionName,
-                        options: await utils_1.normalizeSchema(schematicSchema.json, projectDefaults),
-                        description: v.description || ''
+                        description: v.description || '',
+                        options: options
                     });
                 }
             }
@@ -127,7 +132,21 @@ async function readCollectionSchematics(collectionName, collectionPath, collecti
     }
     return schematicCollection;
 }
+async function readSchematicOptions(workspaceJsonPath, collectionName, schematicName) {
+    const basedir = path_1.join(workspaceJsonPath, '..');
+    const nodeModulesDir = path_1.join(basedir, 'node_modules');
+    const collectionPackageJson = utils_1.readAndCacheJsonFile(path_1.join(collectionName, 'package.json'), nodeModulesDir);
+    const collectionJson = utils_1.readAndCacheJsonFile(collectionPackageJson.json.schematics ||
+        collectionPackageJson.json.generators, path_1.dirname(collectionPackageJson.path));
+    const schematics = Object.assign({}, collectionJson.json.schematics, collectionJson.json.generators);
+    const schematicSchema = utils_1.readAndCacheJsonFile(schematics[schematicName].schema, path_1.dirname(collectionJson.path));
+    const workspaceDefaults = readWorkspaceJsonDefaults(workspaceJsonPath);
+    const defaults = workspaceDefaults &&
+        workspaceDefaults[collectionName] &&
+        workspaceDefaults[collectionName][schematicName];
+    return await utils_1.normalizeSchema(schematicSchema.json, defaults);
+}
+exports.readSchematicOptions = readSchematicOptions;
 function canAdd(name, s) {
     return !s.hidden && !s.private && !s.extends && name !== 'ng-add';
 }
-exports.canAdd = canAdd;

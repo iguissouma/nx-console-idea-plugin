@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommandScope = exports.OptionType = void 0;
 /**
  * Command constructor.
  */

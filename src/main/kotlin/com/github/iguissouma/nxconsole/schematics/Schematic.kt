@@ -84,7 +84,7 @@ class Option {
 
     @SerializedName("\$default")
     @Expose
-    var _default: Map<String,Any>? = null
+    var _default: Map<String, Any>? = null
 
     @SerializedName("tooltip")
     @Expose

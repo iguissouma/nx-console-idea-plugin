@@ -586,7 +586,7 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
                     interpreter!!, NodePackage(module?.virtualFile?.path!!),
                     { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
                     cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, arrayOf(filter), "generate", schematic.name,
+                    null, arrayOf(filter), *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray()
                 )
@@ -604,7 +604,8 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
                     interpreter!!, NodePackage(module?.virtualFile?.path!!),
                     { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
                     cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, arrayOf(filter), "generate", schematic.name,
+                    null, arrayOf(filter),
+                    *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray(),
                     "--dry-run", "--no-interactive"
@@ -823,6 +824,14 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
         )
 
         textField(comment = option.description, constraints = arrayOf(CCFlags.growX))
+    }
+
+    private fun computeGenerateRunCommand(schemaName: String?): List<String> {
+        if (schemaName.isNullOrBlank()) return emptyList()
+        return if (schemaName.startsWith("workspace-schematic:") or schemaName.startsWith("workspace-generator:")) {
+            val split = schemaName.split(":")
+            listOf(split[0], split[1])
+        } else listOf("generate", schemaName)
     }
 
     private fun computeArgsFromModelUi(): List<String> {

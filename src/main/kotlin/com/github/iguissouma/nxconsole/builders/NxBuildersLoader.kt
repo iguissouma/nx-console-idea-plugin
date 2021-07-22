@@ -73,7 +73,7 @@ private fun loadBuildersInfoJson(
     return grabCommandOutput(commandLine, directory.path)
 }
 
-private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {
+fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: String?): String {
     if (workingDir != null) {
         commandLine.withWorkDirectory(workingDir)
     }
@@ -111,7 +111,7 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
     return ""
 }
 
-private fun shortenOutput(output: String): String {
+fun shortenOutput(output: String): String {
     return StringUtil.shortenTextWithEllipsis(
         output.replace('\\', '/')
             .replace("(/[^()/:]+)+(/[^()/:]+)(/[^()/:]+)".toRegex(), "/...$1$2$3"),

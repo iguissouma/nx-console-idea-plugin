@@ -71,7 +71,9 @@
                             serviceImplementation="com.github.iguissouma.nxconsole.builders.NxCliBuildersRegistryServiceImpl"/>
 
     </extensions>
-
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="com.github.iguissouma.nxconsole.json.NxWorkspaceJsonSchemaProviderFactory"/>
+    </extensions>
     <projectListeners>
         <listener class="com.github.iguissouma.nxconsole.listeners.NxProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>

@@ -48,21 +48,13 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                     if (virtualAngularJson == null) {
                         // check if we are in project.json
                         val psiAngularStandaloneConfigJsonFile = getContainingAngularStandaloneConfigJsonFile(element)
-                        val virtualAngularStandaloneConfigJson = psiAngularStandaloneConfigJsonFile?.virtualFile
+                        val virtualAngularStandaloneConfigJson = psiAngularStandaloneConfigJsonFile?.virtualFile ?: return null
                         val findChildNxJsonFile = findChildNxJsonFile(element.project.baseDir) ?: return null
 
                         val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
                         val nxProject =
-                            NxConfigProvider.getNxProject(element.project, virtualAngularStandaloneConfigJson!!)
+                            NxConfigProvider.getNxProject(element.project, virtualAngularStandaloneConfigJson)
                         if (NxJsonUtil.isChildOfTargetsProperty(propertyLiteral.parent as JsonProperty)) {
-                            val architectJsonObject = PsiTreeUtil.getParentOfType(
-                                propertyLiteral,
-                                JsonObject::class.java
-                            )
-                            val projectJsonObject = PsiTreeUtil.getParentOfType(
-                                architectJsonObject,
-                                JsonObject::class.java
-                            ) ?: return null
 
                             val setting = NxRunSettings(
                                 nxFilePath = findChildNxJsonFile.path,

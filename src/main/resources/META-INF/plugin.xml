@@ -70,6 +70,8 @@
         <applicationService serviceInterface="com.github.iguissouma.nxconsole.builders.NxCliBuildersRegistryService"
                             serviceImplementation="com.github.iguissouma.nxconsole.builders.NxCliBuildersRegistryServiceImpl"/>
 
+        <codeInsight.lineMarkerProvider language="JSON"
+                                        implementationClass="com.github.iguissouma.nxconsole.annotators.NxStandaloneConfigProjectAnnotator"/>
     </extensions>
 
     <projectListeners>

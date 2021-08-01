@@ -26,7 +26,7 @@ class NxStandaloneConfigProjectAnnotator : RelatedItemLineMarkerProvider() {
             return
         }
 
-        if(parent !is JsonProperty) return
+        if (parent !is JsonProperty) return
 
         if ((parent.parent !is JsonObject)) {
             return
@@ -51,11 +51,11 @@ class NxStandaloneConfigProjectAnnotator : RelatedItemLineMarkerProvider() {
         val project = element.project
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return
         val path = nxConfig.angularJsonFile.parent.path + "/" + ppath + "/" + "project.json"
-        val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(path))?:return
+        val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(path)) ?: return
 
         val findFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return
         val builder: NavigationGutterIconBuilder<PsiElement> = NavigationGutterIconBuilder
-            .create(if(ppath.startsWith("libs")) NxIcons.NX_LIB_FOLDER else NxIcons.NX_APP_FOLDER)
+            .create(if (ppath.startsWith("libs")) NxIcons.NX_LIB_FOLDER else NxIcons.NX_APP_FOLDER)
             .setTarget(findFile.firstChild)
             .setTooltipText("Navigate to project config file")
         result.add(builder.createLineMarkerInfo(element))

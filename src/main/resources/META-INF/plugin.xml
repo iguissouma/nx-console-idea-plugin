@@ -154,6 +154,9 @@
         <action id="NxLoadUnloadModules" class="com.github.iguissouma.nxconsole.actions.NxLoadUnloadModulesAction">
             <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
         </action>
+        <action id="NxFocusOnAppOrLib" class="com.github.iguissouma.nxconsole.actions.NxFocusOnAppOrLibAction">
+            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
+        </action>
 
     </actions>
 </idea-plugin>

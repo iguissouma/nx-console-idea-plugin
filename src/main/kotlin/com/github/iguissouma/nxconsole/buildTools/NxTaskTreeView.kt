@@ -6,6 +6,7 @@ import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil.findProjectProperty
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.execution.PsiLocation
 import com.intellij.icons.AllIcons
+import com.intellij.ide.projectView.impl.ProjectRootsUtil
 import com.intellij.json.psi.JsonObject
 import com.intellij.lang.javascript.buildTools.base.JsbtFileStructure
 import com.intellij.lang.javascript.buildTools.base.JsbtSortingMode
@@ -13,6 +14,7 @@ import com.intellij.lang.javascript.buildTools.base.JsbtTaskSet
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskTreeView
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -44,6 +46,11 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         // buildfileTreeNode.add(generateAndRunTargetNode)
 
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+        val module = ModuleManager.getInstance(project).modules.first()
+        val unloadedModules =
+            nxConfig?.projects?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) != null }
+                ?.map { it.name } ?: emptyList()
+
         // nxConfig?.projects?.map { it.name to it.architect.keys }
         val groupByTasks = nxConfig?.projects?.flatMap { p -> p.architect.keys.map { it to p.name } }
             ?.groupBy({ it.first }, { it.second })
@@ -53,14 +60,14 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         groupByTasks?.forEach {
             val node = DefaultMutableTreeNode(it.key, true)
             tasksNode.add(node)
-            it.value.forEach { e ->
+            it.value.filterNot { project -> project in unloadedModules }.forEach { e ->
                 node.add(DefaultMutableTreeNode(NxTask(structure, e), false))
             }
         }
         buildfileTreeNode.add(tasksNode)
 
         val nxProjectsTaskNode = DefaultMutableTreeNode("Projects", true)
-        for (myScript: Map.Entry<String, List<NxTask>> in structure.myNxProjectsTask.entries) {
+        for (myScript: Map.Entry<String, List<NxTask>> in structure.myNxProjectsTask.entries.filterNot { it.key in unloadedModules }) {
             val projectNode = DefaultMutableTreeNode(myScript.key, true)
             myScript.value.forEach {
                 val node = DefaultMutableTreeNode(it, false)

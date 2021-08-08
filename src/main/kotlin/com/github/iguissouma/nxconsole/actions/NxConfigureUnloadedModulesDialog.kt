@@ -567,7 +567,7 @@ private class RootNode : DefaultMutableTreeNode(), NxModuleDescriptionTreeNode {
 private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
 private val LOG: Logger = Logger.getInstance("#NxConfigureUnloadedModulesDialog.kt")
 
-private fun loadDepGraphInfoJson(
+fun loadDepGraphInfoJson(
     configurator: NodeCommandLineConfigurator,
     cli: VirtualFile
 ): String {

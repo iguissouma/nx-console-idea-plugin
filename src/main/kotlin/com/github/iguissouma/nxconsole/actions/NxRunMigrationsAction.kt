@@ -10,7 +10,6 @@ import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.packageJson.notification.PackageJsonUpdateNotifier
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationDisplayType
@@ -24,14 +23,12 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import javax.swing.event.HyperlinkEvent
-
 
 class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NRWL_ICON) {
 
@@ -96,8 +93,6 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
                                 )
                                 msg.notify(project)
                             }
-
-
                         }
 
                         override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
@@ -118,7 +113,6 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
                     return false
                 }
             })
-
     }
 
     override fun update(e: AnActionEvent) {
@@ -126,7 +120,6 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
         val presentation = e.presentation
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
         presentation.isEnabled = nxConfig != null
-
     }
 
     private fun createFileLink(projet: Project, file: VirtualFile): String {
@@ -147,5 +140,4 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
             }
         }
     }
-
 }

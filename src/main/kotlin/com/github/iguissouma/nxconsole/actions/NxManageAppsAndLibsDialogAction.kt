@@ -19,7 +19,6 @@ class NxManageAppsAndLibsDialogAction : DumbAwareAction("Nx Manage Apps & Libs")
         val disposable = Disposer.newDisposable()
         val project = e.getRequiredData(CommonDataKeys.PROJECT)
         val panel = object : NxProjectsPanel(disposable) {
-
         }
         val list = UIUtil.findComponentOfType(
             panel,
@@ -34,6 +33,4 @@ class NxManageAppsAndLibsDialogAction : DumbAwareAction("Nx Manage Apps & Libs")
     }
 }
 
-open class NxProjectsPanel(disposable: @NotNull Disposable) : JPanel(BorderLayout()) {
-
-}
+open class NxProjectsPanel(disposable: @NotNull Disposable) : JPanel(BorderLayout())

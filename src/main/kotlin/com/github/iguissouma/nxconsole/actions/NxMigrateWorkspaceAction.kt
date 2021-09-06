@@ -36,7 +36,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import javax.swing.event.HyperlinkEvent
 
-
 class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxIcons.NRWL_ICON) {
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -69,20 +68,20 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
             .run(object : Backgroundable(null, "Nx migrate Workspace", false, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
                     val handler = CapturingProcessHandler(commandLine)
-                    //val indicator = ProgressManager.getInstance().progressIndicator ?: EmptyProgressIndicator()
-                    var startNotified = false;
-                    var success = false;
-                    var packageJsonHasBeenUpdated = false;
-                    var migrationsJsonHasBeenGenerated = false;
+                    // val indicator = ProgressManager.getInstance().progressIndicator ?: EmptyProgressIndicator()
+                    var startNotified = false
+                    var success = false
+                    var packageJsonHasBeenUpdated = false
+                    var migrationsJsonHasBeenGenerated = false
                     handler.addProcessListener(object : ProcessListener {
                         override fun startNotified(event: ProcessEvent) {
-                            //TODO("Not yet implemented")
+                            // TODO("Not yet implemented")
                             println("start notified...")
                             startNotified = true
                         }
 
                         override fun processTerminated(event: ProcessEvent) {
-                            //TODO("Not yet implemented")
+                            // TODO("Not yet implemented")
                             println("process terminated...")
                             val notificationGroup = NotificationGroup(
                                 "nx.notifications.balloon",
@@ -92,23 +91,29 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                             if (success) {
                                 val packageJson = findChildPackageJsonFile(project.baseDir)
                                 val content = "NX The migrate command has run successfully." +
-                                        "<br>" +
-                                        "- " +
-                                        (if (packageJson != null) createFileLink(
+                                    "<br>" +
+                                    "- " +
+                                    (
+                                        if (packageJson != null) createFileLink(
                                             project,
                                             packageJson
-                                        ) else "package.json") +
-                                        " has been updated" +
-                                        (if (migrationsJsonHasBeenGenerated) {
+                                        ) else "package.json"
+                                        ) +
+                                    " has been updated" +
+                                    (
+                                        if (migrationsJsonHasBeenGenerated) {
                                             val migrationsJson = findChildMigrationsJsonFile(project.baseDir)
                                             "<br>" +
-                                                    "- " +
-                                                    (if (migrationsJson != null) createFileLink(
+                                                "- " +
+                                                (
+                                                    if (migrationsJson != null) createFileLink(
                                                         project,
                                                         migrationsJson
-                                                    ) else "migrations.json") +
-                                                    " has been generated"
-                                        } else "")
+                                                    ) else "migrations.json"
+                                                    ) +
+                                                " has been generated"
+                                        } else ""
+                                        )
 
                                 val msg = notificationGroup.createNotification(
                                     "Nx Workspace Migration",
@@ -129,12 +134,10 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                                 )
                                 msg.notify(project)
                             }
-
-
                         }
 
                         override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                            //TODO("Not yet implemented")
+                            // TODO("Not yet implemented")
                             if (startNotified) {
                                 val text = event.text
                                 if (text.startsWith(">  NX  The migrate command has run successfully.")) {
@@ -162,13 +165,11 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                 }
             })
 
-
         /*ProgressManager.getInstance().runProcessWithProgressSynchronously({
           runReadAction {
 
           }
         }, "Nx migrate workspace", false, project) */
-
     }
 
     override fun update(e: AnActionEvent) {
@@ -176,9 +177,7 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
         val presentation = e.presentation
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
         presentation.isEnabled = nxConfig != null
-
     }
-
 
     private class MyNotificationListener(private val projet: Project) : NotificationListener {
         override fun hyperlinkUpdate(notification: Notification, event: HyperlinkEvent) {
@@ -231,12 +230,9 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                 )
                 msg.addAction(NxMigrateWorkspaceAction())
                 msg.notify(project)
-
             }
-
         }
     }
-
 }
 
 private fun createFileLink(projet: Project, file: VirtualFile): String {

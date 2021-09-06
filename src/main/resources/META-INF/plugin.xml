@@ -72,6 +72,20 @@
 
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.iguissouma.nxconsole.annotators.NxStandaloneConfigProjectAnnotator"/>
+
+        <notification.parentGroup
+                id="nx.notifications"
+                title="Nx notifications"/>
+
+        <notification.group
+                parentId="nx.notifications"
+                groupId="nx.notifications.balloon"/>
+        <notification.group
+                parentId="nx.notifications"
+                groupId="nx.notifications.stickyBalloon"/>
+        <postStartupActivity
+                implementation="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction$MyStartupActivity"/>
+
     </extensions>
 
     <projectListeners>
@@ -156,6 +170,12 @@
         </action>
         <action id="NxFocusOnAppOrLib" class="com.github.iguissouma.nxconsole.actions.NxFocusOnAppOrLibAction">
             <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
+        </action>
+
+        <!--<action id="NxFocusOnAppOrLibDialog" class="com.github.iguissouma.nxconsole.actions.NxManageAppsAndLibsDialogAction">
+        </action>-->
+
+        <action id="NxFocusOnAppOrLibDialog" class="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction">
         </action>
 
     </actions>

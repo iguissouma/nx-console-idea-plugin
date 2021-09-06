@@ -42,7 +42,6 @@ import javax.swing.tree.TreeModel
 class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
 
     override fun actionPerformed(event: AnActionEvent) {
-        println("NxShowAffectedAction...")
         val project: Project = event.project ?: return
         if (event.getData<Array<Change>>(VcsDataKeys.CHANGES) != null) {
             showDiscoveredAffectedByChanges(event)

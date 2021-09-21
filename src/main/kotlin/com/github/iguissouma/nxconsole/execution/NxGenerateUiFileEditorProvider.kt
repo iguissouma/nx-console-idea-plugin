@@ -48,6 +48,7 @@ import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
@@ -80,6 +81,7 @@ import com.intellij.vcs.log.impl.VcsLogTabsManager
 import com.intellij.webcore.ui.PathShortener
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
 import java.lang.Integer.min
 import java.lang.reflect.InvocationTargetException
@@ -239,6 +241,24 @@ class NxBuildersUiPanel(
             }
         }
 
+        val copyRun: AnAction = object : AnAction("Copy To Clipboard", "", AllIcons.General.CopyHovered) {
+            private fun copyInfoToClipboard(text: String) {
+                try {
+                    CopyPasteManager.getInstance().setContents(StringSelection(text))
+                } catch (ignore: Exception) {
+                }
+            }
+
+            init {
+                // shortcutSet = CustomShortcutSet.fromString("shift ENTER")
+                // registerCustomShortcutSet(CustomShortcutSet.fromString("meta C", "control C"), this@NxBuildersUiPanel)
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                copyInfoToClipboard("nx run $target:$command ${computeArgsFromModelUi().joinToString(separator = " ")}")
+            }
+        }
+
         val chooseTarget: AnAction = object : ComboBoxAction() {
 
             override fun update(e: AnActionEvent) {
@@ -296,6 +316,7 @@ class NxBuildersUiPanel(
         actionGroup.addAction(chooseTarget)
         actionGroup.addAction(run)
         actionGroup.addAction(dryRun)
+        actionGroup.addAction(copyRun)
 
         val actionToolbar =
             ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR, actionGroup, true)
@@ -613,6 +634,30 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
             }
         }
 
+        val copyRun: AnAction = object : AnAction("Copy To Clipboard", "", AllIcons.General.CopyHovered) {
+            private fun copyInfoToClipboard(text: String) {
+                try {
+                    CopyPasteManager.getInstance().setContents(StringSelection(text))
+                } catch (ignore: Exception) {
+                }
+            }
+
+            init {
+                // shortcutSet = CustomShortcutSet.fromString("shift ENTER")
+                // registerCustomShortcutSet(CustomShortcutSet.fromString("meta C", "control C"), this@NxBuildersUiPanel)
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                copyInfoToClipboard(
+                    "nx  ${
+                    (computeGenerateRunCommand(schematic.name) + computeArgsFromModelUi()).joinToString(
+                        separator = " "
+                    )
+                    }"
+                )
+            }
+        }
+
         val chooseSchematic: AnAction = object : ComboBoxAction() {
 
             override fun update(e: AnActionEvent) {
@@ -676,6 +721,7 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
         actionGroup.addAction(chooseSchematic)
         actionGroup.addAction(run)
         actionGroup.addAction(dryRun)
+        actionGroup.addAction(copyRun)
 
         val actionToolbar =
             ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR, actionGroup, true)

@@ -384,7 +384,7 @@ class NxBuildersUiPanel(
         return modelUI
             .filterKeys { it !in ignoredOptions() }
             .filterNot {
-               builderOptions.first { o -> o.name == it.key }.default == it.value.toString() //filter value are equal to default.
+                builderOptions.first { o -> o.name == it.key }.default == it.value.toString() // filter value are equal to default.
             }
             .filterValues { (it is Number) or (it is Boolean) or (it is String && it.isNotBlank()) }
             .map {
@@ -887,7 +887,7 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
         return modelUI
             .filterKeys { it !in ignoredOptions() }
             .filterNot {
-                schematic.options.first { o -> o.name == it.key }.default == it.value.toString() //filter value are equal to default.
+                schematic.options.first { o -> o.name == it.key }.default == it.value.toString() // filter value are equal to default.
             }
             .filterValues { (it is Number) or (it is Boolean) or (it is String && it.isNotBlank()) }
             .map {

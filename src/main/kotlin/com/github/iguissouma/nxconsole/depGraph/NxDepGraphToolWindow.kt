@@ -59,14 +59,12 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
-import java.net.InetSocketAddress
 import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
-
 
 class NxDepGraphToolWindow : ToolWindowFactory {
 
@@ -126,13 +124,16 @@ class NxDepGraphWindow(val project: Project) {
         // https://youtrack.jetbrains.com/issue/JBR-3175
         browser.jbCefClient.addProperty(JBCefClient.JBCEFCLIENT_JSQUERY_POOL_SIZE_PROP, 10)
         ApplicationManager.getApplication().messageBus.connect()
-            .subscribe(ProjectManager.TOPIC, object : ProjectManagerListener {
-                override fun projectClosed(project: Project) {
-                    if (isProcessRunning) {
-                        stopDepGraphServer()
+            .subscribe(
+                ProjectManager.TOPIC,
+                object : ProjectManagerListener {
+                    override fun projectClosed(project: Project) {
+                        if (isProcessRunning) {
+                            stopDepGraphServer()
+                        }
                     }
                 }
-            })
+            )
         val stop: AnAction = object : AnAction("Stop Dep Graph", "", AllIcons.Actions.Suspend) {
 
             override fun update(e: AnActionEvent) {
@@ -153,7 +154,7 @@ class NxDepGraphWindow(val project: Project) {
                     // TODO check if we add re-run
                     // presentation.icon = AllIcons.Actions.Restart
                     // presentation.text = "Rerun Dep Graph"
-                    e.presentation.isEnabled = false;
+                    e.presentation.isEnabled = false
                 } else {
                     presentation.icon = AllIcons.Actions.Execute
                     presentation.text = "Run Dep Graph"
@@ -360,7 +361,7 @@ class NxDepGraphWindow(val project: Project) {
         actionGroup.add(refresh)
         actionGroup.addSeparator()
         // TODO add filter when synchro between web and swing is always ok
-        //actionGroup.add(filter)
+        // actionGroup.add(filter)
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, actionGroup, true)
         toolbar.layoutPolicy = ActionToolbar.NOWRAP_LAYOUT_POLICY
         // Display a 'Server not started' message.

@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.depGraph
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -32,6 +33,8 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.ProjectManagerListener
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.Disposer
@@ -48,6 +51,7 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.intellij.ui.popup.util.PopupState
+import com.intellij.util.TimeoutUtil
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
@@ -55,6 +59,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
+import java.net.InetSocketAddress
 import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JButton
@@ -62,7 +67,16 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
+
 class NxDepGraphToolWindow : ToolWindowFactory {
+
+    override fun isApplicable(project: Project): Boolean {
+        return super.isApplicable(project) && NxJsonUtil.findChildNxJsonFile(project.baseDir) != null
+    }
+
+    override fun shouldBeAvailable(project: Project): Boolean {
+        return super.shouldBeAvailable(project) && NxJsonUtil.findChildNxJsonFile(project.baseDir) != null
+    }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val nxDepGraphWindowService = ServiceManager.getService(project, NxDepGraphWindowService::class.java)
@@ -111,7 +125,14 @@ class NxDepGraphWindow(val project: Project) {
         val browserComponent = browser.component
         // https://youtrack.jetbrains.com/issue/JBR-3175
         browser.jbCefClient.addProperty(JBCefClient.JBCEFCLIENT_JSQUERY_POOL_SIZE_PROP, 10)
-
+        ApplicationManager.getApplication().messageBus.connect()
+            .subscribe(ProjectManager.TOPIC, object : ProjectManagerListener {
+                override fun projectClosed(project: Project) {
+                    if (isProcessRunning) {
+                        stopDepGraphServer()
+                    }
+                }
+            })
         val stop: AnAction = object : AnAction("Stop Dep Graph", "", AllIcons.Actions.Suspend) {
 
             override fun update(e: AnActionEvent) {
@@ -119,20 +140,7 @@ class NxDepGraphWindow(val project: Project) {
             }
 
             override fun actionPerformed(e: AnActionEvent) {
-                if (depGraphProcess != null) {
-                    if (depGraphProcess!!.isProcessTerminated.not()) {
-                        ApplicationManager.getApplication().executeOnPooledThread {
-                            if (depGraphProcess!!.isProcessTerminated.not()) {
-                                ScriptRunnerUtil.terminateProcessHandler(
-                                    depGraphProcess!!,
-                                    1000,
-                                    depGraphProcess!!.commandLine
-                                )
-                                depGraphProcess = null
-                            }
-                        }
-                    }
-                }
+                stopDepGraphServer()
             }
         }
 
@@ -142,13 +150,15 @@ class NxDepGraphWindow(val project: Project) {
                 val runningServer = isProcessRunning
                 val presentation = e.presentation
                 if (runningServer) {
-                    presentation.icon = AllIcons.Actions.Restart
-                    presentation.text = "Rerun Dep Graph"
+                    // TODO check if we add re-run
+                    // presentation.icon = AllIcons.Actions.Restart
+                    // presentation.text = "Rerun Dep Graph"
+                    e.presentation.isEnabled = false;
                 } else {
                     presentation.icon = AllIcons.Actions.Execute
                     presentation.text = "Run Dep Graph"
+                    e.presentation.isEnabled = true
                 }
-                e.presentation.isEnabled = true
             }
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -172,7 +182,7 @@ class NxDepGraphWindow(val project: Project) {
                 val moduleExe =
                     "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
                 val commandLine =
-                    GeneralCommandLine("", moduleExe, "dep-graph", "--watch")
+                    GeneralCommandLine("", moduleExe, "dep-graph", "--port=4222", "--open=false", "--watch")
                 commandLine.withWorkDirectory(project.basePath)
                 configurator.configure(commandLine)
 
@@ -182,18 +192,17 @@ class NxDepGraphWindow(val project: Project) {
                         depGraphProcess!!.setShouldDestroyProcessRecursively(true)
                         depGraphProcess!!.addProcessListener(object : ProcessListener {
                             override fun startNotified(event: ProcessEvent) {
-                                println("process start notified")
                             }
 
                             override fun processTerminated(event: ProcessEvent) {
-                                println("process terminated")
                                 browser.loadHTML("<p style='color:gray;padding-top:150px;text-align:center'>Server not started.</p>")
                             }
 
                             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                                println(event.text)
                                 if (event.text.contains("Dep graph started")) {
-                                    browser.loadURL("http://localhost:4211/")
+                                    TimeoutUtil.sleep(500)
+                                    browser.loadURL("http://localhost:4222/")
+                                    depGraphProcess?.removeProcessListener(this)
                                 }
                             }
                         })
@@ -240,7 +249,7 @@ class NxDepGraphWindow(val project: Project) {
                 val p = e.project ?: return JPanel()
                 val projects = NxConfigProvider.getNxConfig(p, p.baseDir)?.projects ?: emptyList()
 
-                val chooser: ElementsChooser<NxProject> = object : ElementsChooser<NxProject>(projects, true) {
+                val chooser: ElementsChooser<NxProject> = object : ElementsChooser<NxProject>(projects, false) {
                     override fun getItemText(value: NxProject): String {
                         return StringUtil.capitalizeWords(value.name, true)
                     }
@@ -310,7 +319,9 @@ class NxDepGraphWindow(val project: Project) {
         val refresh = object : DumbAwareAction("Refresh", "", AllIcons.Actions.Refresh) {
 
             override fun actionPerformed(e: AnActionEvent) {
-                browser.cefBrowser.reload()
+                if (isProcessRunning) {
+                    browser.cefBrowser.reload()
+                }
             }
         }
 
@@ -320,8 +331,9 @@ class NxDepGraphWindow(val project: Project) {
                 FileEditorManagerListener.FILE_EDITOR_MANAGER,
                 object : FileEditorManagerListener {
                     override fun fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
-                        println("fileOpened..." + file.name)
-                        focusProject(file)
+                        if (isProcessRunning) {
+                            focusProject(file)
+                        }
                     }
 
                     private fun focusProject(file: VirtualFile) {
@@ -335,7 +347,9 @@ class NxDepGraphWindow(val project: Project) {
                     }
 
                     override fun selectionChanged(@NotNull event: FileEditorManagerEvent) {
-                        event.newFile?.also { focusProject(it) }
+                        if (isProcessRunning) {
+                            event.newFile?.also { focusProject(it) }
+                        }
                     }
                 }
             )
@@ -345,7 +359,8 @@ class NxDepGraphWindow(val project: Project) {
         actionGroup.addSeparator()
         actionGroup.add(refresh)
         actionGroup.addSeparator()
-        actionGroup.add(filter)
+        // TODO add filter when synchro between web and swing is always ok
+        //actionGroup.add(filter)
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, actionGroup, true)
         toolbar.layoutPolicy = ActionToolbar.NOWRAP_LAYOUT_POLICY
         // Display a 'Server not started' message.
@@ -359,5 +374,22 @@ class NxDepGraphWindow(val project: Project) {
         panel.add(browserComponent, BorderLayout.CENTER)
         browser.loadHTML("<p style='color:gray;padding-top:150px;text-align:center'>Server not started.</p>")
         return panel
+    }
+
+    private fun stopDepGraphServer() {
+        if (depGraphProcess != null) {
+            if (depGraphProcess!!.isProcessTerminated.not()) {
+                ApplicationManager.getApplication().executeOnPooledThread {
+                    if (depGraphProcess!!.isProcessTerminated.not()) {
+                        ScriptRunnerUtil.terminateProcessHandler(
+                            depGraphProcess!!,
+                            1000,
+                            depGraphProcess!!.commandLine
+                        )
+                        depGraphProcess = null
+                    }
+                }
+            }
+        }
     }
 }

@@ -383,10 +383,13 @@ class NxBuildersUiPanel(
     private fun computeArgsFromModelUi(): List<String> {
         return modelUI
             .filterKeys { it !in ignoredOptions() }
-            .filterValues { (it is Number) or (it is Boolean && it) or (it is String && it.isNotBlank()) }
+            .filterNot {
+               builderOptions.first { o -> o.name == it.key }.default == it.value.toString() //filter value are equal to default.
+            }
+            .filterValues { (it is Number) or (it is Boolean) or (it is String && it.isNotBlank()) }
             .map {
                 if (it.value is Boolean) {
-                    "--${it.key}"
+                    if (it.value == false) "--no-${it.key}" else "--${it.key}"
                 } else {
                     "--${it.key}=${it.value}"
                 }
@@ -883,10 +886,13 @@ class NxGeneratorsUiPanel(project: Project, var schematic: Schematic, args: Muta
     private fun computeArgsFromModelUi(): List<String> {
         return modelUI
             .filterKeys { it !in ignoredOptions() }
-            .filterValues { (it is Boolean && it) or (it is String && it.isNotBlank()) }
+            .filterNot {
+                schematic.options.first { o -> o.name == it.key }.default == it.value.toString() //filter value are equal to default.
+            }
+            .filterValues { (it is Number) or (it is Boolean) or (it is String && it.isNotBlank()) }
             .map {
                 if (it.value is Boolean) {
-                    "--${it.key}"
+                    if (it.value == false) "--no-${it.key}" else "--${it.key}"
                 } else {
                     "--${it.key}=${it.value}"
                 }

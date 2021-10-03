@@ -10,6 +10,7 @@ import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ScriptRunnerUtil
+import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.ElementsChooser
 import com.intellij.javascript.nodejs.CompletionModuleInfo
@@ -43,6 +44,8 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.ui.AppUIUtil
 import com.intellij.ui.InplaceButton
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.Content
@@ -165,6 +168,9 @@ class NxDepGraphWindow(val project: Project) {
             override fun actionPerformed(e: AnActionEvent) {
                 val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter
                 var configurator: NodeCommandLineConfigurator? = null
+                val toolWindowManager = ToolWindowManager.getInstance(project)
+                val toolWindow = toolWindowManager.getToolWindow("Nx Dep Graph")
+
                 try {
                     configurator = NodeCommandLineConfigurator.find(interpreter!!)
                 } catch (e: Exception) {
@@ -193,9 +199,15 @@ class NxDepGraphWindow(val project: Project) {
                         depGraphProcess!!.setShouldDestroyProcessRecursively(true)
                         depGraphProcess!!.addProcessListener(object : ProcessListener {
                             override fun startNotified(event: ProcessEvent) {
+                                UIUtil.invokeLaterIfNeeded {
+                                    toolWindow!!.setIcon(ExecutionUtil.getLiveIndicator(NxIcons.NRWL_ICON))
+                                }
                             }
 
                             override fun processTerminated(event: ProcessEvent) {
+                                AppUIUtil.invokeLaterIfProjectAlive(project) {
+                                    toolWindow?.setIcon(NxIcons.NRWL_ICON)
+                                }
                                 browser.loadHTML("<p style='color:gray;padding-top:150px;text-align:center'>Server not started.</p>")
                             }
 
@@ -203,7 +215,7 @@ class NxDepGraphWindow(val project: Project) {
                                 if (event.text.contains("Dep graph started")) {
                                     TimeoutUtil.sleep(500)
                                     browser.loadURL("http://localhost:4222/")
-                                    depGraphProcess?.removeProcessListener(this)
+                                    // depGraphProcess?.removeProcessListener(this)
                                 }
                             }
                         })

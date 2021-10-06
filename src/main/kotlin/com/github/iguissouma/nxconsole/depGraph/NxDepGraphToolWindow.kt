@@ -125,7 +125,7 @@ class NxDepGraphWindow(val project: Project) {
         val browser = JBCefBrowser()
         val browserComponent = browser.component
         // https://youtrack.jetbrains.com/issue/JBR-3175
-        browser.jbCefClient.addProperty(JBCefClient.JBCEFCLIENT_JSQUERY_POOL_SIZE_PROP, 10)
+        browser.jbCefClient.setProperty(JBCefClient.Properties.JS_QUERY_POOL_SIZE, 10)
         ApplicationManager.getApplication().messageBus.connect()
             .subscribe(
                 ProjectManager.TOPIC,

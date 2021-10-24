@@ -24,7 +24,7 @@ class NxDepGraphPresentationModel(val project: Project, graph: Graph2D) :
     private var myRenderer: BasicGraphNodeRenderer<BasicNxNode, BasicNxEdge>? = null
 
     override fun getNodeRealizer(n: BasicNxNode?): NodeRealizer {
-        return GraphViewUtil.createNodeRealizer("NxNodeRenderer", getRenderer())
+        return GraphViewUtil.createNodeRealizer("NxNodeRenderer", getRenderer() ?: error("unable to get node celle renderer"))
     }
 
     private fun getRenderer(): BasicGraphNodeRenderer<BasicNxNode, BasicNxEdge>? {

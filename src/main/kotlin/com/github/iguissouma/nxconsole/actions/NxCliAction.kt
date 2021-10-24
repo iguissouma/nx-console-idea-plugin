@@ -2,7 +2,7 @@ package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
-import com.github.iguissouma.nxconsole.execution.NxBuildersUiPanel
+import com.github.iguissouma.nxconsole.execution.ui.NxBuildersUiPanel
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager

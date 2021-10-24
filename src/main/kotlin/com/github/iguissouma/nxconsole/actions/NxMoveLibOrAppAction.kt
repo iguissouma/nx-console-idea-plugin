@@ -26,6 +26,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.JBLabelDecorator
 import com.intellij.ui.layout.panel
@@ -33,6 +34,17 @@ import java.awt.Dimension
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.event.DocumentEvent
+
+val TEXT_FIELD_WITH_HISTORY_WHOLE_TEXT: TextComponentAccessor<TextFieldWithHistory> =
+    object : TextComponentAccessor<TextFieldWithHistory> {
+        override fun getText(textField: TextFieldWithHistory): String {
+            return textField.text
+        }
+
+        override fun setText(textField: TextFieldWithHistory, text: String) {
+            textField.text = text
+        }
+    }
 
 class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
 
@@ -121,7 +133,7 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                 "App or Lib will be moved to this directory",
                 project,
                 descriptor,
-                TextComponentAccessor.TEXT_FIELD_WITH_HISTORY_WHOLE_TEXT
+                TEXT_FIELD_WITH_HISTORY_WHOLE_TEXT
             )
 
             val textField = myTargetDirectoryField.childComponent.textEditor

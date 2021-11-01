@@ -174,7 +174,7 @@ class NxService(val project: Project) : JsbtService(project) {
         val nxRunConfiguration = runConfiguration as NxRunConfiguration
         val merged = NxRunSettings(
             nxFilePath = structure.nxJson.path,
-            tasks = taskSet.taskNames
+            tasks = taskSet.taskNames,
         )
         NxRunConfigurationProducer.setupConfigurationFromSettings(nxRunConfiguration, merged)
     }

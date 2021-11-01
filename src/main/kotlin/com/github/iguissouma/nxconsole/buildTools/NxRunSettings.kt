@@ -2,6 +2,8 @@ package com.github.iguissouma.nxconsole.buildTools
 
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
+import com.intellij.javascript.nodejs.npm.NpmUtil
+import com.intellij.javascript.nodejs.util.NodePackageRef
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
@@ -12,6 +14,7 @@ class NxRunSettings(
     var nxFilePath: String? = null,
     var tasks: List<String> = emptyList(),
     var arguments: String? = null,
+    val packageManagerPackageRef: NodePackageRef = NpmUtil.createProjectPackageManagerPackageRef(),
     var envData: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
 
@@ -31,6 +34,13 @@ class NxRunSettings(
         if (this.arguments?.isNotEmpty() == true) {
             JDOMExternalizerUtil.writeCustomField(parent, "arguments", this.arguments)
         }
+        if (!NpmUtil.isProjectPackageManagerPackageRef(this.packageManagerPackageRef)) {
+            JDOMExternalizerUtil.writeCustomField(
+                parent,
+                "package-manager",
+                this.packageManagerPackageRef.getIdentifier()
+            )
+        }
         this.envData.writeExternal(parent)
     }
 
@@ -49,12 +59,19 @@ class NxRunSettings(
         val interpreterRefName = JDOMExternalizerUtil.readCustomField(parent, "node-interpreter")
         val interpreterRef = createInterpreterRef(interpreterRefName)
         val arguments = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "arguments"))
+        val packageManagerReferenceName = JDOMExternalizerUtil.readCustomField(parent, "package-manager")
+
+        val packageManagerPackageRef =
+            if (packageManagerReferenceName == null) NpmUtil.createProjectPackageManagerPackageRef()
+            else NpmUtil.DESCRIPTOR.createPackageRef(packageManagerReferenceName)
+
         return NxRunSettings(
             interpreterRef = interpreterRef,
             nxFilePath = StringUtil.notNullize(JDOMExternalizerUtil.readCustomField(parent, "nxfile")),
             tasks = readTasks(parent),
             arguments = arguments,
-            envData = EnvironmentVariablesData.readExternal(parent)
+            envData = EnvironmentVariablesData.readExternal(parent),
+            packageManagerPackageRef = packageManagerPackageRef
         )
     }
 

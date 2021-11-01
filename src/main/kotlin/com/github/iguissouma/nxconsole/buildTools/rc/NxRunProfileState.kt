@@ -1,7 +1,9 @@
 package com.github.iguissouma.nxconsole.buildTools.rc
 
+import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.intellij.execution.DefaultExecutionResult
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -16,8 +18,9 @@ import com.intellij.javascript.nodejs.NodeStackTraceFilter
 import com.intellij.javascript.nodejs.debug.NodeLocalDebuggableRunProfileStateSync
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
-import com.intellij.javascript.nodejs.library.yarn.YarnPnpNodePackage
+import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.util.NodePackage
+import com.intellij.javascript.nodejs.util.NodePackageRef
 import com.intellij.lang.javascript.buildTools.TypeScriptErrorConsoleFilter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
@@ -34,13 +37,21 @@ class NxRunProfileState(
 ) : NodeLocalDebuggableRunProfileStateSync() {
 
     override fun executeSync(configurator: CommandLineDebugConfigurator?): ExecutionResult {
-        val interpreter: NodeJsInterpreter = this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
+        val nodeInterpreter: NodeJsInterpreter =
+            this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
         val commandLine = NodeCommandLineUtil.createCommandLine(true)
         val envData = this.runSettings.envData
+        val npmPackageRef = this.runSettings.packageManagerPackageRef
+        val project = this.environment.getProject()
         NodeCommandLineUtil.configureCommandLine(
             commandLine,
             configurator
-        ) { debugMode: Boolean? -> this.configureCommandLine(commandLine, interpreter, envData) }
+        ) { debugMode: Boolean? ->
+            this.configureCommandLine(
+                commandLine, nodeInterpreter, npmPackageRef,
+                project, envData
+            )
+        }
         val processHandler: ProcessHandler = NodeCommandLineUtil.createProcessHandler(commandLine, true)
         ProcessTerminatedListener.attach(processHandler)
         val console: ConsoleView = this.createConsole(processHandler, commandLine.workDirectory)
@@ -50,17 +61,28 @@ class NxRunProfileState(
 
     private fun configureCommandLine(
         commandLine: GeneralCommandLine,
-        interpreter: NodeJsInterpreter,
+        nodeInterpreter: NodeJsInterpreter,
+        npmPackageRef: NodePackageRef,
+        project: Project,
         envData: EnvironmentVariablesData
     ) {
 
         commandLine.withCharset(StandardCharsets.UTF_8)
         CommandLineUtil.setWorkingDirectory(commandLine, File(this.runSettings.nxFilePath).parentFile, false)
-        if (this.nxPackage is YarnPnpNodePackage) {
-            this.nxPackage.addYarnRunToCommandLine(commandLine, this.environment.project, interpreter, null as String?)
+
+        val pkg = NpmUtil.resolveRef(npmPackageRef, project, nodeInterpreter)
+        if (pkg == null) {
+            throw ExecutionException(
+                NxBundle.message(
+                    "nx.npm.dialog.message.cannot.resolve.package.manager",
+                    npmPackageRef.identifier
+                )
+            )
         } else {
-            commandLine.addParameter(getNxBinFile(this.nxPackage).absolutePath)
+            commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg))
+            commandLine.addParameter("nx")
         }
+
 
         val tasks = this.runSettings.tasks
         if (tasks.size > 1) {
@@ -82,7 +104,7 @@ class NxRunProfileState(
         val separator = if (SystemInfo.isWindows) ";" else ":"
         commandLine.environment["PATH"] =
             listOfNotNull(shellPath, nodeModuleBinPath).joinToString(separator = separator)
-        NodeCommandLineConfigurator.find(interpreter).configure(commandLine)
+        NodeCommandLineConfigurator.find(nodeInterpreter).configure(commandLine)
     }
 
     private fun getNxBinFile(nxPackage: NodePackage): File {

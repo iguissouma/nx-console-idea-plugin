@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.execution.ui
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.execution.SchematicProjectOptionsTextField
 import com.github.iguissouma.nxconsole.execution.parseArguments
@@ -244,11 +245,11 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
 
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
-                NpmPackageProjectGenerator.generate(
+                NxGenerator().generate(
                     interpreter!!, NodePackage(module?.virtualFile?.path!!),
-                    { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
+                    { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
                     cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, arrayOf(filter), *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
+                    null, "Generating", arrayOf(filter), *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray()
                 )
@@ -263,11 +264,11 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
 
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
-                NpmPackageProjectGenerator.generate(
+                NxGenerator().generate(
                     interpreter!!, NodePackage(module?.virtualFile?.path!!),
-                    { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
+                    { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
                     cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, arrayOf(filter),
+                    null, "Generating", arrayOf(filter),
                     *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray(),

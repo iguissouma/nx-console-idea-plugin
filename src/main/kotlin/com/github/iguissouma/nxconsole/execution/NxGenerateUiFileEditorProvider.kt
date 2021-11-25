@@ -46,7 +46,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAware
@@ -54,7 +53,6 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.text.StringUtil
@@ -76,8 +74,6 @@ import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.panel
 import com.intellij.util.ThrowableRunnable
 import com.intellij.util.ui.SwingHelper
-import com.intellij.vcs.log.impl.VcsLogContentUtil
-import com.intellij.vcs.log.impl.VcsLogTabsManager
 import com.intellij.webcore.ui.PathShortener
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -137,13 +133,6 @@ internal class DefaultNxUiFile(val task: String, panel: NxUiPanel) : NxUiFile(ta
 
     override fun createMainComponent(project: Project): JComponent {
         return nxUiPanel ?: JBPanelWithEmptyText().withEmptyText(NxBundle.message("nx.ui.tab.closed.status"))
-    }
-
-    fun getDisplayName(): String? {
-        return nxUiPanel?.let {
-            val logUi = VcsLogContentUtil.getLogUi(it) ?: return null
-            return VcsLogTabsManager.generateDisplayName(logUi)
-        }
     }
 
     override fun isValid(): Boolean = nxUiPanel != null
@@ -950,24 +939,6 @@ class NxUIEditorProvider : FileEditorProvider, DumbAware {
 
     override fun getEditorTypeId(): String = "NxUIEditor"
     override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.HIDE_DEFAULT_EDITOR
-
-    override fun disposeEditor(editor: FileEditor) {
-        if (editor.file?.getUserData(FileEditorManagerImpl.CLOSING_TO_REOPEN) != true) {
-            editor.disposeNxUis()
-        }
-
-        super.disposeEditor(editor)
-    }
-}
-
-fun FileEditor.disposeNxUis(): List<String> {
-    val logUis = VcsLogContentUtil.getLogUis(component)
-    val disposedIds = logUis.map { it.id }
-    if (logUis.isNotEmpty()) {
-        component.removeAll()
-        logUis.forEach(Disposer::dispose)
-    }
-    return disposedIds
 }
 
 // a stupid options parser

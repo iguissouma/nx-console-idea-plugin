@@ -17,7 +17,6 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -26,8 +25,6 @@ import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.TextFieldWithAutoCompletionListProvider
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.util.ThrowableRunnable
-import com.intellij.util.ui.SwingHelper
-import com.intellij.webcore.ui.PathShortener
 import java.awt.BorderLayout
 import java.lang.reflect.InvocationTargetException
 import javax.swing.Icon

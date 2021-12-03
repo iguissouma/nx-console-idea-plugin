@@ -66,9 +66,14 @@ class NxGenerator {
         val arguments: MutableList<String?> = mutableListOf()
 
         val nodePackage = NpmManager.getInstance(project).`package` ?: error("cannot find npm package manager")
-        val npmCliJsFilePath = NpmUtil.getValidNpmCliJsFilePath(nodePackage, node)
-        commandLine.addParameter(npmCliJsFilePath)
-        commandLine.addParameter("nx")
+        if (NpmUtil.isYarnAlikePackage(nodePackage) || NpmUtil.isPnpmPackage(nodePackage)) {
+            val npmCliJsFilePath = NpmUtil.getValidNpmCliJsFilePath(nodePackage, node)
+            commandLine.addParameter(npmCliJsFilePath)
+            commandLine.addParameter("nx")
+        } else {
+            commandLine.addParameter(getNxBinFile(pkg).absolutePath)
+        }
+
         commandLine.addParameters(arguments)
         commandLine.addParameters(args.toList())
         commandLine.setWorkDirectory(workingDir.path)
@@ -115,4 +120,7 @@ class NxGenerator {
         return handler
     }
 
+    fun getNxBinFile(nxPackage: NodePackage): File {
+        return File(nxPackage.systemDependentPath, "bin" + File.separator + "nx.js")
+    }
 }

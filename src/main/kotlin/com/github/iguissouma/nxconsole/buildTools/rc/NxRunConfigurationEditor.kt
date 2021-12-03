@@ -11,7 +11,6 @@ import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.lang.javascript.buildTools.base.ComponentWithEmptyBrowseButton
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskFetchException
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
-import com.intellij.lang.javascript.buildTools.grunt.beforeRun.GruntBeforeRunTaskDialog
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.options.ex.SingleConfigurableEditor
@@ -43,7 +42,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
     private val argumentsEditor = createArgumentsEditor()
-    private val packageManagerPackageField: NodePackageField = NpmUtil.createPackageManagerPackageField(this.nodeInterpreterField, false);
+    private val packageManagerPackageField: NodePackageField = NpmUtil.createPackageManagerPackageField(this.nodeInterpreterField, false)
     private val envVarsComponent: EnvironmentVariablesTextFieldWithBrowseButton =
         EnvironmentVariablesTextFieldWithBrowseButton()
 

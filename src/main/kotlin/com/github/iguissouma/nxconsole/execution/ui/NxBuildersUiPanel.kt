@@ -13,7 +13,6 @@ import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.execution.SchematicProjectOptionsTextField
 import com.github.iguissouma.nxconsole.execution.runInEdtAndGet
-import com.github.iguissouma.nxconsole.schematics.Option
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -39,7 +38,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.vcs.VcsShowConfirmationOption
 import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.ColorUtil
 import com.intellij.ui.DocumentAdapter
@@ -152,19 +150,19 @@ class NxBuildersUiPanel(
             return
         }
 
-        //val searchableOptionsRegistrar = SearchableOptionsRegistrar.getInstance()
-        //val filterWords = searchText?.let { searchableOptionsRegistrar.getProcessedWords(it) } ?: emptySet()
-        //val filterWordsUnstemmed = searchText?.split(' ') ?: emptySet()
+        // val searchableOptionsRegistrar = SearchableOptionsRegistrar.getInstance()
+        // val filterWords = searchText?.let { searchableOptionsRegistrar.getProcessedWords(it) } ?: emptySet()
+        // val filterWordsUnstemmed = searchText?.split(' ') ?: emptySet()
         val visibleGroupPanels = mutableSetOf<JPanel>()
         var matchCount = 0
         for (settingsRow in settingsRows) {
-            //val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
+            // val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
             val idWords = settingsRow.id.split('.')
-            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) //(filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
-            //val idMatches =
+            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
+            // val idMatches =
             //    searchText == null || (filterWordsUnstemmed.isNotEmpty() && idWords.containsAll(filterWordsUnstemmed))
             val modifiedMatches = if (onlyShowModified) !settingsRow.isDefaultPredicate() else true
-            //val matches = (textMatches || idMatches) && modifiedMatches
+            // val matches = (textMatches || idMatches) && modifiedMatches
             val matches = textMatches && modifiedMatches
             if (matches) matchCount++
 
@@ -390,7 +388,6 @@ class NxBuildersUiPanel(
         else if (this.type == "number") OptionSettingType.Int
         else OptionSettingType.String
 
-
     private fun RowBuilder.createComponentRow() {
         for (option in builderOptions) {
             val settingsRowsInGroup = mutableListOf<NxBuildersUiPanel.SettingsRow>()
@@ -485,7 +482,7 @@ class NxBuildersUiPanel(
                 )
                 OptionSettingControl(
                     textField,
-                    SpinnerPredicate(textField.component, { it == option.default.toIntOrNull()}),
+                    SpinnerPredicate(textField.component, { it == option.default.toIntOrNull() }),
                     { textField.component.value = option.default.toIntOrNull() }
                 )
             }

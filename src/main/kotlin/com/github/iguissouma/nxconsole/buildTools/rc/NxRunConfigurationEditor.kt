@@ -5,12 +5,12 @@ import com.github.iguissouma.nxconsole.buildTools.NxService
 import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBrowseButton
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
+import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.lang.javascript.buildTools.base.ComponentWithEmptyBrowseButton
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskFetchException
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
-import com.intellij.lang.javascript.buildTools.grunt.beforeRun.GruntBeforeRunTaskDialog
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.options.ex.SingleConfigurableEditor
@@ -42,6 +42,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
     private val argumentsEditor = createArgumentsEditor()
+    private val packageManagerPackageField: NodePackageField = NpmUtil.createPackageManagerPackageField(this.nodeInterpreterField, false)
     private val envVarsComponent: EnvironmentVariablesTextFieldWithBrowseButton =
         EnvironmentVariablesTextFieldWithBrowseButton()
 
@@ -52,6 +53,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         .addLabeledComponent("A&rguments:", argumentsEditor)
         .addComponent(JSeparator(), 8)
         .addLabeledComponent("Node &interpreter:", this.nodeInterpreterField, 8)
+        .addLabeledComponent("Package manager:", this.packageManagerPackageField, 8)
         .addLabeledComponent("&Package nx-cli:", this.nxPackageField)
         .addLabeledComponent("Environment:", this.envVarsComponent)
         .panel
@@ -136,15 +138,18 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         if (defaultPackage != null) {
             this.nxPackageField.selected = defaultPackage
         }
+        this.packageManagerPackageField.setSelectedRef(settings.packageManagerPackageRef)
+
         tasksField.setTextAndAddToHistory(ParametersListUtil.join(settings.tasks))
         argumentsEditor.text = settings.arguments
 
         envVarsComponent.data = settings.envData
 
         val dialogWrapper = DialogWrapper.findInstance(this.panel)
-        if (dialogWrapper is SingleConfigurableEditor || dialogWrapper is GruntBeforeRunTaskDialog) {
+        if (dialogWrapper is SingleConfigurableEditor) {
             this.nodeInterpreterField.setPreferredWidthToFitText()
             this.nxPackageField.setPreferredWidthToFitText()
+            this.packageManagerPackageField.setPreferredWidthToFitText()
             SwingHelper.resizeDialogToFitTextFor(this.nxJsonField)
         }
     }
@@ -160,7 +165,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             nxFilePath = PathShortener.getAbsolutePath(this.nxJsonField.childComponent.textEditor),
             tasks = tasks,
             arguments = this.argumentsEditor.text,
-            envData = this.envVarsComponent.data
+            envData = this.envVarsComponent.data,
+            packageManagerPackageRef = this.packageManagerPackageField.selectedRef
         )
     }
 

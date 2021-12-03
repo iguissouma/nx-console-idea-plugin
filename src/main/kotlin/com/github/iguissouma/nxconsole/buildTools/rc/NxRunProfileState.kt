@@ -79,10 +79,13 @@ class NxRunProfileState(
                 )
             )
         } else {
-            commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg))
-            commandLine.addParameter("nx")
+            if (NpmUtil.isYarnAlikePackage(pkg) || NpmUtil.isPnpmPackage(pkg)) {
+                commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg, nodeInterpreter))
+                commandLine.addParameter("nx")
+            } else {
+                commandLine.addParameter(getNxBinFile(nxPackage).absolutePath)
+            }
         }
-
 
         val tasks = this.runSettings.tasks
         if (tasks.size > 1) {

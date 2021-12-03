@@ -13,12 +13,10 @@ import com.github.iguissouma.nxconsole.schematics.Option
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.icons.AllIcons
 import com.intellij.ide.ui.search.SearchUtil
-import com.intellij.ide.ui.search.SearchableOptionsRegistrar
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -131,19 +129,19 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             return
         }
 
-        //val searchableOptionsRegistrar = SearchableOptionsRegistrar.getInstance()
-        //val filterWords = searchText?.let { searchableOptionsRegistrar.getProcessedWords(it) } ?: emptySet()
-        //val filterWordsUnstemmed = searchText?.split(' ') ?: emptySet()
+        // val searchableOptionsRegistrar = SearchableOptionsRegistrar.getInstance()
+        // val filterWords = searchText?.let { searchableOptionsRegistrar.getProcessedWords(it) } ?: emptySet()
+        // val filterWordsUnstemmed = searchText?.split(' ') ?: emptySet()
         val visibleGroupPanels = mutableSetOf<JPanel>()
         var matchCount = 0
         for (settingsRow in settingsRows) {
-            //val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
+            // val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
             val idWords = settingsRow.id.split('.')
-            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) //(filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
-            //val idMatches =
+            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
+            // val idMatches =
             //    searchText == null || (filterWordsUnstemmed.isNotEmpty() && idWords.containsAll(filterWordsUnstemmed))
             val modifiedMatches = if (onlyShowModified) !settingsRow.isDefaultPredicate() else true
-            //val matches = (textMatches || idMatches) && modifiedMatches
+            // val matches = (textMatches || idMatches) && modifiedMatches
             val matches = textMatches && modifiedMatches
             if (matches) matchCount++
 

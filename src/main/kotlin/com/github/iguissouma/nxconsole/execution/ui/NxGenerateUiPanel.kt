@@ -480,7 +480,8 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
                 )
             }
             OptionSettingType.Enum -> {
-                val comboBoxModel = CollectionComboBoxModel(option.enum)
+                val comboBoxModel =
+                    CollectionComboBoxModel(if ((option.default as? String) == null) listOf("") + option.enum else option.enum)
                 val cb = comboBox(
                     comboBoxModel,
                     { modelUI[option.name!!] as? String ?: "" },
@@ -488,8 +489,8 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
                 )
                 OptionSettingControl(
                     cb,
-                    cb.component.selectedValueIs(option.default as String),
-                    { cb.component.selectedItem = option.default }
+                    cb.component.selectedValueIs(option.default as? String ?: ""),
+                    { cb.component.selectedItem = option.default as? String ?: "" }
                 )
             }
 

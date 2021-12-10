@@ -54,7 +54,8 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
                         val nxProject =
                             NxConfigProvider.getNxProject(element.project, virtualAngularStandaloneConfigJson)
-                        if (NxJsonUtil.isChildOfTargetsProperty(propertyLiteral.parent as JsonProperty)) {
+                        val property = propertyLiteral.parent as? JsonProperty ?: return null
+                        if (NxJsonUtil.isChildOfTargetsProperty(property)) {
 
                             val setting = NxRunSettings(
                                 nxFilePath = findChildNxJsonFile.path,
@@ -66,7 +67,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             )
                             sourceElement?.set(element)
                             setting
-                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(propertyLiteral.parent as JsonProperty)) {
+                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(property)) {
                             val configurationJsonProperty = PsiTreeUtil.getParentOfType(
                                 propertyLiteral,
                                 JsonProperty::class.java
@@ -100,7 +101,8 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                         // findContainingProjectProperty(element)
                         // TODO check when it's not JsonStringLiteral
                         val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
-                        if (NxJsonUtil.isChildOfTargetsProperty(propertyLiteral.parent as JsonProperty)) {
+                        val property = propertyLiteral.parent as? JsonProperty ?: return null
+                        if (NxJsonUtil.isChildOfTargetsProperty(property)) {
                             val architectJsonObject = PsiTreeUtil.getParentOfType(
                                 propertyLiteral,
                                 JsonObject::class.java
@@ -125,7 +127,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             )
                             sourceElement?.set(element)
                             setting
-                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(propertyLiteral.parent as JsonProperty)) {
+                        } else if (NxJsonUtil.isChildOfConfigurationsProperty(property)) {
                             val configurationJsonProperty = PsiTreeUtil.getParentOfType(
                                 propertyLiteral,
                                 JsonProperty::class.java

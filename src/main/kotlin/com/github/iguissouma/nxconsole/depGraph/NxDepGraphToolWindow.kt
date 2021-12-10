@@ -18,7 +18,6 @@ import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -374,10 +373,12 @@ class NxDepGraphWindow(val project: Project) {
         actionGroup.addSeparator()
         // TODO add filter when synchro between web and swing is always ok
         // actionGroup.add(filter)
-        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, actionGroup, true)
+        val toolbar = ActionManager.getInstance().createActionToolbar("NxDepGraphPanel", actionGroup, true)
         toolbar.layoutPolicy = ActionToolbar.NOWRAP_LAYOUT_POLICY
         // Display a 'Server not started' message.
         val panel = JPanel(BorderLayout())
+        toolbar.targetComponent = panel
+
 
         val label = JBLabel("Server not started", SwingConstants.CENTER)
         label.foreground = UIUtil.getLabelDisabledForeground()

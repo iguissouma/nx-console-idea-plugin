@@ -125,7 +125,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             project.messageBus.connect().subscribe(
                 VirtualFileManager.VFS_CHANGES,
                 object : BulkFileListener {
-                    override fun after(events: List<VFileEvent?>) {
+                    override fun after(events: MutableList<out VFileEvent>) {
                         // handle the events
                         events.forEach { event ->
                             if (event is VFileContentChangeEvent && event.file.name == "nx.json" && isShowing) {

@@ -379,7 +379,6 @@ class NxDepGraphWindow(val project: Project) {
         val panel = JPanel(BorderLayout())
         toolbar.targetComponent = panel
 
-
         val label = JBLabel("Server not started", SwingConstants.CENTER)
         label.foreground = UIUtil.getLabelDisabledForeground()
         // panel.add(label, BorderLayout.CENTER)

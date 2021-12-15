@@ -95,6 +95,10 @@
         <jestPackageProvider implementation="com.github.iguissouma.nxconsole.jest.NxJestPackageProvider"/>
     </extensions>
 
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="com.github.iguissouma.nxconsole.schema.NxSchemaProviderFactory"/>
+    </extensions>
+
     <projectListeners>
         <listener class="com.github.iguissouma.nxconsole.listeners.NxProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>

@@ -17,7 +17,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ProjectGeneratorPeer
 import com.intellij.util.PathUtil
@@ -55,8 +54,9 @@ class NxPluginsCliProjectGenerator : NpmPackageProjectGenerator() {
         return arrayOf(baseDir.name, "--pluginName", pluginName)
     }
 
-    override fun workingDir(settings: Settings?, baseDir: VirtualFile): File {
-        return VfsUtilCore.virtualToIoFile(baseDir).parentFile
+    override fun generateInTemp(): Boolean {
+        // generate in temp to avoid nx complaining the baseDir is not an empty directory.
+        return true
     }
 
     override fun filters(project: Project, baseDir: VirtualFile): Array<Filter> {

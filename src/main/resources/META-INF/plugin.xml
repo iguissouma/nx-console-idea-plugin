@@ -89,6 +89,12 @@
         <!--Nx dep graph-->
         <toolWindow id="Nx Dep Graph" anchor="right" secondary="true" factoryClass="com.github.iguissouma.nxconsole.depGraph.NxDepGraphToolWindow" icon="/icons/nrwl.svg"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.depGraph.NxDepGraphWindowService"/>
+
+        <!--intentions-->
+        <intentionAction>
+            <className>com.github.iguissouma.nxconsole.intentions.NxConvertToNxProject</className>
+            <category>Nx</category>
+        </intentionAction>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript">

@@ -13,6 +13,7 @@ import com.intellij.ide.projectView.actions.MarkRootActionBase.findContentEntry
 import com.intellij.ide.projectView.impl.ProjectRootsUtil
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Attachment
@@ -102,7 +103,7 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
         } catch (e: Exception) {
             LOG.error("Cannot load schematics", e)
         }
-        val loadDepGraphInfoJson = loadDepGraphInfoJson(configurator!!, nxConfig?.angularJsonFile!!)
+        val loadDepGraphInfoJson = loadDepGraphInfoJson(project, configurator!!, nxConfig?.angularJsonFile!!)
         println(loadDepGraphInfoJson)
         val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
         val depGraph: Map<String, Any> = Gson().fromJson(loadDepGraphInfoJson, depGraphType)
@@ -568,12 +569,18 @@ private var myLogErrors: ThreadLocal<Boolean> = ThreadLocal.withInitial { true }
 private val LOG: Logger = Logger.getInstance("#NxConfigureUnloadedModulesDialog.kt")
 
 fun loadDepGraphInfoJson(
+    project: Project,
     configurator: NodeCommandLineConfigurator,
     cli: VirtualFile
 ): String {
     val directory = JSLanguageServiceUtil.getPluginDirectory(NxCliProjectGenerator::class.java, "nxCli")
     val utilityExe = "${directory}${File.separator}runner.js"
-    val commandLine = GeneralCommandLine("", utilityExe, cli.path, "./depGraphInfoProvider.js")
+
+    val nodeInstalledPackageFinder = NodeInstalledPackageFinder(project, project.baseDir)
+    val pkg = "@nrwl/workspace"
+    val fromVersion = nodeInstalledPackageFinder.findInstalledPackage(pkg)?.version ?: return ""
+    val command = if (fromVersion.major <= 12) "./depGraphInfoProvider.js" else "./depGraphInfoProvider_13.js"
+    val commandLine = GeneralCommandLine("", utilityExe, cli.path, command)
     // commandLine.addParameter(builderName)
     configurator.configure(commandLine)
     return grabCommandOutput(commandLine, cli.parent.path)

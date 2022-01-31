@@ -22,7 +22,7 @@ const IMPORTANT_FIELD_NAMES = [
 const IMPORTANT_FIELDS_SET = new Set(IMPORTANT_FIELD_NAMES);
 function findClosestNg(dir) {
     if (directoryExists(path.join(dir, 'node_modules'))) {
-        if (os_1.platform() === 'win32') {
+        if ((0, os_1.platform)() === 'win32') {
             if (fileExistsSync(path.join(dir, 'ng.cmd'))) {
                 return path.join(dir, 'ng.cmd');
             }
@@ -46,7 +46,7 @@ function findClosestNg(dir) {
 exports.findClosestNg = findClosestNg;
 function findClosestNx(dir) {
     if (directoryExists(path.join(dir, 'node_modules'))) {
-        if (os_1.platform() === 'win32') {
+        if ((0, os_1.platform)() === 'win32') {
             if (fileExistsSync(path.join(dir, 'nx.cmd'))) {
                 return path.join(dir, 'nx.cmd');
             }
@@ -70,12 +70,12 @@ function findClosestNx(dir) {
 exports.findClosestNx = findClosestNx;
 function listOfUnnestedNpmPackages(nodeModulesDir) {
     const res = [];
-    if (!fs_1.existsSync(nodeModulesDir)) {
+    if (!(0, fs_1.existsSync)(nodeModulesDir)) {
         return res;
     }
-    fs_1.readdirSync(nodeModulesDir).forEach(npmPackageOrScope => {
+    (0, fs_1.readdirSync)(nodeModulesDir).forEach(npmPackageOrScope => {
         if (npmPackageOrScope.startsWith('@')) {
-            fs_1.readdirSync(path.join(nodeModulesDir, npmPackageOrScope)).forEach(p => {
+            (0, fs_1.readdirSync)(path.join(nodeModulesDir, npmPackageOrScope)).forEach(p => {
                 res.push(`${npmPackageOrScope}/${p}`);
             });
         }
@@ -96,13 +96,13 @@ function listFiles(dirName) {
     // the try-catch here is intentional. It's only used in auto-completion.
     // If it doesn't work, we don't want the process to exit
     try {
-        fs_1.readdirSync(dirName).forEach((c) => {
+        (0, fs_1.readdirSync)(dirName).forEach((c) => {
             const child = path.join(dirName, c);
             try {
-                if (!fs_1.statSync(child).isDirectory()) {
+                if (!(0, fs_1.statSync)(child).isDirectory()) {
                     res.push(child);
                 }
-                else if (fs_1.statSync(child).isDirectory()) {
+                else if ((0, fs_1.statSync)(child).isDirectory()) {
                     res.push(...listFiles(child));
                 }
             }
@@ -119,7 +119,7 @@ function listFiles(dirName) {
 exports.listFiles = listFiles;
 function directoryExists(filePath) {
     try {
-        return fs_1.statSync(filePath).isDirectory();
+        return (0, fs_1.statSync)(filePath).isDirectory();
     }
     catch (_a) {
         return false;
@@ -128,7 +128,7 @@ function directoryExists(filePath) {
 exports.directoryExists = directoryExists;
 function fileExistsSync(filePath) {
     try {
-        return fs_1.statSync(filePath).isFile();
+        return (0, fs_1.statSync)(filePath).isFile();
     }
     catch (_a) {
         return false;
@@ -136,13 +136,13 @@ function fileExistsSync(filePath) {
 }
 exports.fileExistsSync = fileExistsSync;
 function readAndParseJson(filePath) {
-    const content = fs_1.readFileSync(filePath, 'utf-8');
+    const content = (0, fs_1.readFileSync)(filePath, 'utf-8');
     try {
         return JSON.parse(content);
     }
     catch (_a) {
         const errors = [];
-        const result = jsonc_parser_1.parse(content, errors);
+        const result = (0, jsonc_parser_1.parse)(content, errors);
         if (errors.length > 0) {
             for (const { error, offset } of errors) {
                 //getOutputChannel().appendLine(
@@ -183,7 +183,7 @@ function cacheJson(filePath, basedir = '', content) {
 exports.cacheJson = cacheJson;
 function readAndCacheJsonFile(filePath, basedir = '') {
     const fullFilePath = path.join(basedir, filePath);
-    if (exports.fileContents[fullFilePath] || fs_1.existsSync(fullFilePath)) {
+    if (exports.fileContents[fullFilePath] || (0, fs_1.existsSync)(fullFilePath)) {
         exports.fileContents[fullFilePath] || (exports.fileContents[fullFilePath] = readAndParseJson(fullFilePath));
         return {
             path: fullFilePath,
@@ -200,7 +200,7 @@ function readAndCacheJsonFile(filePath, basedir = '') {
 exports.readAndCacheJsonFile = readAndCacheJsonFile;
 const registry = new core_1.schema.CoreSchemaRegistry(formats_1.standardFormats);
 async function normalizeSchema(s, projectDefaults) {
-    const options = await json_schema_1.parseJsonSchemaToOptions(registry, s);
+    const options = await (0, json_schema_1.parseJsonSchemaToOptions)(registry, s);
     const requiredFields = new Set(s.required || []);
     const nxOptions = options.map((option) => {
         const xPrompt = s.properties[option.name]['x-prompt'];

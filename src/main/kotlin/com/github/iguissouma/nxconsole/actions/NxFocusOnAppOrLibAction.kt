@@ -47,7 +47,7 @@ class NxFocusOnAppOrLibAction : DumbAwareAction({ "Nx Focus on App or Lib" }, Nx
         } catch (e: Exception) {
             LOG.error("Cannot load schematics", e)
         }
-        val loadDepGraphInfoJson = loadDepGraphInfoJson(configurator!!, nxConfig.angularJsonFile)
+        val loadDepGraphInfoJson = loadDepGraphInfoJson(project, configurator!!, nxConfig.angularJsonFile)
         val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
         val depGraph: Map<String, Any> = Gson().fromJson(loadDepGraphInfoJson, depGraphType)
         val map = depGraph["dependencies"] as Map<*, *>

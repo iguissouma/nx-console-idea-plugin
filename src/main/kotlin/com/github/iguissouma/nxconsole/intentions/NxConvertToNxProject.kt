@@ -55,6 +55,9 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
             "--project",
             unquoteString(element.text)
         )
+        project.save()
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
+        FileDocumentManager.getInstance().saveAllDocuments()
         NxGenerator().generate(
             interpreter,
             NodePackage(module.virtualFile?.path!!),
@@ -63,10 +66,6 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
             VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
             project,
             {
-                ApplicationManager.getApplication().invokeLater {
-                    PsiDocumentManager.getInstance(project).commitAllDocuments()
-                    FileDocumentManager.getInstance().saveAllDocuments()
-                }
             },
             "convert-to-nx-project",
             arrayOf(filter),

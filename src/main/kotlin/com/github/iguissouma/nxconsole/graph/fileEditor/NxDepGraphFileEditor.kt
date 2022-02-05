@@ -1,8 +1,6 @@
 package com.github.iguissouma.nxconsole.graph.fileEditor
 
 import com.intellij.json.psi.JsonFile
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer

@@ -48,7 +48,8 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
         val module = ModuleManager.getInstance(project).modules.first()
         val unloadedModules =
-            nxConfig?.projects?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) != null }
+            nxConfig?.projects?.filter { it.rootDir != null }
+                ?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) != null }
                 ?.map { it.name } ?: emptyList()
 
         // nxConfig?.projects?.map { it.name to it.architect.keys }

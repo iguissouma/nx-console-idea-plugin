@@ -82,10 +82,12 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     //
     private val module = ModuleManager.getInstance(project).modules.first()
     private val loadedModules =
-        nxConfig?.projects?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) == null }
+        nxConfig?.projects?.filter { it.rootDir != null }
+            ?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) == null }
             ?.map { it.name } ?: emptyList()
     private val unloadedModules =
-        nxConfig?.projects?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) != null }
+        nxConfig?.projects?.filter { it.rootDir != null }
+            ?.filter { ProjectRootsUtil.findExcludeFolder(module!!, it.rootDir!!) != null }
             ?.map { it.name } ?: emptyList()
 
     /** graph contains an edge a -> b if b depends on a */

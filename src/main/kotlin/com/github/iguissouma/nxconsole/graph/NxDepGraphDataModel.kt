@@ -33,7 +33,7 @@ class NxDepGraphDataModel(val nxJsonFile: PsiFile) : GraphDataModel<BasicNxNode,
     private val myProject = nxJsonFile.project
 
     init {
-        object : Task.Backgroundable(myProject, "loding nx-depgraph...", false) {
+        object : Task.Backgroundable(myProject, "Loading nx-depgraph...", false) {
             override fun run(indicator: ProgressIndicator) {
                 // ApplicationManager.getApplication().runReadAction{
                 ApplicationManager.getApplication().invokeLater {

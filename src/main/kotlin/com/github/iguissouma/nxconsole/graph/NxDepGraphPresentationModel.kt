@@ -42,10 +42,6 @@ class NxDepGraphPresentationModel(val project: Project, graph: Graph2D) :
         return super.editNode(n)
     }
 
-    override fun editEdge(e: BasicNxEdge?): Boolean {
-        return super.editEdge(e)
-    }
-
     private fun navigateToFile(project: Project, file: VirtualFile) {
         PsiNavigationSupport.getInstance().createNavigatable(project, file, -1).navigate(true)
     }

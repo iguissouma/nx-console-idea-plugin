@@ -46,6 +46,8 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
             val project = nxJsonFile.project
             val graph = GraphManager.getGraphManager().createGraph2D()
             val view = GraphManager.getGraphManager().createGraph2DView()
+            // view.isGridVisible = false
+            // view.gridMode = false
 
             progress.text = "Building model..."
 
@@ -73,7 +75,7 @@ class NxDepGraphComponent(val nxJsonFile: PsiFile) : JPanel(), DataProvider, Dis
                 group,
                 true
             )
-            toolbar.setTargetComponent(graphComponent)
+            toolbar.targetComponent = graphComponent
 
             add(toolbar.component, BorderLayout.NORTH)
             add(graphComponent, BorderLayout.CENTER)

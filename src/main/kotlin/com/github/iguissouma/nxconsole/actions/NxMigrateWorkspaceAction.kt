@@ -208,9 +208,9 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
             val fromVersion = nodeInstalledPackageFinder.findInstalledPackage(pkg)?.version ?: return
             val service = service<NpmRegistryService>()
             val cachedPackageVersions = service.getCachedOrFetchPackageVersions(EmptyProgressIndicator(), pkg).versions
-            val toVersion = cachedPackageVersions.first {
+            val toVersion = cachedPackageVersions.firstOrNull {
                 it.preRelease == null && it.major != 9999 && it.major != 999
-            }
+            } ?: return
 
             if (toVersion > fromVersion) {
                 val notificationGroup = NotificationGroup(

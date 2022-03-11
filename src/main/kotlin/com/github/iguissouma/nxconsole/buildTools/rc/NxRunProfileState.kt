@@ -16,6 +16,7 @@ import com.intellij.javascript.nodejs.NodeCommandLineUtil
 import com.intellij.javascript.nodejs.NodeConsoleAdditionalFilter
 import com.intellij.javascript.nodejs.NodeStackTraceFilter
 import com.intellij.javascript.nodejs.debug.NodeLocalDebuggableRunProfileStateSync
+import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.npm.NpmUtil
@@ -25,6 +26,7 @@ import com.intellij.lang.javascript.buildTools.TypeScriptErrorConsoleFilter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.EnvironmentUtil
+import com.intellij.util.ThreeState
 import com.intellij.util.execution.ParametersListUtil
 import com.intellij.webcore.util.CommandLineUtil
 import java.io.File
@@ -42,21 +44,89 @@ class NxRunProfileState(
         val commandLine = NodeCommandLineUtil.createCommandLine(true)
         val envData = this.runSettings.envData
         val npmPackageRef = this.runSettings.packageManagerPackageRef
-        val project = this.environment.getProject()
-        NodeCommandLineUtil.configureCommandLine(
-            commandLine,
-            configurator
-        ) { debugMode: Boolean? ->
-            this.configureCommandLine(
-                commandLine, nodeInterpreter, npmPackageRef,
-                project, envData
+        val project = this.environment.project
+        val processHandler: ProcessHandler
+        if (NodeTargetRun.shouldExecuteRunConfigurationsUsingTargetsApi(nodeInterpreter)) {
+            val targetRun = NodeTargetRun(
+                nodeInterpreter,
+                project,
+                configurator,
+                NodeTargetRun.createOptions(ThreeState.UNSURE, emptyList())
             )
+            configureCommandLine(
+                targetRun,
+                npmPackageRef,
+                envData,
+            )
+            processHandler = targetRun.startProcess()
+        } else {
+            NodeCommandLineUtil.configureCommandLine(
+                commandLine,
+                configurator,
+                nodeInterpreter,
+            ) { debugMode: Boolean? ->
+                this.configureCommandLine(
+                    commandLine, nodeInterpreter, npmPackageRef,
+                    project, envData
+                )
+            }
+            processHandler = NodeCommandLineUtil.createProcessHandler(commandLine, true)
         }
-        val processHandler: ProcessHandler = NodeCommandLineUtil.createProcessHandler(commandLine, true)
         ProcessTerminatedListener.attach(processHandler)
         val console: ConsoleView = this.createConsole(processHandler, commandLine.workDirectory)
         console.attachToProcess(processHandler)
         return DefaultExecutionResult(console, processHandler)
+    }
+
+    private fun configureCommandLine(
+        targetRun: NodeTargetRun,
+        npmPackageRef: NodePackageRef,
+        envData: EnvironmentVariablesData
+    ) {
+        targetRun.enableWrappingWithYarnPnpNode = false
+        val commandLine = targetRun.commandLineBuilder
+        commandLine.setCharset(StandardCharsets.UTF_8)
+        val workingDirectory: File = File(this.runSettings.nxFilePath).parentFile
+        commandLine.setWorkingDirectory(targetRun.path(workingDirectory.absolutePath))
+        targetRun.configureEnvironment(envData)
+        // commandLine.addParameters(ParametersListUtil.parse(nodeOptions.trim { it <= ' ' }))
+        val pkg = NpmUtil.resolveRef(npmPackageRef, targetRun.project, targetRun.interpreter)
+        if (pkg == null) {
+            throw ExecutionException(
+                NxBundle.message(
+                    "nx.npm.dialog.message.cannot.resolve.package.manager",
+                    npmPackageRef.identifier
+                )
+            )
+        } else {
+            if (NpmUtil.isYarnAlikePackage(pkg) || NpmUtil.isPnpmPackage(pkg)) {
+                commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg, targetRun.interpreter))
+                commandLine.addParameter("nx")
+            } else {
+                commandLine.addParameter(getNxBinFile(nxPackage).absolutePath)
+            }
+        }
+
+        val tasks = this.runSettings.tasks
+        if (tasks.size > 1) {
+            commandLine.addParameters("run-many")
+            val target = tasks.first().substringAfter(":")
+            commandLine.addParameter("--target=$target")
+            commandLine.addParameters("--projects=" + tasks.joinToString(",") { it.substringBefore(":") })
+        } else {
+            commandLine.addParameters("run")
+            commandLine.addParameters(tasks.firstOrNull() ?: "")
+        }
+
+        commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
+        val nodeModuleBinPath =
+            workingDirectory.path + File.separator + "node_modules" + File.separator + ".bin"
+        val shellPath = EnvironmentUtil.getValue("PATH")
+        val separator = if (SystemInfo.isWindows) ";" else ":"
+        commandLine.addEnvironmentVariable(
+            "PATH",
+            listOfNotNull(shellPath, nodeModuleBinPath).joinToString(separator = separator)
+        )
     }
 
     private fun configureCommandLine(

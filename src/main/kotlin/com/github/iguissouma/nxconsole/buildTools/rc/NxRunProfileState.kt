@@ -48,7 +48,8 @@ class NxRunProfileState(
         val npmPackageRef = this.runSettings.packageManagerPackageRef
         val project = this.environment.project
         return if (NodeTargetRun.shouldExecuteRunConfigurationsUsingTargetsApi(nodeInterpreter)) {
-            val targetRun = NodeTargetRun(nodeInterpreter,
+            val targetRun = NodeTargetRun(
+                nodeInterpreter,
                 project,
                 configurator,
                 NodeTargetRun.createOptions(ThreeState.UNSURE, listOf())
@@ -64,8 +65,9 @@ class NxRunProfileState(
 
         ProcessTerminatedListener.attach(processHandler)
         val console = createConsole(
-            //processHandler, File(this.runSettings.getPackageJsonSystemDependentPath())
-            processHandler, File(this.runSettings.nxFileSystemIndependentPath!!)
+            // processHandler, File(this.runSettings.getPackageJsonSystemDependentPath())
+            processHandler,
+            File(this.runSettings.nxFileSystemIndependentPath!!)
                 .parentFile
         )
         console.attachToProcess(processHandler)
@@ -136,11 +138,11 @@ class NxRunProfileState(
         }
 
         commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
-        //val nodeModuleBinPath =
+        // val nodeModuleBinPath =
         //    workingDirectory.path + File.separator + "node_modules" + File.separator + ".bin"
-        //val shellPath = EnvironmentUtil.getValue("PATH")
-        //val separator = if (SystemInfo.isWindows) ";" else ":"
-        //commandLine.addEnvironmentVariable("PATH", listOfNotNull(WslPath.parseWindowsUncPath(nodeModuleBinPath)?.linuxPath).joinToString(separator = separator))
+        // val shellPath = EnvironmentUtil.getValue("PATH")
+        // val separator = if (SystemInfo.isWindows) ";" else ":"
+        // commandLine.addEnvironmentVariable("PATH", listOfNotNull(WslPath.parseWindowsUncPath(nodeModuleBinPath)?.linuxPath).joinToString(separator = separator))
     }
 
     private fun configureCommandLine(

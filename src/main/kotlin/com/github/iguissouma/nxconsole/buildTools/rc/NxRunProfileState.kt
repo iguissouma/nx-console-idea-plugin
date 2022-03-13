@@ -11,14 +11,17 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.wsl.WslPath
 import com.intellij.javascript.debugger.CommandLineDebugConfigurator
 import com.intellij.javascript.nodejs.NodeCommandLineUtil
 import com.intellij.javascript.nodejs.NodeConsoleAdditionalFilter
 import com.intellij.javascript.nodejs.NodeStackTraceFilter
-import com.intellij.javascript.nodejs.debug.NodeLocalDebuggableRunProfileStateSync
+import com.intellij.javascript.nodejs.debug.NodeCommandLineOwner
+import com.intellij.javascript.nodejs.execution.NodeBaseRunProfileState
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
+import com.intellij.javascript.nodejs.interpreter.wsl.WslNodePackage
 import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageRef
@@ -36,46 +39,56 @@ class NxRunProfileState(
     val environment: ExecutionEnvironment,
     val runSettings: NxRunSettings,
     val nxPackage: NodePackage
-) : NodeLocalDebuggableRunProfileStateSync() {
+) : NodeBaseRunProfileState, NodeCommandLineOwner {
 
-    override fun executeSync(configurator: CommandLineDebugConfigurator?): ExecutionResult {
+    override fun startProcess(configurator: CommandLineDebugConfigurator?): ProcessHandler {
         val nodeInterpreter: NodeJsInterpreter =
             this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
-        val commandLine = NodeCommandLineUtil.createCommandLine(true)
         val envData = this.runSettings.envData
         val npmPackageRef = this.runSettings.packageManagerPackageRef
         val project = this.environment.project
-        val processHandler: ProcessHandler
-        if (NodeTargetRun.shouldExecuteRunConfigurationsUsingTargetsApi(nodeInterpreter)) {
-            val targetRun = NodeTargetRun(
-                nodeInterpreter,
+        return if (NodeTargetRun.shouldExecuteRunConfigurationsUsingTargetsApi(nodeInterpreter)) {
+            val targetRun = NodeTargetRun(nodeInterpreter,
                 project,
                 configurator,
-                NodeTargetRun.createOptions(ThreeState.UNSURE, emptyList())
+                NodeTargetRun.createOptions(ThreeState.UNSURE, listOf())
             )
-            configureCommandLine(
-                targetRun,
-                npmPackageRef,
-                envData,
-            )
-            processHandler = targetRun.startProcess()
+            configureCommandLine(targetRun, npmPackageRef, envData)
+            targetRun.startProcess()
         } else {
-            NodeCommandLineUtil.configureCommandLine(
-                commandLine,
-                configurator,
-                nodeInterpreter,
-            ) { debugMode: Boolean? ->
-                this.configureCommandLine(
-                    commandLine, nodeInterpreter, npmPackageRef,
-                    project, envData
-                )
-            }
-            processHandler = NodeCommandLineUtil.createProcessHandler(commandLine, true)
+            startProcessOld(configurator)
         }
+    }
+
+    override fun createExecutionResult(processHandler: ProcessHandler): ExecutionResult {
+
         ProcessTerminatedListener.attach(processHandler)
-        val console: ConsoleView = this.createConsole(processHandler, commandLine.workDirectory)
+        val console = createConsole(
+            //processHandler, File(this.runSettings.getPackageJsonSystemDependentPath())
+            processHandler, File(this.runSettings.nxFileSystemIndependentPath!!)
+                .parentFile
+        )
         console.attachToProcess(processHandler)
+        foldCommandLine(console, processHandler)
         return DefaultExecutionResult(console, processHandler)
+    }
+
+    private fun startProcessOld(configurator: CommandLineDebugConfigurator?): ProcessHandler {
+        val nodeInterpreter: NodeJsInterpreter =
+            this.runSettings.interpreterRef.resolveNotNull(this.environment.project)
+        val envData = this.runSettings.envData
+        val npmPackageRef = this.runSettings.packageManagerPackageRef
+        val project = this.environment.project
+        val commandLine = NodeCommandLineUtil.createCommandLine(true)
+        NodeCommandLineUtil.configureCommandLine(
+            commandLine, configurator, nodeInterpreter
+        ) { debugMode: Boolean? ->
+            this.configureCommandLine(
+                commandLine, nodeInterpreter, npmPackageRef,
+                project, envData
+            )
+        }
+        return NodeCommandLineUtil.createProcessHandler(commandLine, true)
     }
 
     private fun configureCommandLine(
@@ -103,7 +116,11 @@ class NxRunProfileState(
                 commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg, targetRun.interpreter))
                 commandLine.addParameter("nx")
             } else {
-                commandLine.addParameter(getNxBinFile(nxPackage).absolutePath)
+                if (pkg is WslNodePackage) {
+                    commandLine.addParameter(WslPath.parseWindowsUncPath(getNxBinFile(nxPackage).absolutePath)?.linuxPath ?: error("canot fin nx bin file wsl path"))
+                } else {
+                    commandLine.addParameter(getNxBinFile(nxPackage).absolutePath)
+                }
             }
         }
 
@@ -119,14 +136,11 @@ class NxRunProfileState(
         }
 
         commandLine.addParameters(this.runSettings.arguments?.let { ParametersListUtil.parse(it) } ?: emptyList())
-        val nodeModuleBinPath =
-            workingDirectory.path + File.separator + "node_modules" + File.separator + ".bin"
-        val shellPath = EnvironmentUtil.getValue("PATH")
-        val separator = if (SystemInfo.isWindows) ";" else ":"
-        commandLine.addEnvironmentVariable(
-            "PATH",
-            listOfNotNull(shellPath, nodeModuleBinPath).joinToString(separator = separator)
-        )
+        //val nodeModuleBinPath =
+        //    workingDirectory.path + File.separator + "node_modules" + File.separator + ".bin"
+        //val shellPath = EnvironmentUtil.getValue("PATH")
+        //val separator = if (SystemInfo.isWindows) ";" else ":"
+        //commandLine.addEnvironmentVariable("PATH", listOfNotNull(WslPath.parseWindowsUncPath(nodeModuleBinPath)?.linuxPath).joinToString(separator = separator))
     }
 
     private fun configureCommandLine(

@@ -94,6 +94,8 @@ tasks {
     }
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+        // For creation of default methods in interfaces
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all")
     }
 
     withType<Detekt> {

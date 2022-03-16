@@ -185,7 +185,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
                 (node.parent as DefaultMutableTreeNode).userObject as String
             )
             if (property != null) {
-                val jsonObject = property.value as JsonObject
+                val jsonObject = property.value as? JsonObject ?: return null
                 val architectProperty = jsonObject
                     .findProperty("architect") ?: jsonObject.findProperty("targets")
                 val taskProperty = (architectProperty?.value as JsonObject).findProperty(script.name)

@@ -146,9 +146,9 @@ tasks {
         )
     }
 
-    runPluginVerifier {
-        ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-    }
+    //runPluginVerifier {
+    //    ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
+    //}
 
     publishPlugin {
         dependsOn("patchChangelog")

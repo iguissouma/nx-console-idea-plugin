@@ -21,7 +21,6 @@ import com.intellij.javascript.nodejs.execution.NodeBaseRunProfileState
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
-import com.intellij.javascript.nodejs.interpreter.wsl.WslNodePackage
 import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageRef
@@ -47,7 +46,7 @@ class NxRunProfileState(
         val envData = this.runSettings.envData
         val npmPackageRef = this.runSettings.packageManagerPackageRef
         val project = this.environment.project
-        return if (NodeTargetRun.shouldExecuteRunConfigurationsUsingTargetsApi(nodeInterpreter)) {
+        return if (true) {
             val targetRun = NodeTargetRun(
                 nodeInterpreter,
                 project,
@@ -118,11 +117,10 @@ class NxRunProfileState(
                 commandLine.addParameter(NpmUtil.getValidNpmCliJsFilePath(pkg, targetRun.interpreter))
                 commandLine.addParameter("nx")
             } else {
-                if (pkg is WslNodePackage) {
-                    commandLine.addParameter(WslPath.parseWindowsUncPath(getNxBinFile(nxPackage).absolutePath)?.linuxPath ?: error("canot fin nx bin file wsl path"))
-                } else {
-                    commandLine.addParameter(getNxBinFile(nxPackage).absolutePath)
-                }
+                commandLine.addParameter(
+                    WslPath.parseWindowsUncPath(getNxBinFile(nxPackage).absolutePath)?.linuxPath
+                        ?: getNxBinFile(nxPackage).absolutePath
+                )
             }
         }
 

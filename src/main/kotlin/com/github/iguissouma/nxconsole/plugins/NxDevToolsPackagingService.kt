@@ -43,12 +43,12 @@ fun getPackageList(nxListOutput: String, from: String, to: String, trim: String)
         .toList()
 }
 
-private fun getInstalled(command: String) = getPackageList(command, ">  NX  Installed plugins:", ">  NX  Also available:", " (")
-private fun getAlsoAvailable(command: String) = getPackageList(command, ">  NX  Also available:", ">  NX  Community plugins:", " (")
+private fun getInstalled(command: String) = getPackageList(command, ">  NX   Installed plugins:", ">  NX   Also available:", " (")
+private fun getAlsoAvailable(command: String) = getPackageList(command, ">  NX   Also available:", ">  NX   Community plugins:", " (")
 private fun getCommunityPlugins(command: String) = getPackageList(
     command,
-    ">  NX  Community plugins:",
-    ">  NX   NOTE  Use \"nx list [plugin]\" to find out more",
+    ">  NX   Community plugins:",
+    ">  NX   Use \"nx list [plugin]\" to find out more",
     " -"
 )
 
@@ -327,4 +327,109 @@ class NxDevToolsPackagingService(
             }
         )
     }
+}
+
+
+fun main() {
+    val output = """
+        > nx-example@0.0.0 nx /Users/iguissouma/idea/nx-examples
+        > nx "list"
+
+
+         >  NX   Installed plugins:
+
+           @angular-devkit/build-angular (executors)
+           @ngrx/component-store (generators)
+           @ngrx/effects (generators)
+           @ngrx/entity (generators)
+           @ngrx/router-store (generators)
+           @ngrx/store (generators)
+           @ngrx/store-devtools (generators)
+           @nrwl/angular (executors,generators)
+           @nrwl/cypress (executors,generators)
+           @nrwl/jest (executors,generators)
+           @nrwl/js (executors,generators)
+           @nrwl/linter (executors,generators)
+           @nrwl/nx-cloud (generators)
+           @nrwl/react (executors,generators)
+           @nrwl/storybook (executors,generators)
+           @nrwl/web (executors,generators)
+           @nrwl/workspace (executors,generators)
+           nx (executors)
+
+
+         >  NX   Also available:
+
+           @nrwl/express (executors,generators)
+           @nrwl/nest (executors,generators)
+           @nrwl/next (executors,generators)
+           @nrwl/node (executors,generators)
+           @nrwl/nx-plugin (executors,generators)
+
+
+         >  NX   Community plugins:
+
+           nx-plugins - Nx plugin integrations with ESBuild / Vite / Snowpack / Prisma, with derived ESBuild / Snowpack / ... plugins.
+           @codebrew/nx-aws-cdk - An Nx plugin for aws cdk develop.
+           @rxap/plugin-localazy - An Nx plugin for localazy.com upload and download tasks.
+           nx-electron - An Nx plugin for developing Electron applications
+           nx-stylelint - Nx plugin to use stylelint in a nx workspace
+           @nxtend/ionic-react - An Nx plugin for developing Ionic React applications and libraries
+           @nxtend/ionic-angular - An Nx plugin for developing Ionic Angular applications and libraries
+           @nxtend/capacitor - An Nx plugin for developing cross-platform applications using Capacitor
+           @nxtend/firebase - An Nx plugin for developing applications using Firebase
+           @angular-architects/ddd - Nx plugin for structuring a monorepo with domains and layers
+           @offeringsolutions/nx-karma-to-jest - Nx plugin for replacing karma with jest in an Nx workspace
+           @flowaccount/nx-serverless - Nx plugin for node/angular-universal schematics and deployment builders in an Nx workspace
+           @ns3/nx-serverless - Nx plugin for node serverless applications in an Nx workspace
+           @ns3/nx-jest-playwright - Nx plugin to run jest-playwright e2e tests in an Nx workspace
+           @dev-thought/nx-deploy-it - Nx plugin to deploy applications on your favorite cloud provider
+           @offeringsolutions/nx-protractor-to-cypress - Nx plugin to replace protractor with cypress in an nx workspace
+           @nx-tools/nx-docker - Nx plugin to build docker images of your affected apps
+           @angular-custom-builders/lite-serve - Nx plugin to run the e2e test on an existing dist folder
+           @nx-plus/nuxt - Nx plugin adding first class support for Nuxt in your Nx workspace.
+           @nx-plus/vue - Nx plugin adding first class support for Vue in your Nx workspace.
+           @nx-plus/docusaurus - Nx plugin adding first class support for Docusaurus in your Nx workspace.
+           @twittwer/compodoc - Nx Plugin to integrate the generation of documentation with Compodoc in the Nx workflow
+           @nxext/svelte - Nx plugin to use Svelte within nx workspaces
+           @nxext/stencil - Nx plugin to use StencilJs within nx workspaces
+           @nxext/vite - Nx plugin to use ViteJS within nx workspaces
+           @nxext/solid - Nx plugin to use SolidJS within nx workspaces
+           @joelcode/gcp-function - Nx plugin to generate, test, lint, build, serve, & deploy Google Cloud Function
+           @nx-go/nx-go - Nx plugin to use Go in a Nx workspace
+           @angular-architects/module-federation - Nx plugin to use webpack module federation
+           @nxrocks/nx-spring-boot - Nx plugin to generate, run, package, build (and more) Spring Boot projects inside your Nx workspace
+           @trumbitta/nx-plugin-openapi - OpenAPI Plugin for Nx. Keep your API spec files in libs, and auto-generate sources.
+           @trumbitta/nx-plugin-unused-deps - Check the dependency graph of your monorepo, looking for unused NPM packages.
+           @nxrocks/nx-flutter - Nx Plugin adding first class support for Flutter in your Nx workspace
+           @srleecode/domain - Nx Plugin for allowing operations to occur at the domain level instead of the default library level
+
+           @jscutlery/semver - Nx plugin to automate semantic versioning and CHANGELOG generation.
+           ngx-deploy-npm - Publish your libraries to NPM with just one command.
+           @trafilea/nx-shopify - Nx plugin for developing performance-first Shopify themes
+           nx-dotnet - Nx plugin for developing and housing .NET projects within an Nx workspace.
+           @nxrocks/nx-quarkus - Nx plugin to generate, run, package, build (and more) Quarkus projects inside your Nx workspace
+           @nx-extend/gcp-secrets - Nx plugin to generate and securely deploy your Google Cloud Secrets
+           @nx-extend/gcp-storage - Nx plugin to upload to Google Cloud Storage
+           @nx-extend/gcp-functions - Nx plugin to generate, run, build and deploy your Google Cloud Functions
+           @nx-extend/gcp-deployment-manager - Nx plugin to deploy your Google Cloud Deployments
+           @nx-extend/gcp-cloud-run - Nx plugin to build and deploy your docker container to Google Cloud Run
+           @nx-extend/translations - Nx plugin to extract, pull, push and translate your apps translations
+           @nativescript/nx - Nx Plugin adding first class support for NativeScript in your Nx workspace
+           @nx-clean/plugin-core - Nx Plugin to generate projects following Clean Architecture practices
+           @jnxplus/nx-boot-gradle - Nx plugin to add Spring Boot and Gradle multi-project builds support to Nx workspace
+           @jnxplus/nx-boot-maven - Nx plugin to add Spring Boot and Maven multi-module project support to Nx workspace
+           @nxtensions/astro - Nx plugin adding first class support for Astro (https://astro.build).
+           @nxrs/cargo - Nx plugin adding first-class support for Rust applications and libraries.
+           nx-uvu - An nx executor for the uvu test library
+
+
+         >  NX   Use "nx list [plugin]" to find out more
+
+        (node:94674) [DEP0148] DeprecationWarning: Use of deprecated folder mapping "./" in the "exports" field module resolution of the package at /Users/iguissouma/idea/nx-examples/node_modules/tslib/package.json.
+        Update this package.json to use a subpath pattern like "./*".
+        (Use `node --trace-deprecation ...` to show where the warning was created)
+    """.trimIndent()
+
+    val installed = getInstalled(output)
 }

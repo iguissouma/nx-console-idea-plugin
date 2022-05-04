@@ -3,12 +3,12 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.intellij.CommonBundle
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -27,7 +27,8 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         }
         val nxConfig = NxConfigProvider.getNxConfig(project, appOrLibDirectory) ?: return
         val nxProjectToRemove = nxConfig.projects.firstOrNull { it.rootDir == appOrLibDirectory } ?: return
-        val message = "Are you sure you want to remove ${ nxProjectToRemove.type?.name?.toLowerCase()?.capitalize() } ''${nxProjectToRemove.name}'' from the workspace?"
+        val title = "${nxProjectToRemove.type?.name?.toLowerCase()?.capitalize()} ''${nxProjectToRemove.name}''"
+        val message = "Are you sure you want to remove $title from the workspace?"
         val returnValue = Messages.showOkCancelDialog(
             message,
             UIBundle.message("delete.dialog.title"),
@@ -41,16 +42,24 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         val module = modules.firstOrNull() ?: return
         val filter = NxCliFilter(project, project.baseDir.path)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
+
         val args = arrayOf(
             "@nrwl/workspace:remove",
             "--project",
             nxProjectToRemove.name
         )
-        NpmPackageProjectGenerator.generate(
-            interpreter, NodePackage(module.virtualFile?.path!!),
-            { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
-            nxConfig.angularJsonFile.parent, VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent), project,
-            null, arrayOf(filter), "generate", *args
+        NxGenerator().generate(
+            interpreter,
+            NodePackage(module.virtualFile?.path!!),
+            { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
+            nxConfig.angularJsonFile.parent,
+            VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
+            project,
+            null,
+            "Remove $title",
+            arrayOf(filter),
+            "generate",
+            *args
         )
     }
 }

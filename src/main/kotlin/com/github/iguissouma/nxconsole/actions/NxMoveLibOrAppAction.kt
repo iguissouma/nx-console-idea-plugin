@@ -3,16 +3,11 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
-import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.json.psi.JsonObject
-import com.intellij.json.psi.JsonProperty
-import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -24,7 +19,6 @@ import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.TextComponentAccessor
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.DocumentAdapter
@@ -84,13 +78,12 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                 )
                 NxGenerator().generate(
                     interpreter,
-                    NodePackage(module.virtualFile?.path!!),
-                    { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
+                    // NodePackage(module.virtualFile?.path!!),
+                    // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
                     cli,
                     VfsUtilCore.virtualToIoFile(workingDir ?: cli),
                     project,
                     {
-
                     },
                     "Move",
                     arrayOf(filter),

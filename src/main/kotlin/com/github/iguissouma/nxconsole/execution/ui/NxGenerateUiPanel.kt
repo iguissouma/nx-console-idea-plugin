@@ -16,7 +16,6 @@ import com.intellij.ide.ui.search.SearchUtil
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -244,10 +243,16 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
                 NxGenerator().generate(
-                    interpreter!!, NodePackage(module?.virtualFile?.path!!),
-                    { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
-                    cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, "Generating", arrayOf(filter), *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
+                    interpreter!!,
+                    // NodePackage(module?.virtualFile?.path!!),
+                    // { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
+                    cli,
+                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project,
+                    null,
+                    "Generating",
+                    arrayOf(filter),
+                    *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray()
                 )
@@ -263,14 +268,20 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
                 NxGenerator().generate(
-                    interpreter!!, NodePackage(module?.virtualFile?.path!!),
-                    { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
-                    cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, "Generating", arrayOf(filter),
+                    interpreter!!,
+                    // NodePackage(module?.virtualFile?.path!!),
+                    // { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
+                    cli,
+                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project,
+                    null,
+                    "Generating",
+                    arrayOf(filter),
                     *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray(),
-                    "--dry-run", "--no-interactive"
+                    "--dry-run",
+                    "--no-interactive"
                 )
             }
         }

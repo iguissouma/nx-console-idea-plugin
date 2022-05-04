@@ -9,7 +9,6 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -59,8 +58,8 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
         FileDocumentManager.getInstance().saveAllDocuments()
         NxGenerator().generate(
             interpreter,
-            NodePackage(module.virtualFile?.path!!),
-            { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
+            // NodePackage(module.virtualFile?.path!!),
+            // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
             nxConfig.angularJsonFile.parent,
             VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
             project,

@@ -32,7 +32,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.Function
 import com.intellij.util.ThreeState
 import com.intellij.util.text.SemVer
 import org.jetbrains.annotations.Nls
@@ -54,8 +53,8 @@ class NxGenerator {
 
     fun generate(
         node: NodeJsInterpreter,
-        pkg: NodePackage,
-        binFilePathProvider: Function<in NodePackage?, String?>,
+        // pkg: NodePackage,
+        // binFilePathProvider: Function<in NodePackage?, String?>,
         baseDir: VirtualFile,
         workingDir: File,
         project: Project,

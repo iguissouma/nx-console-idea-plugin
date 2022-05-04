@@ -8,7 +8,6 @@ import com.intellij.CommonBundle
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -50,8 +49,8 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         )
         NxGenerator().generate(
             interpreter,
-            NodePackage(module.virtualFile?.path!!),
-            { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
+            // NodePackage(module.virtualFile?.path!!),
+            // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
             nxConfig.angularJsonFile.parent,
             VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
             project,

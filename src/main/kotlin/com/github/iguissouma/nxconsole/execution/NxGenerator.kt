@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.execution
 
+import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.filters.Filter
@@ -110,11 +111,13 @@ class NxGenerator {
                 .fetchVersion(node, npmPkg, workingDir) {
                     version = it
                 }
-            if (version != null && version!!.major >= 6 && version!!.minor >= 13) {
+
+            // version is null first time use exec
+            if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
                 // useExec like vscode extension
                 commandLine.addParameter("exec")
             } else {
-                NpmNodePackage(npmPkg.systemIndependentPath.replace("pnpm$".toRegex(), "pnpx"))
+                NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
                     .let {
                         if (it.isValid(targetRun.project, targetRun.interpreter)) {
                             it.configureNpmPackage(targetRun)

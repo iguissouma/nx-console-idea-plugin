@@ -1,6 +1,7 @@
 package com.github.iguissouma.nxconsole.buildTools.rc
 
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
+import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
@@ -129,12 +130,14 @@ class NxRunProfileState(
                 .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
                     version = it
                 }
-            if (version != null && version!!.major >= 6 && version!!.minor >= 13) {
+
+            // version is null first time use exec
+            if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
                 // useExec like vscode extension
                 commandLine.addParameter("exec")
             } else {
                 // use pnpx
-                NpmNodePackage(npmPkg.systemIndependentPath.replace("pnpm$".toRegex(), "pnpx"))
+                NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
                     .let {
                         if (it.isValid(targetRun.project, targetRun.interpreter)) {
                             it.configureNpmPackage(targetRun)

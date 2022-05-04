@@ -82,11 +82,13 @@ class NxExecutionUtil(val project: Project) {
                     .fetchVersion(targetRun.interpreter, npmPkg, File(project.basePath!!)) {
                         version = it
                     }
-                if (version != null && version!!.major >= 6 && version!!.minor >= 13) {
+
+                // version is null first time use exec
+                if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
                     // useExec like vscode extension
                     commandLine.addParameter("exec")
                 } else {
-                    NpmNodePackage(npmPkg.systemIndependentPath.replace("pnpm$".toRegex(), "pnpx"))
+                    NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
                         .let {
                             if (it.isValid(targetRun.project, targetRun.interpreter)) {
                                 it.configureNpmPackage(targetRun)
@@ -113,6 +115,11 @@ class NxExecutionUtil(val project: Project) {
         processHandler.waitFor()
         return adapter.output
     }
+}
+
+// using String's substring method
+fun replacePnpmToPnpx(pnpmPath: String): String {
+    return pnpmPath.substring(0, pnpmPath.lastIndexOf("pnpm")) + "pnpx" + pnpmPath.substring(pnpmPath.lastIndexOf("pnpm") + 1)
 }
 
 class AnsiEscapesAwareAdapter(output: ProcessOutput?) :

@@ -5,7 +5,8 @@ import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
-import com.intellij.execution.configurations.GeneralCommandLine
+import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
@@ -13,10 +14,16 @@ import com.intellij.execution.process.ScriptRunnerUtil
 import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.ElementsChooser
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
+import com.intellij.javascript.debugger.CommandLineDebugConfigurator
+import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.intellij.javascript.nodejs.npm.NpmManager
+import com.intellij.javascript.nodejs.npm.NpmNodePackage
+import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
+import com.intellij.javascript.nodejs.npm.NpmUtil
+import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
+import com.intellij.javascript.nodejs.util.NodePackage
+import com.intellij.lang.javascript.JavaScriptBundle
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
@@ -39,6 +46,8 @@ import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.text.HtmlBuilder
+import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
@@ -53,7 +62,9 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.intellij.ui.popup.util.PopupState
+import com.intellij.util.ThreeState
 import com.intellij.util.TimeoutUtil
+import com.intellij.util.text.SemVer
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
@@ -61,6 +72,8 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.util.List
 import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JButton
@@ -164,37 +177,81 @@ class NxDepGraphWindow(val project: Project) {
                 }
             }
 
+
+            private fun configureCommandLine(targetRun: NodeTargetRun, npmPkg: NodePackage, workingDirectory: File) {
+                targetRun.enableWrappingWithYarnPnpNode = false
+                val commandLine = targetRun.commandLineBuilder
+                commandLine.setCharset(StandardCharsets.UTF_8)
+                commandLine.setWorkingDirectory(targetRun.path(workingDirectory.absolutePath))
+                NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
+                val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
+                if (NpmUtil.isPnpmPackage(npmPkg)) {
+                    var version: SemVer? = null
+                    WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
+                        .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
+                            version = it
+                        }
+
+                    // version is null first time use exec
+                    if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
+                        // useExec like vscode extension
+                        commandLine.addParameter("exec")
+                    } else {
+                        // use pnpx
+                        NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
+                            .let {
+                                if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                    it.configureNpmPackage(targetRun)
+                                }
+                            }
+                    }
+                } else if (yarn.not()) {
+                    NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")?.configureNpmPackage(targetRun)
+                }
+                commandLine.addParameter("nx")
+            }
+
             override fun actionPerformed(e: AnActionEvent) {
-                val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter
-                var configurator: NodeCommandLineConfigurator? = null
                 val toolWindowManager = ToolWindowManager.getInstance(project)
                 val toolWindow = toolWindowManager.getToolWindow("Nx Dep Graph")
+                val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
+                val targetRun = NodeTargetRun(
+                    interpreter, project, null as CommandLineDebugConfigurator?, NodeTargetRun.createOptions(
+                        ThreeState.NO, List.of()
+                    )
+                )
 
-                try {
-                    configurator = NodeCommandLineConfigurator.find(interpreter!!)
-                } catch (e: Exception) {
-                    //
-                    error("")
+                val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
+                val npmPkg = NpmUtil.resolveRef(npmPackageRef, targetRun.project, targetRun.interpreter)
+                if (npmPkg == null) {
+                    if (NpmUtil.isProjectPackageManagerPackageRef(npmPackageRef)) {
+                        val message = JavaScriptBundle.message(
+                            "npm.dialog.message.cannot.resolve.package.manager",
+                            NpmManager.getInstance(project).packageRef.identifier
+                        )
+                        throw NpmManager.InvalidNpmPackageException(
+                            project,
+                            HtmlBuilder().append(message).append(HtmlChunk.p())
+                                .toString() + JavaScriptBundle.message("please.specify.package.manager", *arrayOfNulls(0))
+                        ) {} // onNpmPackageRefResolved
+                    } else {
+                        throw ExecutionException(
+                            JavaScriptBundle.message(
+                                "npm.dialog.message.cannot.resolve.package.manager",
+                                npmPackageRef.identifier
+                            )
+                        )
+                    }
                 }
 
-                val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-                NodeModuleSearchUtil.findModulesWithName(
-                    modules,
-                    "@nrwl/cli",
-                    project.baseDir, // TODO change deprecation
-                    null
-                )
-                val module = modules.firstOrNull() ?: error("")
-                val moduleExe =
-                    "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
-                val commandLine =
-                    GeneralCommandLine("", moduleExe, "dep-graph", "--port=4222", "--open=false", "--watch")
-                commandLine.withWorkDirectory(project.basePath)
-                configurator.configure(commandLine)
+                configureCommandLine(targetRun, npmPkg, File(project.basePath!!))
+                val commandLine = targetRun.commandLineBuilder
+                commandLine.addParameters("dep-graph", "--port=4222", "--open=false", "--watch")
+                val processWithCmdLine = targetRun.startProcessEx()
 
                 ApplicationManager.getApplication().invokeLater {
                     runInEdt {
-                        depGraphProcess = KillableProcessHandler(commandLine)
+                        depGraphProcess = processWithCmdLine.processHandler
                         depGraphProcess!!.setShouldDestroyProcessRecursively(true)
                         depGraphProcess!!.addProcessListener(object : ProcessListener {
                             override fun startNotified(event: ProcessEvent) {
@@ -211,7 +268,7 @@ class NxDepGraphWindow(val project: Project) {
                             }
 
                             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                                if (event.text.contains("Dep graph started")) {
+                                if (event.text.contains("Dep graph started")  || event.text.contains("Project graph started")) {
                                     TimeoutUtil.sleep(500)
                                     browser.loadURL("http://localhost:4222/")
                                     // depGraphProcess?.removeProcessListener(this)

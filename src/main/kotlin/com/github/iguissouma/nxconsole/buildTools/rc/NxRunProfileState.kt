@@ -22,6 +22,7 @@ import com.intellij.javascript.nodejs.npm.NpmManager.InvalidNpmPackageException
 import com.intellij.javascript.nodejs.npm.NpmNodePackage
 import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
 import com.intellij.javascript.nodejs.npm.NpmUtil
+import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageRef
 import com.intellij.lang.javascript.JavaScriptBundle
@@ -31,6 +32,7 @@ import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.util.ThreeState
 import com.intellij.util.execution.ParametersListUtil
+import com.intellij.util.text.SemVer
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -122,11 +124,22 @@ class NxRunProfileState(
 
         val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
         if (NpmUtil.isPnpmPackage(npmPkg)) {
-            if (npmPkg.version != null && npmPkg.version!!.major >= 6 && npmPkg.version!!.minor >= 13) {
+            var version: SemVer? = null
+            WorkingDirectoryDependentNpmPackageVersionManager.getInstance(environment.project)
+                .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
+                    version = it
+                }
+            if (version != null && version!!.major >= 6 && version!!.minor >= 13) {
                 // useExec like vscode extension
                 commandLine.addParameter("exec")
             } else {
-                NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "pnpx")?.configureNpmPackage(targetRun)
+                // use pnpx
+                NpmNodePackage(npmPkg.systemIndependentPath.replace("pnpm$".toRegex(), "pnpx"))
+                    .let {
+                        if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                            it.configureNpmPackage(targetRun)
+                        }
+                    }
             }
         } else if (yarn.not()) {
             NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")?.configureNpmPackage(targetRun)

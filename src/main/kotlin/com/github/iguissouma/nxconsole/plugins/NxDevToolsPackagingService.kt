@@ -329,7 +329,6 @@ class NxDevToolsPackagingService(
     }
 }
 
-
 fun main() {
     val output = """
         > nx-example@0.0.0 nx /Users/iguissouma/idea/nx-examples

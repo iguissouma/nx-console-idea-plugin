@@ -13,6 +13,8 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ScriptRunnerUtil
 import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.icons.AllIcons
+import com.intellij.ide.ui.LafManager
+import com.intellij.ide.ui.laf.darcula.DarculaLookAndFeelInfo
 import com.intellij.ide.util.ElementsChooser
 import com.intellij.javascript.debugger.CommandLineDebugConfigurator
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
@@ -177,7 +179,6 @@ class NxDepGraphWindow(val project: Project) {
                 }
             }
 
-
             private fun configureCommandLine(targetRun: NodeTargetRun, npmPkg: NodePackage, workingDirectory: File) {
                 targetRun.enableWrappingWithYarnPnpNode = false
                 val commandLine = targetRun.commandLineBuilder
@@ -216,7 +217,8 @@ class NxDepGraphWindow(val project: Project) {
                 val toolWindow = toolWindowManager.getToolWindow("Nx Dep Graph")
                 val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
                 val targetRun = NodeTargetRun(
-                    interpreter, project, null as CommandLineDebugConfigurator?, NodeTargetRun.createOptions(
+                    interpreter, project, null as CommandLineDebugConfigurator?,
+                    NodeTargetRun.createOptions(
                         ThreeState.NO, List.of()
                     )
                 )
@@ -264,11 +266,11 @@ class NxDepGraphWindow(val project: Project) {
                                 AppUIUtil.invokeLaterIfProjectAlive(project) {
                                     toolWindow?.setIcon(NxIcons.NRWL_ICON)
                                 }
-                                browser.loadHTML("<p style='color:gray;padding-top:150px;text-align:center'>Server not started.</p>")
+                                loadServerNotStartedPage(browser)
                             }
 
                             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                                if (event.text.contains("Dep graph started")  || event.text.contains("Project graph started")) {
+                                if (event.text.contains("Dep graph started") || event.text.contains("Project graph started")) {
                                     TimeoutUtil.sleep(500)
                                     browser.loadURL("http://localhost:4222/")
                                     // depGraphProcess?.removeProcessListener(this)
@@ -442,8 +444,35 @@ class NxDepGraphWindow(val project: Project) {
 
         panel.add(toolbar.component, BorderLayout.NORTH)
         panel.add(browserComponent, BorderLayout.CENTER)
-        browser.loadHTML("<p style='color:gray;padding-top:150px;text-align:center'>Server not started.</p>")
+        loadServerNotStartedPage(browser)
         return panel
+    }
+
+    private fun loadServerNotStartedPage(browser: JBCefBrowser) {
+        val color = if (LafManager.getInstance().currentLookAndFeel is DarculaLookAndFeelInfo)
+            "#3C3F41" else "#F5F5F5"
+        browser.loadHTML(
+            """
+                <html lang="en">
+                    <head>
+                        <style>
+                            html { background-color: $color; } 
+                            body {
+                                min-height: 100vh;
+                                max-width: 100bh;
+                                background-color: $color; 
+                                margin: 0 auto;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <p style='color:gray;padding-top:150px;text-align:center'>
+                            Server not started.
+                        </p>
+                    </body>
+                </html>
+            """.trimIndent()
+        )
     }
 
     private fun stopDepGraphServer() {

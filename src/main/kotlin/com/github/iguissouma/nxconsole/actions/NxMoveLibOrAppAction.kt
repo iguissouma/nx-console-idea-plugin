@@ -3,6 +3,9 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
+import com.github.iguissouma.nxconsole.cli.config.NxConfig
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
@@ -10,7 +13,6 @@ import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonProperty
 import com.intellij.json.psi.JsonStringLiteral
-import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -56,18 +58,9 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         if (!appOrLibDirectory.isDirectory) {
             return
         }
-        val angularJsonFile = NxJsonUtil.findChildAngularJsonFile(project.baseDir) ?: return
-        val findProjectsProperty: JsonProperty? = NxJsonUtil.findProjectsProperty(project, angularJsonFile) ?: return
-        val toMap = ((findProjectsProperty as JsonProperty).value as JsonObject)
-            .propertyList
-            .map { it.name to (it.value as? JsonObject)?.findProperty("root") }
-            .filter { it.second != null }
-            .map {
-                LocalFileSystem.getInstance()
-                    .findFileByIoFile(File(angularJsonFile.parent.path + "/" + (it.second?.value as? JsonStringLiteral)?.value)) to it.first
-            }.toMap()
-
-        if (toMap.containsKey(appOrLibDirectory)) {
+        val nxConfig = NxConfigProvider.getNxConfig(project, appOrLibDirectory) ?: return
+        val files = nxConfig.projects.map { it.rootDir to it }.toMap()
+        if (files.containsKey(appOrLibDirectory)) {
             // show dialog
             val nxMoveLibOrAppDialog = NxMoveLibOrAppDialog(project, appOrLibDirectory)
             if (nxMoveLibOrAppDialog.showAndGet()) {
@@ -83,17 +76,26 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                 val args = arrayOf(
                     "@nrwl/workspace:move",
                     "--project",
-                    toMap[appOrLibDirectory],
+                    files[appOrLibDirectory]?.name,
                     nxMoveLibOrAppDialog.myTargetDirectoryField.text.replace(project.baseDir.path, "")
                         .replace("/libs", "")
                         .replace("/apps", "")
 
                 )
-                NpmPackageProjectGenerator.generate(
-                    interpreter, NodePackage(module.virtualFile?.path!!),
-                    { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
-                    cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                    null, arrayOf(filter), "generate", *args
+                NxGenerator().generate(
+                    interpreter,
+                    NodePackage(module.virtualFile?.path!!),
+                    { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
+                    cli,
+                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project,
+                    {
+
+                    },
+                    "Move",
+                    arrayOf(filter),
+                    "generate",
+                    *args
                 )
             }
         }

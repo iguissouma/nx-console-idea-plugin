@@ -6,8 +6,6 @@ import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.openapi.editor.Editor
@@ -42,10 +40,7 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
     }
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
         val nxConfig = NxConfigProvider.getNxConfig(project, element.containingFile.virtualFile) ?: return
-        NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
-        val module = modules.firstOrNull() ?: return
         val filter = NxCliFilter(project, project.baseDir.path)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
         val args = arrayOf(
@@ -58,8 +53,6 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
         FileDocumentManager.getInstance().saveAllDocuments()
         NxGenerator().generate(
             interpreter,
-            // NodePackage(module.virtualFile?.path!!),
-            // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
             nxConfig.angularJsonFile.parent,
             VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
             project,

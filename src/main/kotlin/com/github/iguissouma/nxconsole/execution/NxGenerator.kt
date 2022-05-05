@@ -53,8 +53,6 @@ class NxGenerator {
 
     fun generate(
         node: NodeJsInterpreter,
-        // pkg: NodePackage,
-        // binFilePathProvider: Function<in NodePackage?, String?>,
         baseDir: VirtualFile,
         workingDir: File,
         project: Project,

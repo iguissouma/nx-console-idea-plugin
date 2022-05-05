@@ -11,11 +11,7 @@ import com.intellij.ide.actions.runAnything.RunAnythingAction.EXECUTOR_KEY
 import com.intellij.ide.actions.runAnything.RunAnythingContext
 import com.intellij.ide.actions.runAnything.RunAnythingUtil
 import com.intellij.ide.actions.runAnything.activity.RunAnythingCommandLineProvider
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.util.NodePackage
-import com.intellij.lang.javascript.boilerplate.NpmPackageProjectGenerator
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -33,15 +29,15 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         const val HELP_COMMAND = "nx generate"
     }
 
-    override fun getIcon(value: String): Icon? = NxIcons.NRWL_ICON
+    override fun getIcon(value: String): Icon = NxIcons.NRWL_ICON
 
     override fun getHelpGroupTitle() = "Nx"
 
-    override fun getCompletionGroupTitle(): String? {
+    override fun getCompletionGroupTitle(): String {
         return "Nx tasks"
     }
 
-    override fun getHelpCommandPlaceholder(): String? {
+    override fun getHelpCommandPlaceholder(): String {
         return "nx generate <schematic...> <--option-name...>"
     }
 
@@ -53,7 +49,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         return listOf("nx g")
     }
 
-    override fun getHelpIcon(): Icon? = NxIcons.NRWL_ICON
+    override fun getHelpIcon(): Icon = NxIcons.NRWL_ICON
 
     override fun getMainListItem(dataContext: DataContext, value: String) =
         RunAnythingNxItem(
@@ -68,15 +64,10 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         val executionContext = dataContext.getData(EXECUTING_CONTEXT) ?: RunAnythingContext.ProjectContext(project)
         val context = createContext(project, executionContext, dataContext)
 
-        // TODO check use global or local
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
-
         // TODO check current directory
         val cli = project.baseDir
         val workingDir = project.baseDir
 
-        val module = modules.firstOrNull() ?: return false
         val filter = NxCliFilter(project, project.baseDir.path)
 
         val args = mutableListOf(*commandLine.parameters.toTypedArray())
@@ -85,11 +76,16 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
         }
 
         if (!isUI(args)) {
-            NpmPackageProjectGenerator.generate(
-                interpreter, NodePackage(module.virtualFile?.path!!),
-                { pkg -> pkg.findBinFile("nx", null)?.absolutePath },
-                cli, VfsUtilCore.virtualToIoFile(workingDir ?: cli), project,
-                null, arrayOf(filter), "generate", *args.toTypedArray()
+            NxGenerator().generate(
+                interpreter,
+                cli,
+                VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                project,
+                null,
+                "Generate",
+                arrayOf(filter),
+                "generate",
+                *args.toTypedArray()
             )
         } else {
             val schematic = hasSchematic(context, commandLine)

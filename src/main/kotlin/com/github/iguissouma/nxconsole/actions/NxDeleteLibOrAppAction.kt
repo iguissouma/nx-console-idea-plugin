@@ -5,8 +5,6 @@ import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.intellij.CommonBundle
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -36,28 +34,22 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
             Messages.getQuestionIcon()
         )
         if (returnValue != Messages.OK) return
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", nxConfig.angularJsonFile.parent, null)
-        val module = modules.firstOrNull() ?: return
         val filter = NxCliFilter(project, project.baseDir.path)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
-
         val args = arrayOf(
+            "generate",
             "@nrwl/workspace:remove",
             "--project",
             nxProjectToRemove.name
         )
         NxGenerator().generate(
-            interpreter,
-            // NodePackage(module.virtualFile?.path!!),
-            // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
-            nxConfig.angularJsonFile.parent,
-            VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
-            project,
-            null,
-            "Remove $title",
-            arrayOf(filter),
-            "generate",
+            node = interpreter,
+            baseDir = nxConfig.angularJsonFile.parent,
+            workingDir = VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
+            project = project,
+            callback = null,
+            title = "Remove $title",
+            filters = arrayOf(filter),
             *args
         )
     }

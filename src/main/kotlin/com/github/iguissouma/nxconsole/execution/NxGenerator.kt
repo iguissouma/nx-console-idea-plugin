@@ -15,7 +15,6 @@ import com.intellij.ide.file.BatchFileChangeListener
 import com.intellij.javascript.debugger.CommandLineDebugConfigurator
 import com.intellij.javascript.nodejs.NodeCommandLineUtil
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.npm.NpmManager
 import com.intellij.javascript.nodejs.npm.NpmNodePackage
@@ -65,9 +64,7 @@ class NxGenerator {
         val done = PackageJsonDependenciesExternalUpdateManager.getInstance(project)
             .externalUpdateStarted(null, null)
         GENERATING[project] = Boolean.TRUE
-        val configurator = NodeCommandLineConfigurator.find(node)
         val useConsoleViewImpl = Boolean.getBoolean("npm.project.generators.ConsoleViewImpl")
-
         val targetRun = NodeTargetRun(
             node,
             project,

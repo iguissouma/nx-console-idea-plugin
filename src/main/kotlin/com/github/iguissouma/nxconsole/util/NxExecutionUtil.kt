@@ -34,7 +34,7 @@ class NxExecutionUtil(val project: Project) {
 
     fun executeAndGetOutput(command: String, vararg args: String): ProcessOutput? {
         val nodeInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return null
-        val configurator = NodeCommandLineConfigurator.find(nodeInterpreter) ?: return null
+        NodeCommandLineConfigurator.find(nodeInterpreter) ?: return null
         val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
         val npmPkg = NpmUtil.resolveRef(npmPackageRef, project, nodeInterpreter)
         val targetRun = NodeTargetRun(

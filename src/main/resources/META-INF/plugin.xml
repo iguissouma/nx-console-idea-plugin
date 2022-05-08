@@ -95,6 +95,10 @@
             <className>com.github.iguissouma.nxconsole.intentions.NxConvertToNxProject</className>
             <category>Nx</category>
         </intentionAction>
+
+        <!--advanced settings-->
+        <advancedSetting id="nx.exclude.generators" groupKey="group.advanced.settings.nx" bundle="messages.NxBundle"
+                         default="" descriptionKey="advanced.setting.nx.exclude.generators.description"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript">

@@ -378,7 +378,7 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
         actionGroup.addAction(copyRun)
 
         val actionToolbar =
-            ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR, actionGroup, true)
+            ActionManager.getInstance().createActionToolbar("NxGenerateUiPanel", actionGroup, true)
         actionToolbar.setMinimumButtonSize(ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE)
         actionToolbar.layoutPolicy = ActionToolbar.AUTO_LAYOUT_POLICY
         // actionToolbar.component.border = IdeBorderFactory.createBorder(SideBorder.TOP + SideBorder.BOTTOM)

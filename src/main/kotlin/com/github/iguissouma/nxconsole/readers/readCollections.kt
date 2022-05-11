@@ -242,7 +242,7 @@ fun getCollectionInfo(
         val path = Paths.get(collectionPath).resolve(Paths.get(schemaPath).parent).resolve(value["schema"] as String).normalize().toFile().path
         // val path = File(File(collectionPath, schemaPath).parent, value["schema"] as String).path
         return CollectionInfo(
-            name = "$collectionName/$name",
+            name = "$collectionName:$name",
             type = type,
             path = path
         )

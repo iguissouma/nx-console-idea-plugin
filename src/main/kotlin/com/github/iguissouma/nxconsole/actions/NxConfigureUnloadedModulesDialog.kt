@@ -1,13 +1,13 @@
 package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxBundle
-import com.github.iguissouma.nxconsole.builders.execAndGetOutput
 import com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.intellij.CommonBundle
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.util.ExecUtil.execAndGetOutput
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.actions.MarkRootActionBase.findContentEntry
 import com.intellij.ide.projectView.impl.ProjectRootsUtil
@@ -592,7 +592,7 @@ private fun grabCommandOutput(commandLine: GeneralCommandLine, workingDir: Strin
     if (workingDir != null) {
         commandLine.withWorkDirectory(workingDir)
     }
-    val output = execAndGetOutput(commandLine).get()
+    val output = execAndGetOutput(commandLine)
 
     if (output.exitCode == 0) {
         if (output.stderr.trim().isNotEmpty()) {

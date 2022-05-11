@@ -48,12 +48,7 @@ class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {
                     if (includeHidden) SCHEMATICS_ALL else SCHEMATICS_PUBLIC
                 ).getUpToDateOrCompute {
                     CachedValueProvider.Result.create(
-                        doLoad(
-                            angularJson.project,
-                            angularJson.virtualFile,
-                            includeHidden,
-                            logErrors
-                        ),
+                        doLoadGenerators(angularJson.project),
                         NodeModulesDirectoryManager.getInstance(angularJson.project).nodeModulesDirChangeTracker,
                         SCHEMATICS_CACHE_TRACKER,
                         angularJson

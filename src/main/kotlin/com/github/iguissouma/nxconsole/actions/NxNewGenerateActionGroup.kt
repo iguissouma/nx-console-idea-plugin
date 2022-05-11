@@ -19,7 +19,7 @@ class NxNewGenerateActionGroup : ActionGroup(
         val project = event.project ?: return emptyArray()
         val nxExcludeGenerators: List<Regex> = AdvancedSettings.getString("nx.exclude.generators")
             .takeIf { it.isNotBlank() }?.split(";")?.map { wildcardToRegex(it) }
-            ?:  emptyList()
+            ?: emptyList()
         return NxCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
             .filterNot { s ->
                 nxExcludeGenerators.any { it.matches(s.name!!) }

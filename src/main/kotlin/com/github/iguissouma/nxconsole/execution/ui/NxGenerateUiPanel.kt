@@ -781,7 +781,7 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
 
         init {
             templatePresentation.setText(text, false)
-            templatePresentation.isEnabled = false
+            // templatePresentation.isEnabled = false
         }
     }
 

@@ -13,7 +13,7 @@ fun doLoadGenerators(project: Project): List<Schematic> {
         val options = getGeneratorOptions(project.basePath!!, data?.collection!!, data.name, path)
             .map { nxOption: com.github.iguissouma.nxconsole.readers.Option ->
                 val option = Option(name = nxOption.name)
-                option.default = nxOption.`$default` // TODO: check if this is correct
+                option.default = nxOption.default ?: "" // TODO: check if this is correct
                 option.description = nxOption.description
                 option.type = nxOption.type
                 option.isRequired = nxOption.isRequired

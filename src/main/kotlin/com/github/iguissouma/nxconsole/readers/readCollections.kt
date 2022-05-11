@@ -142,6 +142,7 @@ data class Option(
     val format: String? = null,
     val `x-prompt`: Any? = null,
     val `$default`: String? = null,
+    val default: String? = null,
 
     // CliOption
     val name: String,

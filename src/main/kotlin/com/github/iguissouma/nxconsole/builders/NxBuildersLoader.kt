@@ -14,7 +14,7 @@ fun doLoadBuilders(project: Project, builderName: String): List<NxBuilderOptions
     val options = getGeneratorOptions(project.basePath!!, data?.collection!!, data.name, path)
         .map { nxOption: com.github.iguissouma.nxconsole.readers.Option ->
             val option = NxBuilderOptions()
-            option.default = nxOption.`$default` ?: "" // TODO: check if this is correct
+            option.default = nxOption.default ?: "" // TODO: check if this is correct
             option.description = nxOption.description ?: ""
             option.type = nxOption.type ?: ""
             option.required = nxOption.isRequired

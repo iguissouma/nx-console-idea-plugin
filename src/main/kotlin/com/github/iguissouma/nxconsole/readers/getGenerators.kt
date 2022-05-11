@@ -73,10 +73,13 @@ fun normalizeSchema(s: Map<String, Any?>, projectDefaults: GeneratorDefaults? = 
         var nxOption = option.copy(
             isRequired = isFieldRequired(requiredFields, option, xPrompt, `$default`),
             aliases = if (option.alias != null) listOf(option.alias) else emptyList(),
-
             // TODO
             //  ...(workspaceDefault !== undefined && { default: workspaceDefault }),
+
             //  ...($default && { $default }),
+            `$default` = `$default`,
+
+            // TODO
             //  ...(option.enum && { items: option.enum.map((item) => item.toString()) }),
 
             // Strongly suspect items does not belong in the Option schema.
@@ -164,6 +167,7 @@ fun schemaToOptions(schema: Map<String, Any?>): List<Option> {
                 format = currentProperty["format"] as? String?,
                 `x-prompt` = currentProperty["\$x-prompt"] as? String?,
                 `$default` = currentProperty["\$default"] as? String?,
+                default = currentProperty["default"] as? String?,
 
                 positional = positional,
                 alias = currentProperty["alias"] as? String,

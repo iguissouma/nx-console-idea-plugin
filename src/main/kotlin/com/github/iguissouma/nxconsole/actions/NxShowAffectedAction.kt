@@ -1,7 +1,6 @@
 package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
-import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.buildTools.NxService
 import com.github.iguissouma.nxconsole.buildTools.NxTaskTreeView
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
@@ -13,8 +12,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.IconButton
 import com.intellij.openapi.ui.popup.JBPopup
@@ -29,6 +29,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.ScrollPaneFactory
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.ui.JBDimension
+import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import com.intellij.vcsUtil.VcsFileUtil
 import java.awt.Component
@@ -140,18 +141,10 @@ class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
 
         val popup: JBPopup = builder.createPopup()
 
-        val nxJsonFile = NxJsonUtil.findChildNxJsonFile(project.baseDir) ?: return
-
-        runInEdt {
-
-            val output: ProcessOutput? =
-                NxExecutionUtil(project).executeAndGetOutput(
-                    "print-affected", "--files=${
-                        relativeAffectePaths.joinToString(",")
-                    }"
-                )
-
-
+        NxExecutionUtil(project).executeAndGetOutputAsync(
+            command = "print-affected",
+            args = arrayOf("--files=${relativeAffectePaths.joinToString(",")}"),
+        ) { output ->
             if (output != null && output.exitCode == 0) {
                 val mapType = object : TypeToken<Map<String, Any>>() {}.type
                 val affected: Map<String, Any> = Gson().fromJson(output.stdout, mapType)
@@ -160,10 +153,13 @@ class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
                 nxTaskTreeView.filterByAffected = affected["projects"] as? List<String> ?: emptyList()
                 nxTaskTreeView.init()
 
-                popup.showInBestPositionFor(e.dataContext)
-                TreeUtil.expandAll(tree)
+                UIUtil.invokeLaterIfNeeded {
+                    popup.showInBestPositionFor(e.dataContext)
+                    TreeUtil.expandAll(tree)
+                }
             }
         }
+
     }
 
     fun getRelativeAffectedPaths(project: Project, changes: Collection<Change>): List<String> {

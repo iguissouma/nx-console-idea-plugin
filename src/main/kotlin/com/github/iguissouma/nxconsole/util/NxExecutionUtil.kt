@@ -17,13 +17,21 @@ import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
 import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
 import com.intellij.lang.javascript.JavaScriptBundle
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.util.ThreeState
+import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.text.SemVer
+import org.jetbrains.annotations.NotNull
+import org.jetbrains.plugins.notebooks.visualization.r.inlays.runAsyncInlay
 import java.io.File
+import java.util.concurrent.CompletableFuture
 
 class NxExecutionUtil(val project: Project) {
 
@@ -33,6 +41,36 @@ class NxExecutionUtil(val project: Project) {
     }
 
     fun executeAndGetOutput(command: String, vararg args: String): ProcessOutput? {
+        return getOutput(getProcessHandler(command, *args) ?: return null)
+    }
+
+    private inline fun runAsync(crossinline task: () -> Unit): CompletableFuture<Void> {
+        return CompletableFuture.runAsync(Runnable { task() }, AppExecutorUtil.getAppExecutorService())
+    }
+
+    fun executeAndGetOutputAsync(command: String, args: Array<String>, callback: (ProcessOutput?) -> Unit) {
+        val result = getProcessHandler(command, *args) ?: return
+        val manager = ProgressManager.getInstance()
+        ApplicationManager.getApplication()
+            .executeOnPooledThread {
+                manager.run(
+                    object : Task.Backgroundable(project, command, true) {
+                        override fun run(@NotNull indicator: ProgressIndicator) {
+                            try {
+                                getOutput(processHandler = result)?.let { callback(it) }
+                            } finally {
+                                indicator.cancel()
+                            }
+                        }
+                    })
+            }
+
+    }
+
+    private fun getProcessHandler(
+        command: String,
+        vararg args: String
+    ): ProcessHandler? {
         val nodeInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return null
         NodeCommandLineConfigurator.find(nodeInterpreter) ?: return null
         val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
@@ -104,7 +142,7 @@ class NxExecutionUtil(val project: Project) {
             commandLine.addParameter(command)
             commandLine.addParameter(args.joinToString(" "))
             val handler: ProcessHandler = targetRun.startProcess()
-            return getOutput(handler)
+            return handler
         }
     }
 
@@ -119,7 +157,10 @@ class NxExecutionUtil(val project: Project) {
 
 // using String's substring method
 fun replacePnpmToPnpx(pnpmPath: String): String {
-    return pnpmPath.substring(0, pnpmPath.lastIndexOf("pnpm")) + "pnpx" + pnpmPath.substring(pnpmPath.lastIndexOf("pnpm") + 1)
+    return pnpmPath.substring(
+        0,
+        pnpmPath.lastIndexOf("pnpm")
+    ) + "pnpx" + pnpmPath.substring(pnpmPath.lastIndexOf("pnpm") + 1)
 }
 
 class AnsiEscapesAwareAdapter(output: ProcessOutput?) :

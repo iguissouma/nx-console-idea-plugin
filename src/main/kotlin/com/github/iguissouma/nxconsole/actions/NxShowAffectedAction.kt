@@ -4,20 +4,17 @@ import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.buildTools.NxService
 import com.github.iguissouma.nxconsole.buildTools.NxTaskTreeView
-import com.github.iguissouma.nxconsole.graph.grabCommandOutput
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.intellij.CommonBundle
-import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.icons.AllIcons
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.IconButton
 import com.intellij.openapi.ui.popup.JBPopup
@@ -35,9 +32,7 @@ import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.tree.TreeUtil
 import com.intellij.vcsUtil.VcsFileUtil
 import java.awt.Component
-import java.io.File
 import javax.swing.BorderFactory
-import javax.swing.tree.TreeModel
 
 class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
 
@@ -146,56 +141,27 @@ class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
         val popup: JBPopup = builder.createPopup()
 
         val nxJsonFile = NxJsonUtil.findChildNxJsonFile(project.baseDir) ?: return
-        ApplicationManager.getApplication().invokeLater {
-            val nodeJsInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter
-            if (nodeJsInterpreter != null) {
-                val configurator: NodeCommandLineConfigurator
-                try {
-                    configurator = NodeCommandLineConfigurator.find(nodeJsInterpreter)
-                    val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-                    NodeModuleSearchUtil.findModulesWithName(
-                        modules,
-                        "@nrwl/cli",
-                        nxJsonFile,
-                        null
-                    )
-                    val module = modules.firstOrNull()
-                    if (module != null) {
-                        val moduleExe =
-                            "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
-                        // TODO check if json can be out of monorepo
-                        // val createTempFile = createTempFile("tmp", ".json", File(nxJsonFile.parent!!.virtualFile.path))
-                        val commandLine =
-                            GeneralCommandLine(
-                                "",
-                                moduleExe,
-                                "print-affected",
-                                "--files=${
-                                relativeAffectePaths.joinToString(",")
-                                }"
-                            )
-                        configurator.configure(commandLine)
-                        val grabCommandOutput = grabCommandOutput(
-                            project,
-                            commandLine,
-                            nxJsonFile.parent.path
-                        )
-                        val model: TreeModel = tree.getModel()
-                        // Disposer.register(popup, tree)
 
-                        val mapType = object : TypeToken<Map<String, Any>>() {}.type
-                        val affected: Map<String, Any> = Gson().fromJson(grabCommandOutput, mapType)
+        runInEdt {
 
-                        nxTaskTreeView.isAffected = true
-                        nxTaskTreeView.filterByAffected = affected["projects"] as? List<String> ?: emptyList()
-                        nxTaskTreeView.init()
+            val output: ProcessOutput? =
+                NxExecutionUtil(project).executeAndGetOutput(
+                    "print-affected", "--files=${
+                        relativeAffectePaths.joinToString(",")
+                    }"
+                )
 
-                        popup.showInBestPositionFor(e.dataContext)
-                        TreeUtil.expandAll(tree)
-                    }
-                } finally {
-                    // nothing
-                }
+
+            if (output != null && output.exitCode == 0) {
+                val mapType = object : TypeToken<Map<String, Any>>() {}.type
+                val affected: Map<String, Any> = Gson().fromJson(output.stdout, mapType)
+
+                nxTaskTreeView.isAffected = true
+                nxTaskTreeView.filterByAffected = affected["projects"] as? List<String> ?: emptyList()
+                nxTaskTreeView.init()
+
+                popup.showInBestPositionFor(e.dataContext)
+                TreeUtil.expandAll(tree)
             }
         }
     }

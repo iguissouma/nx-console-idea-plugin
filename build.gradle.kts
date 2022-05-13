@@ -25,18 +25,10 @@ repositories {
     jcenter()
 }
 
-sourceSets["main"].java {
-    srcDir("src/main/gen")
-}
-
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
 
     tasks {
-
-        buildPlugin {
-            from("$projectDir/src/main/gen")
-        }
 
         buildSearchableOptions {
             enabled = false
@@ -88,17 +80,6 @@ tasks {
 
     wrapper {
         gradleVersion = properties("gradleVersion")
-    }
-
-    prepareSandbox {
-        doLast {
-            val pluginServerDir = "${intellij.sandboxDir.get()}/plugins/${intellij.pluginName.get()}/"
-            mkdir(pluginServerDir)
-            copy {
-                from("$projectDir/src/main/gen")
-                into(pluginServerDir)
-            }
-        }
     }
 
     patchPluginXml {

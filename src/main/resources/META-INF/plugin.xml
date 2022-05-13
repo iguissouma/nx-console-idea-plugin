@@ -33,8 +33,9 @@
                 implementation="com.github.iguissouma.nxconsole.buildTools.NxRunAnythingProvider"/>
 
         <!--dep-graph-->
-        <projectService serviceImplementation="com.github.iguissouma.nxconsole.graph.NxGraphConfiguration"/>
-        <fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>
+        <!--disable graph file editor provider-->
+        <!--<projectService serviceImplementation="com.github.iguissouma.nxconsole.graph.NxGraphConfiguration"/>-->
+        <!--<fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>-->
 
         <!--ui-->
         <fileEditorProvider implementation="com.github.iguissouma.nxconsole.execution.NxUIEditorProvider"/>

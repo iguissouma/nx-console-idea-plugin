@@ -3,13 +3,8 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationDisplayType
@@ -27,7 +22,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import java.io.File
 import javax.swing.event.HyperlinkEvent
 
 class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NRWL_ICON) {

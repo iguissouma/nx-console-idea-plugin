@@ -13,11 +13,8 @@ import com.github.iguissouma.nxconsole.schematics.Option
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.icons.AllIcons
 import com.intellij.ide.ui.search.SearchUtil
-import com.intellij.javascript.nodejs.CompletionModuleInfo
-import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -214,14 +211,11 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
                 }
             }
 
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(modules, "@nrwl/cli", project.baseDir, null)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter
         // TODO check current directory
         val cli = project.baseDir
         val workingDir = project.baseDir
 
-        val module = modules.firstOrNull()
         val filter = NxCliFilter(project, project.baseDir.path)
 
         centerPanel = createCenterPanel()

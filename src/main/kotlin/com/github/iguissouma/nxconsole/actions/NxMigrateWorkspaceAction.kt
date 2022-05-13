@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.ProcessEvent
@@ -51,73 +52,11 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        // val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return
-        val node = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
-        val targetRun = NodeTargetRun(
-            node,
-            project,
-            null as CommandLineDebugConfigurator?,
-            NodeTargetRun.createOptions(ThreeState.UNSURE, List.of())
-        )
-        val commandLine = targetRun.commandLineBuilder
-        val arguments: MutableList<String?> = mutableListOf()
-        val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
-        val npmPkg = NpmUtil.resolveRef(npmPackageRef, targetRun.project, targetRun.interpreter)
-        if (npmPkg == null) {
-            if (NpmUtil.isProjectPackageManagerPackageRef(npmPackageRef)) {
-                val message = JavaScriptBundle.message(
-                    "npm.dialog.message.cannot.resolve.package.manager",
-                    NpmManager.getInstance(project).packageRef.identifier
-                )
-                throw NpmManager.InvalidNpmPackageException(
-                    project,
-                    HtmlBuilder().append(message).append(HtmlChunk.p())
-                        .toString() + JavaScriptBundle.message("please.specify.package.manager", *arrayOfNulls(0))
-                ) {} // onNpmPackageRefResolved
-            } else {
-                throw ExecutionException(
-                    JavaScriptBundle.message(
-                        "npm.dialog.message.cannot.resolve.package.manager",
-                        npmPackageRef.identifier
-                    )
-                )
-            }
-        }
-        targetRun.enableWrappingWithYarnPnpNode = false
-        NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
-        NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
-        val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
-        if (NpmUtil.isPnpmPackage(npmPkg)) {
-            var version: SemVer? = null
-            WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
-                .fetchVersion(node, npmPkg, File(project.basePath!!)) {
-                    version = it
-                }
-
-            // version is null first time use exec
-            if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
-                // useExec like vscode extension
-                commandLine.addParameter("exec")
-            } else {
-                NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
-                    .let {
-                        if (it.isValid(targetRun.project, targetRun.interpreter)) {
-                            it.configureNpmPackage(targetRun)
-                        }
-                    }
-            }
-        } else if (yarn.not()) {
-            NpmPackageDescriptor.findBinaryFilePackage(node, "npx")?.configureNpmPackage(targetRun)
-        }
-
-        commandLine.setWorkingDirectory(project.basePath!!)
-        commandLine.addParameter("nx")
-        commandLine.addParameters("migrate", "@nrwl/workspace")
-
         ProgressManager.getInstance()
             .run(object : Backgroundable(null, "Nx migrate Workspace", false, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
-                    val handler = targetRun.startProcess()
+                    val handler = NxExecutionUtil(project)
+                        .getProcessHandler("migrate", "@nrwl/workspace") ?: return
                     var startNotified = false
                     var success = false
                     var packageJsonHasBeenUpdated = false

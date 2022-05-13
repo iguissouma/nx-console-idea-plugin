@@ -2,8 +2,8 @@ package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.javascript.nodejs.CompletionModuleInfo
@@ -34,34 +34,12 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return
-        val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter
-        var configurator: NodeCommandLineConfigurator? = null
-        try {
-            configurator = NodeCommandLineConfigurator.find(interpreter!!)
-        } catch (e: Exception) {
-            return
-        }
-
-        val modules: MutableList<CompletionModuleInfo> = mutableListOf()
-        NodeModuleSearchUtil.findModulesWithName(
-            modules,
-            "@nrwl/cli",
-            project.baseDir, // TODO change deprecation
-            null
-        )
-        val module = modules.firstOrNull() ?: return
-        val moduleExe =
-            "${module.virtualFile!!.path}${File.separator}bin${File.separator}nx"
-        val commandLine =
-            GeneralCommandLine("", moduleExe, "migrate", "--run-migrations=migrations.json")
-        commandLine.withWorkDirectory(project.basePath)
-        configurator.configure(commandLine)
 
         ProgressManager.getInstance()
             .run(object : Backgroundable(null, "Nx run migration", false, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
-                    val handler = CapturingProcessHandler(commandLine)
+                    val handler = NxExecutionUtil(project)
+                        .getProcessHandler("migrate", "--run-migrations=migrations.json") ?: return
                     var startNotified = false
                     var success = false
                     handler.addProcessListener(object : ProcessListener {
@@ -105,7 +83,7 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
                             }
                         }
                     })
-                    handler.runProcess()
+                    handler.startNotify()
                 }
 
                 override fun isHeadless(): Boolean {

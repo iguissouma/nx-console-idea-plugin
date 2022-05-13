@@ -67,7 +67,7 @@ class NxExecutionUtil(val project: Project) {
 
     }
 
-    private fun getProcessHandler(
+    fun getProcessHandler(
         command: String,
         vararg args: String
     ): ProcessHandler? {

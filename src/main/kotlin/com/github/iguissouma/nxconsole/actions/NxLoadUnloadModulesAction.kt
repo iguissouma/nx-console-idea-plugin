@@ -1,9 +1,14 @@
 package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.util.ui.UIUtil
 
 class NxLoadUnloadModulesAction : DumbAwareAction({ "Nx Load/Unload App or Libs..." }, NxIcons.NRWL_ICON) {
 
@@ -19,7 +24,17 @@ class NxLoadUnloadModulesAction : DumbAwareAction({ "Nx Load/Unload App or Libs.
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        NxConfigureUnloadedModulesDialog(project, getSelectedProjectName(e)).show()
+        NxExecutionUtil(project).executeAndGetOutputAsync("print-affected", arrayOf()) {
+            val result = it?.stdout ?: return@executeAndGetOutputAsync
+            if (it.exitCode == 0 && result.isNotEmpty()) {
+                val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
+                val depGraph: Map<String, Any> = Gson().fromJson(result, depGraphType)
+                val projectGraph = depGraph["projectGraph"] as Map<*, *>
+                invokeLater {
+                    NxConfigureUnloadedModulesDialog(project, projectGraph, getSelectedProjectName(e)).show()
+                }
+            }
+        }
     }
 
     private fun getSelectedProjectName(e: AnActionEvent): String? {

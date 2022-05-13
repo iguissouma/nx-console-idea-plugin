@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.intellij.CommonBundle
@@ -41,6 +42,7 @@ import com.intellij.util.graph.GraphAlgorithms
 import com.intellij.util.graph.GraphGenerator
 import com.intellij.util.graph.InboundSemiGraph
 import com.intellij.util.ui.GridBag
+import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import com.intellij.xml.util.XmlStringUtil
 import java.awt.BorderLayout
@@ -70,7 +72,7 @@ class NxModuleDescription(val myName: String, val myDependencyModuleNames: Mutab
     }
 }
 
-class NxConfigureUnloadedModulesDialog(private val project: Project, selectedModuleName: String?) :
+class NxConfigureUnloadedModulesDialog(private val project: Project, projectGraph:Map<*,*>, selectedModuleName: String?) :
     DialogWrapper(project) {
     private val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
     private val loadedModulesTree = NxModuleDescriptionsTree(project)
@@ -97,26 +99,13 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     init {
         title = NxBundle.message("nx.module.load.unload.dialog.title")
 
-        // Todo clean calculating deps
-        val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter
-        var configurator: NodeCommandLineConfigurator? = null
-        try {
-            configurator = NodeCommandLineConfigurator.find(interpreter!!)
-        } catch (e: Exception) {
-            LOG.error("Cannot load schematics", e)
-        }
-        val loadDepGraphInfoJson = loadDepGraphInfoJson(project, configurator!!, nxConfig?.angularJsonFile!!)
-        println(loadDepGraphInfoJson)
-        val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
-        val depGraph: Map<String, Any> = Gson().fromJson(loadDepGraphInfoJson, depGraphType)
-        val map = depGraph["dependencies"] as Map<*, *>
-        nxConfig.projects.forEach {
+        val map = projectGraph["dependencies"] as Map<*, *>
+        nxConfig?.projects?.forEach {
             val nxModuleDescription = moduleDescriptions[it.name]
             (map[it.name] as List<Map<*, *>>).forEach { x ->
                 nxModuleDescription?.dependencyModuleNames?.add(x["target"] as String)
             }
         }
-        //
 
         loadedModulesTree.fillTree(moduleDescriptions.values.filter { it.name in loadedModules })
         unloadedModulesTree.fillTree(moduleDescriptions.values.filter { it.name in unloadedModules })
@@ -305,7 +294,7 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, selectedMod
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return initiallyFocusedTree.tree
+        return initiallyFocusedTree?.tree
     }
 
     override fun doOKAction() {

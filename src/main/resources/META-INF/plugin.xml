@@ -8,20 +8,23 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.json</depends>
+    <depends>com.intellij.diagram</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <directoryProjectGenerator
                 implementation="com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator"/>  <!-- works in WebStorm and other SmallIDEs -->
         <directoryProjectGenerator
                 implementation="com.github.iguissouma.nxconsole.cli.NxPluginsCliProjectGenerator"/>  <!-- works in WebStorm and other SmallIDEs -->
-        <projectTemplatesFactory implementation="com.github.iguissouma.nxconsole.cli.NxProjectTemplateFactory"/> <!-- works in IntelliJ IDEA -->
+        <projectTemplatesFactory
+                implementation="com.github.iguissouma.nxconsole.cli.NxProjectTemplateFactory"/> <!-- works in IntelliJ IDEA -->
 
 
         <applicationService serviceImplementation="com.github.iguissouma.nxconsole.services.NxApplicationService"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.services.NxProjectService"/>
         <!--buildTools-->
         <!--<runLineMarkerContributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.buildTools.NxRunLineMarkerContributor"/>-->
-        <runLineMarkerContributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.buildTools.NxAngularRunLineMarkerContributor"/>
+        <runLineMarkerContributor language="JSON"
+                                  implementationClass="com.github.iguissouma.nxconsole.buildTools.NxAngularRunLineMarkerContributor"/>
         <postStartupActivity implementation="com.github.iguissouma.nxconsole.buildTools.NxJsbtStartupActivity"/>
         <configurationType implementation="com.github.iguissouma.nxconsole.buildTools.rc.NxConfigurationType"/>
         <runConfigurationProducer
@@ -37,20 +40,26 @@
         <!--<projectService serviceImplementation="com.github.iguissouma.nxconsole.graph.NxGraphConfiguration"/>-->
         <!--<fileEditorProvider implementation="com.github.iguissouma.nxconsole.graph.fileEditor.NxDepGraphFileEditorProvider"/>-->
 
+        <diagram.Provider implementation="com.github.iguissouma.nxconsole.uml.NxDiagramProvider"/>
+
         <!--ui-->
         <fileEditorProvider implementation="com.github.iguissouma.nxconsole.execution.NxUIEditorProvider"/>
         <fileIconProvider implementation="com.github.iguissouma.nxconsole.execution.NxUiIconProvider"/>
 
         <!--filetype-->
-        <fileType name="nx" fileNames="nx.json" implementationClass="com.github.iguissouma.nxconsole.NxFileType" fieldName="INSTANCE"/>
-        <iconProvider implementation="com.github.iguissouma.nxconsole.NxDirectoryIconProvider" order="before directory, before javaDirectory"/>
+        <fileType name="nx" fileNames="nx.json" implementationClass="com.github.iguissouma.nxconsole.NxFileType"
+                  fieldName="INSTANCE"/>
+        <iconProvider implementation="com.github.iguissouma.nxconsole.NxDirectoryIconProvider"
+                      order="before directory, before javaDirectory"/>
 
         <!--vcs-->
-        <checkinHandlerFactory implementation="com.github.iguissouma.nxconsole.vcs.checkin.NxReformatCheckinHandlerFactory"/>
+        <checkinHandlerFactory
+                implementation="com.github.iguissouma.nxconsole.vcs.checkin.NxReformatCheckinHandlerFactory"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.vcs.NxVcsConfiguration"/>
 
         <!--scope provider-->
-        <customScopesProvider implementation="com.github.iguissouma.nxconsole.scopes.NxProjectsScopesProvider" order="last"/>
+        <customScopesProvider implementation="com.github.iguissouma.nxconsole.scopes.NxProjectsScopesProvider"
+                              order="last"/>
 
         <!--settings-->
         <projectConfigurable id="Settings.Nx.DevTools"
@@ -59,8 +68,6 @@
                              bundle="messages.NxBundle"
         />
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.plugins.NxDevToolsSettingsManager"/>
-
-
 
 
         <!--schematics-->
@@ -88,7 +95,9 @@
                 implementation="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction$MyStartupActivity"/>
 
         <!--Nx dep graph-->
-        <toolWindow id="Nx Dep Graph" anchor="right" secondary="true" factoryClass="com.github.iguissouma.nxconsole.depGraph.NxDepGraphToolWindow" icon="/icons/nrwl.svg"/>
+        <toolWindow id="Nx Dep Graph" anchor="right" secondary="true"
+                    factoryClass="com.github.iguissouma.nxconsole.depGraph.NxDepGraphToolWindow"
+                    icon="/icons/nrwl.svg"/>
         <projectService serviceImplementation="com.github.iguissouma.nxconsole.depGraph.NxDepGraphWindowService"/>
 
         <!--intentions-->
@@ -161,14 +170,15 @@
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>-->
 
-       <!--plugins-->
+        <!--plugins-->
         <action id="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction"
                 class="com.github.iguissouma.nxconsole.plugins.NxShowNxDevToolsSettingsAction" text="Nx Plugins"
                 description="Nx plugins"/>
 
 
         <!--graph actions-->
-        <action id="Nx.GRAPH.ShowAffectedAction" class="com.github.iguissouma.nxconsole.graph.actions.NxGraphShowAffectedAction"
+        <action id="Nx.GRAPH.ShowAffectedAction"
+                class="com.github.iguissouma.nxconsole.graph.actions.NxGraphShowAffectedAction"
                 text="Show Affected" icon="/actions/diagramDiff.svg">
         </action>
 
@@ -188,10 +198,12 @@
         </group>
 
         <action id="NxLoadUnloadModules" class="com.github.iguissouma.nxconsole.actions.NxLoadUnloadModulesAction">
-            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
+            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after"
+                          relative-to-action="OpenModuleSettings"/>
         </action>
         <action id="NxFocusOnAppOrLib" class="com.github.iguissouma.nxconsole.actions.NxFocusOnAppOrLibAction">
-            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after" relative-to-action="OpenModuleSettings"/>
+            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="after"
+                          relative-to-action="OpenModuleSettings"/>
         </action>
 
         <!--<action id="NxFocusOnAppOrLibDialog" class="com.github.iguissouma.nxconsole.actions.NxManageAppsAndLibsDialogAction">
@@ -199,6 +211,16 @@
 
         <action id="NxFocusOnAppOrLibDialog" class="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction">
         </action>
+
+
+        <action class="com.github.iguissouma.nxconsole.uml.ShowNxGraphNewDiagramAction"
+                id="ShowNxGraphNewDiagram"
+                text="Show Nx Graph Dependency Diagram"
+                icon="AllIcons.FileTypes.Diagram">
+        >
+            <add-to-group group-id="UML.EditorGroup"/>
+        </action>
+
 
     </actions>
 </idea-plugin>

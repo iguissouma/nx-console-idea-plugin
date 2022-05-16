@@ -486,7 +486,7 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             }
             OptionSettingType.Enum -> {
                 val comboBoxModel =
-                    CollectionComboBoxModel(if ((option.default as? String) == null) listOf("") + option.enum else option.enum)
+                    CollectionComboBoxModel(if ((option.default as? String).isNullOrBlank()) listOf("") + option.enum else option.enum)
                 val cb = comboBox(
                     comboBoxModel,
                     { modelUI[option.name!!] as? String ?: "" },
@@ -500,8 +500,8 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             }
 
             OptionSettingType.Int -> {
-                val textField = intTextField(
-                    { modelUI[option.name!!] as? Int ?: 0 },
+                val textField = textField( // everything is string like port I should display empty not 0
+                    { modelUI[option.name!!] as? String ?: "" },
                     { modelUI[option.name!!] = it },
                     columns = 10
                 )

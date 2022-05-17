@@ -201,7 +201,7 @@ class NxBuildersUiPanel(
         }
     }
 
-    private var mainPanel: JPanel? = null
+    private var mainPanel: JPanel? = JPanel(BorderLayout())
     var hasFocus = false
     var focusedComponent = null
 
@@ -352,6 +352,7 @@ class NxBuildersUiPanel(
         // actionToolbar.component.border = IdeBorderFactory.createBorder(SideBorder.TOP + SideBorder.BOTTOM)
         actionToolbar.setMinimumButtonSize(Dimension(22, 22))
         actionToolbar.component.isOpaque = true
+        actionToolbar.targetComponent = this.mainPanel
 
         val textFilter: Wrapper = Wrapper()
         textFilter.setVerticalSizeReferent(searchField)
@@ -365,7 +366,7 @@ class NxBuildersUiPanel(
         panel.add(actionToolbar.component, BorderLayout.LINE_START)
         panel.add(searchField, BorderLayout.CENTER)
 
-        mainPanel = JPanel(BorderLayout())
+        // mainPanel = JPanel(BorderLayout())
         mainPanel!!.add(panel, BorderLayout.NORTH)
         val jbScrollPane = JBScrollPane(centerPanel)
         mainPanel!!.add(jbScrollPane, BorderLayout.CENTER)

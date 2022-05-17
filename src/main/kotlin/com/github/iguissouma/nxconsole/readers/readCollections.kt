@@ -460,6 +460,26 @@ fun npmDependencies(workspacePath: String): Collection<String> {
     return res
 }
 
+fun workspaceDependencyPath(
+    workspacePath: String,
+    workspaceDependencyName: String
+): File? {
+    if (workspaceDependencyName.startsWith('.')) {
+        return File(workspacePath, workspaceDependencyName);
+    }
+
+    /*if (await isWorkspaceInPnp(workspacePath)) {
+        return pnpDependencyPath(workspacePath, workspaceDependencyName);
+    }*/
+
+    val nodeModulesDir = File(workspacePath, "node_modules");
+    val path = File(nodeModulesDir, workspaceDependencyName);
+    if (path.exists() && path.isDirectory) {
+        return path;
+    }
+    return null
+}
+
 fun localDependencies(workspacePath: String, projects: WorkspaceProjects): Collection<String> {
     if (projects == null) {
         return emptyList();

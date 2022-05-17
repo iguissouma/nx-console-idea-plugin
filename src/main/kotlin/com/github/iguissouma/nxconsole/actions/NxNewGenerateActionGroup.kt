@@ -24,6 +24,7 @@ class NxNewGenerateActionGroup : ActionGroup(
             .filterNot { s ->
                 nxExcludeGenerators.any { it.matches(s.name!!) }
             }
+            .sortedBy { it.name } // not same as vscode
             .map { NxNewGenerateAction(it, virtualFile, it.name, it.description, NxIcons.NRWL_ICON) }
             .toTypedArray()
     }

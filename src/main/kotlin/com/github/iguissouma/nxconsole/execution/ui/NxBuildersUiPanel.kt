@@ -215,14 +215,13 @@ class NxBuildersUiPanel(
 
     init {
 
-        builderOptions = runInEdtAndGet {
-            NxCliBuildersRegistryService.getInstance()
+        builderOptions = NxCliBuildersRegistryService.getInstance()
                 .readBuilderSchema(
                     project,
                     nxConfig?.angularJsonFile!!,
                     architect.builder!!
                 ) ?: emptyList()
-        }
+
 
         builderOptions.map { it.name to it.default }.forEach { modelUI[it.first] = it.second }
 
@@ -473,17 +472,16 @@ class NxBuildersUiPanel(
                 )
             }
 
-            OptionSettingType.Int -> {
-                val textField = spinner(
-                    { modelUI[option.name!!].toString().toIntOrNull() ?: 0 },
+            OptionSettingType.Int -> { // same as String
+                val textField = textField(
+                    { modelUI[option.name!!] as? String ?: "" },
                     { modelUI[option.name!!] = it },
-                    0,
-                    Int.MAX_VALUE
+                    columns = 10
                 )
                 OptionSettingControl(
                     textField,
-                    SpinnerPredicate(textField.component, { it == option.default.toIntOrNull() }),
-                    { textField.component.value = option.default.toIntOrNull() }
+                    textField.component.enteredTextSatisfies { it == option.default },
+                    { textField.component.text = option.default as String }
                 )
             }
 

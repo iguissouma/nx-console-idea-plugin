@@ -3,17 +3,23 @@ package com.github.iguissouma.nxconsole.builders
 import com.github.iguissouma.nxconsole.readers.CollectionInfo
 import com.github.iguissouma.nxconsole.readers.getExecutors
 import com.github.iguissouma.nxconsole.readers.getGeneratorOptions
+import com.github.iguissouma.nxconsole.readers.readBuilderSchema
 import com.intellij.openapi.project.Project
 
 fun doLoadBuilders(project: Project, builderName: String): List<NxBuilderOptions> {
     val executor: CollectionInfo = getExecutors(project.basePath!!, null, false)
-        .firstOrNull { "${it.data?.collection}:${it.data?.name}" == builderName } ?: return emptyList()
+        .firstOrNull { it.name == builderName } ?: return emptyList()
 
-    val schematic = executor.data ?: return emptyList()
-    val (name, path, type, data) = executor
-    val options = getGeneratorOptions(project.basePath!!, data?.collection!!, data.name, path)
+    //val schematic = executor.data ?: return emptyList()
+    val (collection, name) = builderName.split(":").let {
+        it.first() to it.last()
+    }
+    val (_name, path, type, data) = executor
+
+    val options = readBuilderSchema(project.basePath!!, builderName, emptyMap())
         .map { nxOption: com.github.iguissouma.nxconsole.readers.Option ->
             val option = NxBuilderOptions()
+            option.name = nxOption.name
             option.default = nxOption.default ?: "" // TODO: check if this is correct
             option.description = nxOption.description ?: ""
             option.type = nxOption.type ?: ""

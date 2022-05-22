@@ -1,6 +1,10 @@
 package com.github.iguissouma.nxconsole.readers
 
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.*
+import com.intellij.openapi.project.ProjectLocator
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiManager
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -42,7 +46,10 @@ fun getGeneratorOptions(
     workspaceDefaults &&
             workspaceDefaults[collectionName] &&
             workspaceDefaults[collectionName][generatorName];*/
-    val defaults = null
+    val defaults = if (workspaceDefaults?.isNotEmpty() == true) {
+        (workspaceDefaults[collectionName] as? Map<String, Any>)?.get(generatorName) as? Map<String, Any> ?: emptyMap<String, Any>()
+    } else
+        emptyMap<String, Any>()
 
     return normalizeSchema(generatorSchema["json"] as Map<String, Any?>, defaults)
 
@@ -63,18 +70,17 @@ val IMPORTANT_FIELD_NAMES = arrayOf(
 )
 val IMPORTANT_FIELDS_SET = IMPORTANT_FIELD_NAMES.toSet()
 
-fun normalizeSchema(s: Map<String, Any?>, projectDefaults: GeneratorDefaults? = null): List<Option> {
+fun normalizeSchema(s: Map<String, Any?>, projectDefaults: Map<String, Any>? = null): List<Option> {
     val options = schemaToOptions(s);
     val requiredFields = (s["required"] as? List<String> ?: emptyList()).distinct()
 
     val nxOptions = options.map { option: Option ->
         val xPrompt = option.`x-prompt`
+        val workspaceDefault = projectDefaults?.get(option.name)
         val `$default` = option.`$default`;
         var nxOption = option.copy(
             isRequired = isFieldRequired(requiredFields, option, xPrompt, `$default`),
             aliases = if (option.alias != null) listOf(option.alias) else emptyList(),
-            // TODO
-            //  ...(workspaceDefault !== undefined && { default: workspaceDefault }),
 
             //  ...($default && { $default }),
             `$default` = `$default`,
@@ -87,6 +93,12 @@ fun normalizeSchema(s: Map<String, Any?>, projectDefaults: GeneratorDefaults? = 
             //  but items is used in @schematics/angular - guard
             items = getItems(option),
         )
+
+        // TODO
+        //  ...(workspaceDefault !== undefined && { default: workspaceDefault }),
+        if (workspaceDefault != null) {
+            nxOption = nxOption.copy(default = workspaceDefault.toString())
+        }
         if (xPrompt != null) {
             nxOption = nxOption.copy()
         }
@@ -201,7 +213,52 @@ fun isPropertyVisible(option: String, property: Map<String, Any?>): Boolean {
 
 
 fun readWorkspaceJsonDefaults(workspacePath: String): Map<String, Any?>? {
-    return emptyMap()
+    // get virtual file from path
+    val virtualFile = LocalFileSystem.getInstance().findFileByPath(workspacePath) ?: return emptyMap<String, Any>()
+    // guess project from virtual file
+    val project = ProjectLocator.getInstance().guessProjectForFile(virtualFile) ?: return emptyMap<String, Any>()
+
+    val nxConfig = NxConfigProvider.getNxConfig(project, virtualFile)
+
+    var defaults = emptyMap<String, Any>()
+
+    if (true) {
+        defaults = getNxConfig(workspacePath)["generators"] as? Map<String, Any> ?: emptyMap()
+    }
+
+    val collectionDefaults = mutableMapOf<String, Any>()
+    defaults.keys.forEach { key ->
+        if (key.contains(":")) {
+            val (collectionName, generatorName) = key.split(":").let { it.first() to it.last() }
+            if (collectionDefaults[collectionName] == null) {
+                 collectionDefaults[collectionName] = mutableMapOf<String, Any>()
+            }
+            (collectionDefaults[collectionName] as MutableMap<String, Any>)[generatorName] = defaults[key] as Any
+        } else {
+            val collectionName = key
+            if (collectionDefaults[collectionName] == null) {
+                collectionDefaults[collectionName] = mutableMapOf<String, Any>()
+            }
+            (defaults?.get(collectionName) as Map<String, Any>).keys.forEach { generatorName ->
+                (collectionDefaults[collectionName] as MutableMap<String, Any>)[generatorName] = (defaults[key] as Map<String, Any>)[generatorName] as Any
+            }
+
+        }
+    }
+    return collectionDefaults;
+}
+
+
+fun getNxConfig(baseDir: String): Map<String, Any> {
+
+    val file = File(baseDir, "nx.json")
+    if (!file.exists()) {
+        return emptyMap()
+    }
+
+    val cachedNxJson = cacheJson("nx.json", baseDir)["json"] as Map<String, Any>
+
+    return cachedNxJson
 }
 
 

@@ -240,7 +240,8 @@ fun getCollectionInfo(
         type: CollectionType,
         schemaPath: String,
     ): CollectionInfo {
-        val path = Paths.get(collectionPath).resolve(Paths.get(schemaPath).parent).resolve(value["schema"] as String).normalize().toFile().path
+        val path = Paths.get(collectionPath).resolve(Paths.get(schemaPath).parent).resolve(value["schema"] as String)
+            .normalize().toFile().path
         // val path = File(File(collectionPath, schemaPath).parent, value["schema"] as String).path
         return CollectionInfo(
             name = "$collectionName:$name",
@@ -516,4 +517,30 @@ fun clearJsonCache(filePath: String, basedir: String = ""): Boolean {
     val fullFilePath = File(basedir, filePath);
     fileContents.remove(fullFilePath.path);
     return true;
+}
+
+
+/**
+ * Caches already created json contents to a file path
+ */
+fun cacheJson(filePath: String, basedir: String = "", content: Any?= null): Map<String, Any?> {
+    val fullFilePath = File(basedir, filePath);
+    if (fileContents.contains(fullFilePath.path)) {
+        return mapOf(
+            "path" to fullFilePath.path,
+            "json" to fileContents[fullFilePath.path],
+        )
+    }
+
+    if (content != null) {
+        fileContents[fullFilePath.path] = content as Map<String, Any>;
+    }
+    // not same as vscode
+    else {
+        fileContents[fullFilePath.path] = readAndParseJson(fullFilePath.path)
+    }
+    return mapOf(
+        "json" to content,
+        "path" to fullFilePath.path,
+    )
 }

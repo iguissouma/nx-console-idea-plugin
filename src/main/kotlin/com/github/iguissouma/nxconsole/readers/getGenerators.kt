@@ -223,7 +223,7 @@ fun readWorkspaceJsonDefaults(workspacePath: String): Map<String, Any?>? {
     var defaults = emptyMap<String, Any>()
 
     if (true) {
-        defaults = getNxConfig(workspacePath)["generators"] as? Map<String, Any> ?: emptyMap()
+        defaults = getNxConfig(workspacePath)?.get("generators") as? Map<String, Any> ?: emptyMap()
     }
 
     val collectionDefaults = mutableMapOf<String, Any>()
@@ -249,14 +249,14 @@ fun readWorkspaceJsonDefaults(workspacePath: String): Map<String, Any?>? {
 }
 
 
-fun getNxConfig(baseDir: String): Map<String, Any> {
+fun getNxConfig(baseDir: String): Map<String, Any>? {
 
     val file = File(baseDir, "nx.json")
     if (!file.exists()) {
         return emptyMap()
     }
 
-    val cachedNxJson = cacheJson("nx.json", baseDir)["json"] as Map<String, Any>
+    val cachedNxJson = cacheJson("nx.json", baseDir)["json"] as? Map<String, Any>
 
     return cachedNxJson
 }

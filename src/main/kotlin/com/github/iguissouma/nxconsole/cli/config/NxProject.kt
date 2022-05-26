@@ -81,13 +81,16 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
 
 internal class NxProjectImpl(
     override val name: String,
+    val projectPath: String?,
     val ngProject: AngularJsonProject,
     angularCliFolder: VirtualFile,
     project: Project
 ) :
     NxProject(angularCliFolder, project) {
 
-    override val rootDir = ngProject.rootPath?.let { angularCliFolder.findFileByRelativePath(it) }
+    override val rootDir = ngProject.rootPath?.let { angularCliFolder.findFileByRelativePath(it) } ?: projectPath?.let {
+        angularCliFolder.findFileByRelativePath(it)
+    }
 
     override val sourceDir get() = ngProject.sourceRoot?.let { angularCliFolder.findFileByRelativePath(it) } ?: rootDir
 

@@ -37,15 +37,17 @@ class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Pr
             projects = angularJson.projects.map { (name, ngProjectJson) ->
                 when (ngProjectJson) {
                     is String -> {
-                        val path = angularCliFolder.path + "/" + ngProjectJson + "/" + "project.json"
+                        val projectPath = angularCliFolder.path + "/" + ngProjectJson
+                        val path = "$projectPath/project.json"
                         val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(path))
                             ?: error("cannot read project ...")
                         val psiFile =
                             PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
-                        NxProjectImpl(name, mapper.readValue(psiFile.text), angularCliFolder, project)
+                        NxProjectImpl(name, ngProjectJson, mapper.readValue(psiFile.text),  angularCliFolder, project)
                     }
                     is Map<*, *> -> NxProjectImpl(
                         name,
+                        ngProjectJson["root"] as? String,
                         mapper.readValue(mapper.writeValueAsString(ngProjectJson)),
                         angularCliFolder,
                         project

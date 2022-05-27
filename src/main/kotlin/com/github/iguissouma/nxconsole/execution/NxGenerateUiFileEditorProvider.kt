@@ -2,7 +2,9 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
+import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.diff.util.FileEditorBase
 import com.intellij.ide.FileIconProvider
@@ -17,6 +19,7 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -32,10 +35,20 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class NxUiIconProvider : FileIconProvider {
-    override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? = (file as? NxUiFile)?.fileType?.icon
-}
 
+class NxUiIconProvider : FileIconProvider {
+    override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? {
+        if (project == null) return (file as? NxUiFile)?.fileType?.icon
+        return NxConfigProvider.getNxWorkspaceType(project, file)
+            .let { if (it == WorkspaceType.ANGULAR) angular else nrwl }
+    }
+
+    companion object {
+        val angular = NxIcons.ANGULAR
+        val nrwl = NxIcons.NRWL_ICON
+    }
+
+}
 class NxUiFileType : FileType {
     override fun getName(): String = "NxUi"
     override fun getDescription(): String = ""

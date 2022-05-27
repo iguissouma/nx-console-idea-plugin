@@ -18,6 +18,6 @@ object NxIcons {
     val ANGULAR = load("/icons/angular2.svg")
 
     private fun load(path: String): Icon {
-        return IconLoader.getIcon(path, NxIcons::class.java.getClassLoader())
+        return IconLoader.getIcon(path, NxIcons::class.java.classLoader)
     }
 }

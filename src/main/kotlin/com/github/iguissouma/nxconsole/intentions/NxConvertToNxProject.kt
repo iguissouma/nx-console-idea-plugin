@@ -44,6 +44,7 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
         val filter = NxCliFilter(project, project.baseDir.path)
         val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
         val args = arrayOf(
+            "generate",
             "@nrwl/workspace:convert-to-nx-project",
             "--project",
             unquoteString(element.text)
@@ -52,16 +53,15 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
         PsiDocumentManager.getInstance(project).commitAllDocuments()
         FileDocumentManager.getInstance().saveAllDocuments()
         NxGenerator().generate(
-            interpreter,
-            nxConfig.angularJsonFile.parent,
-            VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
-            project,
-            {
-            },
-            "convert-to-nx-project",
-            arrayOf(filter),
-            "generate",
-            *args
+            node = interpreter,
+            nxExe = "nx",
+            baseDir = nxConfig.angularJsonFile.parent,
+            workingDir = VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
+            project = project,
+            callback = null,
+            title = "convert-to-nx-project",
+            filters = arrayOf(filter),
+            args = args
         )
     }
 }

@@ -45,12 +45,14 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         NxGenerator().generate(
             node = interpreter,
             baseDir = nxConfig.angularJsonFile.parent,
-            workingDir = VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
+            workingDir = VfsUtilCore.virtualToIoFile(
+                nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent
+            ),
             project = project,
             callback = null,
             title = "Remove $title",
             filters = arrayOf(filter),
-            *args
+            args = args
         )
     }
 }

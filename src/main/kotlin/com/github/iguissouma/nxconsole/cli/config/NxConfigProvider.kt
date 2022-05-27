@@ -54,5 +54,26 @@ class NxConfigProvider private constructor() {
                 false
             )
         }
+
+        fun getNxWorkspaceType(project: Project, context: VirtualFile): WorkspaceType {
+            return getNxConfig(project, context)?.let {
+                if(it.angularJsonFile.name == "angular.json") {
+                    WorkspaceType.ANGULAR
+                } else {
+                    WorkspaceType.NX
+                }
+            } ?: WorkspaceType.UNKNOWN
+        }
     }
+}
+
+enum class WorkspaceType{
+    NX, ANGULAR, NX_WITH_ANGULAR, UNKNOWN
+}
+
+fun WorkspaceType.exe() = when(this) {
+    WorkspaceType.NX -> "nx"
+    WorkspaceType.ANGULAR -> "ng"
+    WorkspaceType.NX_WITH_ANGULAR -> "nx"
+    WorkspaceType.UNKNOWN -> "nx"
 }

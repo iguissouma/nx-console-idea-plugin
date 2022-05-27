@@ -62,6 +62,7 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                 val filter = NxCliFilter(project, project.baseDir.path)
                 val interpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return
                 val args = arrayOf(
+                    "generate",
                     "@nrwl/workspace:move",
                     "--project",
                     files[appOrLibDirectory]?.name,
@@ -71,18 +72,16 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
 
                 )
                 NxGenerator().generate(
-                    interpreter,
-                    // NodePackage(module.virtualFile?.path!!),
-                    // { pkg -> pkg?.findBinFile("nx", null)?.absolutePath },
-                    cli,
-                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
-                    project,
-                    {
+                    node = interpreter,
+                    nxExe = "nx",
+                    baseDir = cli,
+                    workingDir = VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project = project,
+                    callback = {
                     },
-                    "Move",
-                    arrayOf(filter),
-                    "generate",
-                    *args
+                    title = "Move",
+                    filters = arrayOf(filter),
+                    args = args
                 )
             }
         }

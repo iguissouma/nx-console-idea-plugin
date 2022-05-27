@@ -52,6 +52,7 @@ class NxGenerator {
 
     fun generate(
         node: NodeJsInterpreter,
+        nxExe: String = "nx",
         baseDir: VirtualFile,
         workingDir: File,
         project: Project,
@@ -122,7 +123,7 @@ class NxGenerator {
             NpmPackageDescriptor.findBinaryFilePackage(node, "npx")?.configureNpmPackage(targetRun)
         }
 
-        commandLine.addParameter("nx")
+        commandLine.addParameter(nxExe)
         commandLine.addParameters(arguments)
         commandLine.addParameters(args.toList())
         commandLine.setWorkingDirectory(targetRun.path(workingDir.path))

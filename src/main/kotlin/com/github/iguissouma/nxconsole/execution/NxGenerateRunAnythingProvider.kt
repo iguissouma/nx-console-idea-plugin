@@ -2,6 +2,8 @@ package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.exe
 import com.github.iguissouma.nxconsole.execution.ui.NxGenerateUiPanel
 import com.github.iguissouma.nxconsole.schematics.NxCliSchematicsRegistryService
 import com.github.iguissouma.nxconsole.schematics.Schematic
@@ -77,13 +79,14 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
 
         if (!isUI(args)) {
             NxGenerator().generate(
-                interpreter,
-                cli,
-                VfsUtilCore.virtualToIoFile(workingDir ?: cli),
-                project,
-                null,
-                "Generate",
-                arrayOf(filter),
+                node = interpreter,
+                nxExe = NxConfigProvider.getNxWorkspaceType(project, workingDir).exe(),
+                baseDir = cli,
+                workingDir = VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                project = project,
+                callback = null,
+                title = "Generate",
+                filters = arrayOf(filter),
                 "generate",
                 *args.toTypedArray()
             )

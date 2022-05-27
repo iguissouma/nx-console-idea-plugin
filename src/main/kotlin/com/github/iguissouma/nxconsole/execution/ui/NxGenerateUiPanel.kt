@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.execution.ui
 import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.exe
 import com.github.iguissouma.nxconsole.execution.NxGenerator
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.execution.SchematicProjectOptionsTextField
@@ -237,15 +238,14 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
                 NxGenerator().generate(
-                    interpreter!!,
-                    // NodePackage(module?.virtualFile?.path!!),
-                    // { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
-                    cli,
-                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
-                    project,
-                    null,
-                    "Generating",
-                    arrayOf(filter),
+                    node = interpreter!!,
+                    nxExe = NxConfigProvider.getNxWorkspaceType(project, workingDir).exe(),
+                    baseDir = cli,
+                    workingDir = VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project = project,
+                    callback = null,
+                    title = "Generating",
+                    filters = arrayOf(filter),
                     *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
                     *computeArgsFromModelUi()
                         .toTypedArray()
@@ -262,18 +262,16 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             override fun actionPerformed(e: AnActionEvent) {
                 apply()
                 NxGenerator().generate(
-                    interpreter!!,
-                    // NodePackage(module?.virtualFile?.path!!),
-                    // { pkg -> pkg!!.findBinFile("nx", null)?.absolutePath },
-                    cli,
-                    VfsUtilCore.virtualToIoFile(workingDir ?: cli),
-                    project,
-                    null,
-                    "Generating",
-                    arrayOf(filter),
+                    node = interpreter!!,
+                    nxExe = NxConfigProvider.getNxWorkspaceType(project, workingDir).exe(),
+                    baseDir = cli,
+                    workingDir = VfsUtilCore.virtualToIoFile(workingDir ?: cli),
+                    project = project,
+                    callback = null,
+                    title = "Generating",
+                    filters = arrayOf(filter),
                     *computeGenerateRunCommand(schemaName = schematic.name).toTypedArray(),
-                    *computeArgsFromModelUi()
-                        .toTypedArray(),
+                    *computeArgsFromModelUi().toTypedArray(),
                     "--dry-run",
                     "--no-interactive"
                 )

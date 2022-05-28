@@ -38,9 +38,14 @@ import javax.swing.SwingUtilities
 
 class NxUiIconProvider : FileIconProvider {
     override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? {
-        if (project == null) return (file as? NxUiFile)?.fileType?.icon
-        return NxConfigProvider.getNxWorkspaceType(project, file)
-            .let { if (it == WorkspaceType.ANGULAR) angular else nrwl }
+        if (project == null) {
+            return null
+        }
+        return (file as? NxUiFile)?.let {
+            return NxConfigProvider.getNxWorkspaceType(project, file)
+                .let { if (it == WorkspaceType.ANGULAR) angular else nrwl }
+        }
+
     }
 
     companion object {

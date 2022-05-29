@@ -1,6 +1,7 @@
 package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.uml.extractJson
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -25,7 +26,7 @@ class NxLoadUnloadModulesAction : DumbAwareAction({ "Nx Load/Unload App or Libs.
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         NxExecutionUtil(project).executeAndGetOutputAsync("print-affected", arrayOf()) {
-            val result = it?.stdout ?: return@executeAndGetOutputAsync
+            val result = it?.stdout?.extractJson() ?: return@executeAndGetOutputAsync
             if (it.exitCode == 0 && result.isNotEmpty()) {
                 val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
                 val depGraph: Map<String, Any> = Gson().fromJson(result, depGraphType)

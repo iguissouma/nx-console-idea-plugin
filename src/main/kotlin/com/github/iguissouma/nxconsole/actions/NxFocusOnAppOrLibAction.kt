@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.uml.extractJson
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -38,7 +39,7 @@ class NxFocusOnAppOrLibAction : DumbAwareAction({ "Nx Focus on App or Lib" }, Nx
         val selectedProjectName = getSelectedProjectName(e) ?: return
 
         NxExecutionUtil(project).executeAndGetOutputAsync("print-affected", arrayOf()) {
-            val result = it?.stdout ?: return@executeAndGetOutputAsync
+            val result = it?.stdout?.extractJson() ?: return@executeAndGetOutputAsync
             if (it.exitCode == 0 && result.isNotEmpty()) {
                 invokeLater {
                     val depGraphType = object : TypeToken<Map<String, Any>>() {}.type

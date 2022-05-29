@@ -3,6 +3,7 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxService
 import com.github.iguissouma.nxconsole.buildTools.NxTaskTreeView
+import com.github.iguissouma.nxconsole.uml.extractJson
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -143,7 +144,7 @@ class NxShowAffectedAction : AnAction(NxIcons.NRWL_ICON) {
         ) { output ->
             if (output != null && output.exitCode == 0) {
                 val mapType = object : TypeToken<Map<String, Any>>() {}.type
-                val affected: Map<String, Any> = Gson().fromJson(output.stdout, mapType)
+                val affected: Map<String, Any> = Gson().fromJson(output.stdout.extractJson(), mapType)
 
                 nxTaskTreeView.isAffected = true
                 nxTaskTreeView.filterByAffected = affected["projects"] as? List<String> ?: emptyList()

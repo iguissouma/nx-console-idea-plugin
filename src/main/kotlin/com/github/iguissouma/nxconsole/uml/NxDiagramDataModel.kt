@@ -21,16 +21,23 @@ class NxDiagramDataModel(project: Project, val provider: NxDiagramProvider) :
 
     init {
         NxExecutionUtil(project).executeAndGetOutputAsync("print-affected", arrayOf()) {
-            val result = it?.stdout ?: "{}"
-            val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
-            val depGraph: Map<String, Any> = Gson().fromJson(result, depGraphType)
-            val projectGraph: Map<String, Any> = depGraph["projectGraph"] as Map<String, Any>
-            myNodes = mutableSetOf()
-            myEdges = mutableSetOf()
             UIUtil.invokeAndWaitIfNeeded(Runnable {
+                val result = it?.stdout?.extractJson() ?: "{}"
+                val depGraphType = object : TypeToken<Map<String, Any>>() {}.type
+                val depGraph: Map<String, Any> = Gson().fromJson(result, depGraphType)
+                val projectGraph: Map<String, Any> = depGraph["projectGraph"] as Map<String, Any>
+                myNodes = mutableSetOf()
+                myEdges = mutableSetOf()
                 val nxConfig = NxConfigProvider.getNxConfig(project, project.projectFile ?: return@Runnable)
                 (projectGraph["nodes"] as List<String>).forEach { node ->
-                    myNodes?.add(NxGraphNode(NxDiagramObject(node, nxConfig?.projects?.firstOrNull() { it.name == node }?.type?.name ?: "library") , provider))
+                    myNodes?.add(
+                        NxGraphNode(
+                            NxDiagramObject(
+                                node,
+                                nxConfig?.projects?.firstOrNull() { it.name == node }?.type?.name ?: "library"
+                            ), provider
+                        )
+                    )
                 }
                 (projectGraph["dependencies"] as Map<String, Any>).forEach { entry ->
                     val deps = entry.value as List<Map<*, *>>
@@ -40,8 +47,14 @@ class NxDiagramDataModel(project: Project, val provider: NxDiagramProvider) :
                         if (source != null && target != null) {
                             myEdges?.add(
                                 NxGraphEdge(
-                                    NxGraphNode(NxDiagramObject(source.diagramObject.name, source.diagramObject.type), provider),
-                                    NxGraphNode(NxDiagramObject(target.diagramObject.name, target.diagramObject.type), provider)
+                                    NxGraphNode(
+                                        NxDiagramObject(source.diagramObject.name, source.diagramObject.type),
+                                        provider
+                                    ),
+                                    NxGraphNode(
+                                        NxDiagramObject(target.diagramObject.name, target.diagramObject.type),
+                                        provider
+                                    )
                                 )
                             )
                         }
@@ -79,3 +92,5 @@ class NxDiagramDataModel(project: Project, val provider: NxDiagramProvider) :
     }
 
 }
+
+fun String.extractJson() = substring(indexOf("{"), lastIndexOf("}") + 1)

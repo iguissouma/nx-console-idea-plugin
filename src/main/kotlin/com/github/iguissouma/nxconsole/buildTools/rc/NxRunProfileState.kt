@@ -1,6 +1,9 @@
 package com.github.iguissouma.nxconsole.buildTools.rc
 
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
+import com.github.iguissouma.nxconsole.cli.config.exe
 import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
@@ -76,8 +79,7 @@ class NxRunProfileState(
         val console = createConsole(
             // processHandler, File(this.runSettings.getPackageJsonSystemDependentPath())
             processHandler,
-            File(this.runSettings.nxFileSystemIndependentPath!!)
-                .parentFile
+            this.runSettings.nxFileSystemIndependentPath?.let { File(it) }?.parentFile
         )
         console.attachToProcess(processHandler)
         foldCommandLine(console, processHandler)
@@ -92,7 +94,7 @@ class NxRunProfileState(
         targetRun.enableWrappingWithYarnPnpNode = false
         val commandLine = targetRun.commandLineBuilder
         commandLine.setCharset(StandardCharsets.UTF_8)
-        val workingDirectory: File = File(this.runSettings.nxFilePath).parentFile
+        val workingDirectory: File = this.runSettings.nxFilePath?.let { File(it).parentFile } ?: File(targetRun.project.basePath!!)
         commandLine.setWorkingDirectory(targetRun.path(workingDirectory.absolutePath))
         targetRun.enableWrappingWithYarnPnpNode = false
         targetRun.configureEnvironment(envData)
@@ -147,9 +149,10 @@ class NxRunProfileState(
         } else if (yarn.not()) {
             NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")?.configureNpmPackage(targetRun)
         }
-        commandLine.addParameter("nx")
+        val nxWorkspaceType = NxConfigProvider.getNxWorkspaceType(targetRun.project, targetRun.project.baseDir)
+        commandLine.addParameter(nxWorkspaceType.exe())
         val tasks = this.runSettings.tasks
-        if (tasks.size > 1) {
+        if (tasks.size > 1 && nxWorkspaceType == WorkspaceType.NX) {
             commandLine.addParameters("run-many")
             val target = tasks.first().substringAfter(":")
             commandLine.addParameter("--target=$target")

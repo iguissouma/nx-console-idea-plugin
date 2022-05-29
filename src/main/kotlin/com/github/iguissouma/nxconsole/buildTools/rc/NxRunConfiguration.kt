@@ -2,6 +2,8 @@ package com.github.iguissouma.nxconsole.buildTools.rc
 
 import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.github.iguissouma.nxconsole.buildTools.NxService
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
@@ -36,7 +38,8 @@ class NxRunConfiguration(
     }
 
     private fun getNxPackage(project: Project, runSettings: NxRunSettings): NodePackage? {
-        return NodePackage.findDefaultPackage(project, "@nrwl/cli", NodeJsInterpreterRef.createProjectRef().resolve(project))
+        val p = if (NxConfigProvider.getNxWorkspaceType(project, project.baseDir) == WorkspaceType.ANGULAR) "@angular/cli" else "@nrwl/cli"
+        return NodePackage.findDefaultPackage(project, p, NodeJsInterpreterRef.createProjectRef().resolve(project))
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

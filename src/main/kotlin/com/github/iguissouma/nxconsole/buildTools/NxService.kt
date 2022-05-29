@@ -186,7 +186,7 @@ class NxService(val project: Project) : JsbtService(project) {
 
     fun detectFirstBuildfileInContentRoots(webModulesOnly: Boolean): VirtualFile? {
         val buildfiles = this.detectAllBuildfilesInContentRoots(webModulesOnly)
-        return ContainerUtil.getFirstItem(buildfiles) as VirtualFile
+        return buildfiles.firstOrNull()
     }
 
     class NxApplicationService : JsbtApplicationService() {

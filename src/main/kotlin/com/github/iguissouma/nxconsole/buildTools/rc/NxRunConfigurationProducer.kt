@@ -97,7 +97,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             null
                         }
                     } else {
-                        val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) ?: return null
+                        val findChildNxJsonFile = findChildNxJsonFile(virtualAngularJson.parent) //?: return null
                         // findContainingProjectProperty(element)
                         // TODO check when it's not JsonStringLiteral
                         val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
@@ -118,7 +118,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             ) ?: return null
 
                             val setting = NxRunSettings(
-                                nxFilePath = findChildNxJsonFile.path,
+                                nxFilePath = findChildNxJsonFile?.path,
                                 tasks = listOf(
                                     "${projectProperty.name}:${
                                     propertyLiteral.value
@@ -146,7 +146,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                             ) ?: return null
 
                             val setting = NxRunSettings(
-                                nxFilePath = findChildNxJsonFile.path,
+                                nxFilePath = findChildNxJsonFile?.path,
                                 tasks = listOf(
                                     "${projectJsonProperty.name}:${
                                     architectJsonProperty.name

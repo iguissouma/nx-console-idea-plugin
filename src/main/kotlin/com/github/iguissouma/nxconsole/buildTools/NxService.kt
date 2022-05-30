@@ -156,14 +156,15 @@ class NxService(val project: Project) : JsbtService(project) {
                 return JsbtUtil.equalsOrderless(
                     patternRunSettings.tasks,
                     runSettings.tasks
-                ) && patternRunSettings.nxFileSystemIndependentPath == runSettings.nxFileSystemIndependentPath
+                ) && patternRunSettings.nxFileSystemIndependentPath.orEmpty() == runSettings.nxFileSystemIndependentPath.orEmpty()
+
             }
             if (patternObject is JsbtTaskSet) {
                 val patternTaskSet = patternObject
                 return JsbtUtil.equalsOrderless(
                     patternTaskSet.taskNames,
                     runSettings.tasks
-                ) && patternTaskSet.structure.buildfile.path == runSettings.nxFileSystemIndependentPath
+                ) && patternTaskSet.structure.buildfile.path == runSettings.nxFileSystemIndependentPath.orEmpty()
             }
         }
         return false

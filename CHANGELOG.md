@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.44.0]
+### Added
+- Add support for angular projects without nx(Run action from Gutter and Schematics generation)
+- Add support for 2022.2 EAP
+
 ## [0.43.2]
 ### Added
 - Add new way to load generators/builders (kotlin implemenetation) 

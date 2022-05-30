@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.cli.config
 
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.schematics.NxCliUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -56,11 +57,16 @@ class NxConfigProvider private constructor() {
         }
 
         fun getNxWorkspaceType(project: Project, context: VirtualFile): WorkspaceType {
-            return NxCliUtil.findAngularCliFolder(project, context)?.let {
+            val findAngularCliFolder = NxCliUtil.findAngularCliFolder(project, context)
+            return findAngularCliFolder?.let {
                 NxCliUtil.findCliJson(it)
             }?.let {
-                if (it.name == "angular.json") {
-                    WorkspaceType.ANGULAR
+                if (it.name != "workspace.json") {
+                    if (NxJsonUtil.findChildNxJsonFile(findAngularCliFolder) != null) {
+                        WorkspaceType.NX_WITH_ANGULAR
+                    } else {
+                        WorkspaceType.ANGULAR
+                    }
                 } else {
                     WorkspaceType.NX
                 }

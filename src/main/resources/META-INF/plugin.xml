@@ -52,6 +52,11 @@
         <iconProvider implementation="com.github.iguissouma.nxconsole.NxDirectoryIconProvider"
                       order="before directory, before javaDirectory"/>
 
+        <fileType name="nx workspace"
+                  fileNames="workspace.json,angular.json,.angular-cli.json,angular-cli.json,workspace.json"
+                  implementationClass="com.github.iguissouma.nxconsole.NxWorkspaceFileType"
+                  fieldName="INSTANCE"/>
+
         <!--vcs-->
         <checkinHandlerFactory
                 implementation="com.github.iguissouma.nxconsole.vcs.checkin.NxReformatCheckinHandlerFactory"/>
@@ -217,7 +222,7 @@
                 id="ShowNxGraphNewDiagram"
                 text="Show Nx Graph Dependency Diagram"
                 icon="AllIcons.FileTypes.Diagram">
-        >
+            >
             <add-to-group group-id="UML.EditorGroup"/>
         </action>
 

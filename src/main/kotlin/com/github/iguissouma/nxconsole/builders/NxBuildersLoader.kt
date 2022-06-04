@@ -2,7 +2,6 @@ package com.github.iguissouma.nxconsole.builders
 
 import com.github.iguissouma.nxconsole.readers.CollectionInfo
 import com.github.iguissouma.nxconsole.readers.getExecutors
-import com.github.iguissouma.nxconsole.readers.getGeneratorOptions
 import com.github.iguissouma.nxconsole.readers.readBuilderSchema
 import com.intellij.openapi.project.Project
 

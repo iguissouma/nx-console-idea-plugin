@@ -16,8 +16,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.annotations.NonNls
-import java.lang.UnsupportedOperationException
-import java.util.Collections
+import java.util.*
 import java.util.function.Supplier
 
 class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {

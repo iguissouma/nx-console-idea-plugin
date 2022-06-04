@@ -34,7 +34,6 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.util.SmartList
-import com.intellij.util.containers.ContainerUtil
 import javax.swing.Icon
 
 @Service

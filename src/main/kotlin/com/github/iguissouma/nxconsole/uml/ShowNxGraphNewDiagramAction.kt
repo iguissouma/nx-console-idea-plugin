@@ -5,7 +5,6 @@ import com.intellij.diagram.DiagramProvider
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.uml.core.actions.ShowDiagram
 import org.jetbrains.annotations.NotNull
-import org.jetbrains.annotations.Nullable
 
 
 class ShowNxGraphNewDiagramAction : ShowDiagram() {

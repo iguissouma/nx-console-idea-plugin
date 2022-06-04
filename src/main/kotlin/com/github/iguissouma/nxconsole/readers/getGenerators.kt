@@ -1,10 +1,10 @@
 package com.github.iguissouma.nxconsole.readers
 
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
-import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.*
+import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.generators
+import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.schematics
 import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiManager
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path

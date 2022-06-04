@@ -12,7 +12,6 @@ import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.execution.NxUiPanel
 import com.github.iguissouma.nxconsole.execution.SchematicProjectOptionsTextField
-import com.github.iguissouma.nxconsole.execution.runInEdtAndGet
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -22,7 +21,6 @@ import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.icons.AllIcons
 import com.intellij.ide.ui.search.SearchUtil
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

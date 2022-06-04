@@ -16,9 +16,7 @@ import com.intellij.webcore.util.JsonUtil
 import org.jetbrains.annotations.Contract
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
-import java.util.Objects
-import kotlin.Throws
+import java.util.*
 
 class NxCliConfig(private val myConfig: VirtualFile) {
 

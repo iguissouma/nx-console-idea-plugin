@@ -6,8 +6,6 @@ import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.cli.config.exe
 import com.github.iguissouma.nxconsole.execution.DefaultNxUiFile
 import com.github.iguissouma.nxconsole.execution.ui.NxGenerateUiPanel
-import com.github.iguissouma.nxconsole.readers.ReadCollectionsOptions
-import com.github.iguissouma.nxconsole.readers.readCollections
 import com.github.iguissouma.nxconsole.schematics.Schematic
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

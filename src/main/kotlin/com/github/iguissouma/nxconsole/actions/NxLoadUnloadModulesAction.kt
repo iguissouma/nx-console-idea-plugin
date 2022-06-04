@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.util.ui.UIUtil
 
 class NxLoadUnloadModulesAction : DumbAwareAction({ "Nx Load/Unload App or Libs..." }, NxIcons.NRWL_ICON) {
 

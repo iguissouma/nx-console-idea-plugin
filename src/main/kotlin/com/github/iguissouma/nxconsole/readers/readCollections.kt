@@ -325,7 +325,7 @@ fun readCollectionGenerator(
             type = generatorType
         )
     } catch (e: Exception) {
-        println("Invalid package.json for schematic ${collectionName}:${collectionSchemaName}");
+        println("Invalid package.json for schematic ${collectionName}:${collectionSchemaName}")
         return null;
     }
 }

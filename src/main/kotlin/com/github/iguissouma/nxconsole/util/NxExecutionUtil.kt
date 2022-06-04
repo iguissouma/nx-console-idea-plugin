@@ -29,7 +29,6 @@ import com.intellij.util.ThreeState
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.text.SemVer
 import org.jetbrains.annotations.NotNull
-import org.jetbrains.plugins.notebooks.visualization.r.inlays.runAsyncInlay
 import java.io.File
 import java.util.concurrent.CompletableFuture
 

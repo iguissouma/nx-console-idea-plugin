@@ -1,8 +1,6 @@
 package com.github.iguissouma.nxconsole.uml
 
 import com.intellij.diagram.AbstractDiagramElementManager
-import com.intellij.diagram.DiagramElementManager
-import com.intellij.diagram.DiagramProvider
 import com.intellij.openapi.actionSystem.DataContext
 
 class NxDiagramElementManager(val provider: NxDiagramProvider) : AbstractDiagramElementManager<NxDiagramObject>() {

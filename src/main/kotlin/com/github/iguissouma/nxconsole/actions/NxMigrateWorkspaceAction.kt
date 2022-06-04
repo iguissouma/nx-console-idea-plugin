@@ -3,22 +3,10 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.util.NxExecutionUtil
-import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
-import com.intellij.javascript.debugger.CommandLineDebugConfigurator
-import com.intellij.javascript.nodejs.NodeCommandLineUtil
-import com.intellij.javascript.nodejs.execution.NodeTargetRun
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.npm.NpmManager
-import com.intellij.javascript.nodejs.npm.NpmNodePackage
-import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
-import com.intellij.javascript.nodejs.npm.NpmUtil
-import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
 import com.intellij.javascript.nodejs.npm.registry.NpmRegistryService
 import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
-import com.intellij.lang.javascript.JavaScriptBundle
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.findChildPackageJsonFile
 import com.intellij.notification.Notification
@@ -37,15 +25,9 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.text.HtmlBuilder
-import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.ThreeState
-import com.intellij.util.text.SemVer
-import java.io.File
-import java.util.List
 import javax.swing.event.HyperlinkEvent
 
 class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxIcons.NRWL_ICON) {

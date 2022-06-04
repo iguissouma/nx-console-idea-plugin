@@ -1,24 +1,12 @@
 package com.github.iguissouma.nxconsole.actions
 
 import com.github.iguissouma.nxconsole.NxBundle
-import com.github.iguissouma.nxconsole.cli.NxCliProjectGenerator
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
-import com.github.iguissouma.nxconsole.util.NxExecutionUtil
-import com.google.common.reflect.TypeToken
-import com.google.gson.Gson
 import com.intellij.CommonBundle
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.util.ExecUtil.execAndGetOutput
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.actions.MarkRootActionBase.findContentEntry
 import com.intellij.ide.projectView.impl.ProjectRootsUtil
-import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
-import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
-import com.intellij.lang.javascript.service.JSLanguageServiceUtil
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.diagnostic.Attachment
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.ModuleDescription
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -27,8 +15,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.text.NaturalComparator
-import com.intellij.openapi.util.text.StringUtil
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.DoubleClickListener
@@ -42,7 +28,6 @@ import com.intellij.util.graph.GraphAlgorithms
 import com.intellij.util.graph.GraphGenerator
 import com.intellij.util.graph.InboundSemiGraph
 import com.intellij.util.ui.GridBag
-import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.tree.TreeUtil
 import com.intellij.xml.util.XmlStringUtil
 import java.awt.BorderLayout
@@ -50,7 +35,6 @@ import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseEvent
-import java.io.File
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent

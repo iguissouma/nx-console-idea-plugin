@@ -71,7 +71,7 @@ class NxExecutionUtil(val project: Project) {
         vararg args: String
     ): ProcessHandler? {
         val nodeInterpreter = NodeJsInterpreterManager.getInstance(project).interpreter ?: return null
-        NodeCommandLineConfigurator.find(nodeInterpreter) ?: return null
+        NodeCommandLineConfigurator.find(nodeInterpreter)
         val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
         val npmPkg = NpmUtil.resolveRef(npmPackageRef, project, nodeInterpreter)
         val targetRun = NodeTargetRun(

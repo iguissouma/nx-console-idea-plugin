@@ -94,7 +94,8 @@ class NxRunProfileState(
         targetRun.enableWrappingWithYarnPnpNode = false
         val commandLine = targetRun.commandLineBuilder
         commandLine.setCharset(StandardCharsets.UTF_8)
-        val workingDirectory: File = this.runSettings.nxFilePath?.let { File(it).parentFile } ?: File(targetRun.project.basePath!!)
+        val workingDirectory: File =
+            this.runSettings.nxFilePath?.let { File(it).parentFile } ?: File(targetRun.project.basePath!!)
         commandLine.setWorkingDirectory(targetRun.path(workingDirectory.absolutePath))
         targetRun.enableWrappingWithYarnPnpNode = false
         targetRun.configureEnvironment(envData)

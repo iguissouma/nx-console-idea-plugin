@@ -130,7 +130,7 @@ class NxService(val project: Project) : JsbtService(project) {
         return ReadAction.compute<NxFileStructure, JsbtTaskFetchException> {
             if (myProject.isDisposed) {
                 throw JsbtTaskFetchException.newGenericException(nxJson, "myProject is disposed already")
-            } else if (!nxJson.isValid()) {
+            } else if (!nxJson.isValid) {
                 throw JsbtTaskFetchException.newBuildfileSyntaxError(nxJson)
             } else {
                 val psiFile = PsiManager.getInstance(myProject).findFile(nxJson)

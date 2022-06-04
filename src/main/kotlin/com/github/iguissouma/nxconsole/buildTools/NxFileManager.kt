@@ -39,7 +39,7 @@ class NxFileManager(val project: Project) :
     fun getValidNxJsonFiles(): Set<VirtualFile> {
         var nxJsonFiles: Set<VirtualFile>?
         synchronized(this.LOCK) { nxJsonFiles = this.myNxJsonFiles }
-        return this.myNxJsonFiles.toSet() ?: emptySet()
+        return this.myNxJsonFiles.toSet()
         // return this.filter(packageJsonFiles, false)
     }
 

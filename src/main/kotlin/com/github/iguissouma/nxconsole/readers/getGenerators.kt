@@ -47,7 +47,8 @@ fun getGeneratorOptions(
             workspaceDefaults[collectionName] &&
             workspaceDefaults[collectionName][generatorName];*/
     val defaults = if (workspaceDefaults?.isNotEmpty() == true) {
-        (workspaceDefaults[collectionName] as? Map<String, Any>)?.get(generatorName) as? Map<String, Any> ?: emptyMap<String, Any>()
+        (workspaceDefaults[collectionName] as? Map<String, Any>)?.get(generatorName) as? Map<String, Any>
+            ?: emptyMap<String, Any>()
     } else
         emptyMap<String, Any>()
 
@@ -71,13 +72,13 @@ val IMPORTANT_FIELD_NAMES = arrayOf(
 val IMPORTANT_FIELDS_SET = IMPORTANT_FIELD_NAMES.toSet()
 
 fun normalizeSchema(s: Map<String, Any?>, projectDefaults: Map<String, Any>? = null): List<Option> {
-    val options = schemaToOptions(s);
+    val options = schemaToOptions(s)
     val requiredFields = (s["required"] as? List<String> ?: emptyList()).distinct()
 
     val nxOptions = options.map { option: Option ->
         val xPrompt = option.`x-prompt`
         val workspaceDefault = projectDefaults?.get(option.name)
-        val `$default` = option.`$default`;
+        val `$default` = option.`$default`
         var nxOption = option.copy(
             isRequired = isFieldRequired(requiredFields, option, xPrompt, `$default`),
             aliases = if (option.alias != null) listOf(option.alias) else emptyList(),
@@ -125,11 +126,11 @@ fun normalizeSchema(s: Map<String, Any?>, projectDefaults: Map<String, Any>? = n
                 return 1
             } else if (IMPORTANT_FIELDS_SET.contains(a.name)) {
                 if (IMPORTANT_FIELDS_SET.contains(b.name)) {
-                    return (IMPORTANT_FIELD_NAMES.indexOf(a.name) - IMPORTANT_FIELD_NAMES.indexOf(b.name));
+                    return (IMPORTANT_FIELD_NAMES.indexOf(a.name) - IMPORTANT_FIELD_NAMES.indexOf(b.name))
                 }
-                return -1;
+                return -1
             } else if (IMPORTANT_FIELDS_SET.contains(b.name)) {
-                return 1;
+                return 1
             } else {
                 return a.name.compareTo(b.name)
             }
@@ -166,7 +167,7 @@ fun schemaToOptions(schema: Map<String, Any?>): List<Option> {
         val _default = currentProperty["\$default"] as Map<String, Any?>?
         val _defaultIndex = if (_default?.get("\$source") == "argv") _default["index"] else null
         val positional: Int? = (_defaultIndex as? Double)?.toInt()
-        val visible = isPropertyVisible(option, currentProperty);
+        val visible = isPropertyVisible(option, currentProperty)
         if (!visible) {
             return@forEach
         }
@@ -201,7 +202,7 @@ fun schemaToOptions(schema: Map<String, Any?>): List<Option> {
 val ALWAYS_VISIBLE_OPTIONS = listOf("path")
 fun isPropertyVisible(option: String, property: Map<String, Any?>): Boolean {
     if (ALWAYS_VISIBLE_OPTIONS.contains(option)) {
-        return true;
+        return true
     }
 
     if (property.containsKey("hidden")) {
@@ -231,7 +232,7 @@ fun readWorkspaceJsonDefaults(workspacePath: String): Map<String, Any?>? {
         if (key.contains(":")) {
             val (collectionName, generatorName) = key.split(":").let { it.first() to it.last() }
             if (collectionDefaults[collectionName] == null) {
-                 collectionDefaults[collectionName] = mutableMapOf<String, Any>()
+                collectionDefaults[collectionName] = mutableMapOf<String, Any>()
             }
             (collectionDefaults[collectionName] as MutableMap<String, Any>)[generatorName] = defaults[key] as Any
         } else {
@@ -239,13 +240,14 @@ fun readWorkspaceJsonDefaults(workspacePath: String): Map<String, Any?>? {
             if (collectionDefaults[collectionName] == null) {
                 collectionDefaults[collectionName] = mutableMapOf<String, Any>()
             }
-            (defaults?.get(collectionName) as Map<String, Any>).keys.forEach { generatorName ->
-                (collectionDefaults[collectionName] as MutableMap<String, Any>)[generatorName] = (defaults[key] as Map<String, Any>)[generatorName] as Any
+            (defaults.get(collectionName) as Map<String, Any>).keys.forEach { generatorName ->
+                (collectionDefaults[collectionName] as MutableMap<String, Any>)[generatorName] =
+                    (defaults[key] as Map<String, Any>)[generatorName] as Any
             }
 
         }
     }
-    return collectionDefaults;
+    return collectionDefaults
 }
 
 
@@ -296,8 +298,8 @@ fun readWorkspaceGeneratorsCollection(
     val collectionDir = Path(baseDir).resolve(workspaceGeneratorsPath).toFile()
     val collectionName = "workspace-${
         if (workspaceGeneratorType === generators) "generator" else "schematic"
-    }";
-    val collectionPath = File(collectionDir, "collection.json");
+    }"
+    val collectionPath = File(collectionDir, "collection.json")
     if (collectionPath.exists()) {
         val collection = readAndCacheJsonFile(filePath = "${collectionDir.path}/collection.json")
         return getCollectionInfo(

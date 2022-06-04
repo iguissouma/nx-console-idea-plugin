@@ -48,7 +48,8 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                     if (virtualAngularJson == null) {
                         // check if we are in project.json
                         val psiAngularStandaloneConfigJsonFile = getContainingAngularStandaloneConfigJsonFile(element)
-                        val virtualAngularStandaloneConfigJson = psiAngularStandaloneConfigJsonFile?.virtualFile ?: return null
+                        val virtualAngularStandaloneConfigJson =
+                            psiAngularStandaloneConfigJsonFile?.virtualFile ?: return null
                         val findChildNxJsonFile = findChildNxJsonFile(element.project.baseDir) ?: return null
 
                         val propertyLiteral = element.parent as? JsonStringLiteral ?: return null
@@ -61,7 +62,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${nxProject?.name}:${
-                                    propertyLiteral.value
+                                        propertyLiteral.value
                                     }"
                                 )
                             )
@@ -85,9 +86,9 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile.path,
                                 tasks = listOf(
                                     "${nxProject?.name}:${
-                                    architectJsonProperty.name
+                                        architectJsonProperty.name
                                     }:${
-                                    configurationJsonProperty.name
+                                        configurationJsonProperty.name
                                     }"
                                 )
                             )
@@ -121,7 +122,7 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile?.path,
                                 tasks = listOf(
                                     "${projectProperty.name}:${
-                                    propertyLiteral.value
+                                        propertyLiteral.value
                                     }"
                                 )
                             )
@@ -149,9 +150,9 @@ class NxRunConfigurationProducer : LazyRunConfigurationProducer<NxRunConfigurati
                                 nxFilePath = findChildNxJsonFile?.path,
                                 tasks = listOf(
                                     "${projectJsonProperty.name}:${
-                                    architectJsonProperty.name
+                                        architectJsonProperty.name
                                     }:${
-                                    configurationJsonProperty.name
+                                        configurationJsonProperty.name
                                     }"
                                 )
                             )

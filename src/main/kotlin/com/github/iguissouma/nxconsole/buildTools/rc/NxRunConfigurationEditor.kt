@@ -42,7 +42,8 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
     private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
     private val argumentsEditor = createArgumentsEditor()
-    private val packageManagerPackageField: NodePackageField = NpmUtil.createPackageManagerPackageField(this.nodeInterpreterField, false)
+    private val packageManagerPackageField: NodePackageField =
+        NpmUtil.createPackageManagerPackageField(this.nodeInterpreterField, false)
     private val envVarsComponent: EnvironmentVariablesTextFieldWithBrowseButton =
         EnvironmentVariablesTextFieldWithBrowseButton()
 
@@ -87,7 +88,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         field.addPopupMenuListener(
             object : PopupMenuListenerAdapter() {
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent) {
-                    val nxJson = LocalFileSystem.getInstance().findFileByPath((nxJsonPath.get() as String)!!)
+                    val nxJson = LocalFileSystem.getInstance().findFileByPath(nxJsonPath.get())
                     if (nxJson != null && nxJson.isValid && !nxJson.isDirectory) {
                         if (nxJson != lastNxJsonRef.get()) {
                             lastNxJsonRef.set(nxJson)
@@ -134,11 +135,15 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         }
 
         val defaultPackage =
-            NodePackage.findDefaultPackage(project, "@nrwl/cli", NodeJsInterpreterRef.createProjectRef().resolve(project))
+            NodePackage.findDefaultPackage(
+                project,
+                "@nrwl/cli",
+                NodeJsInterpreterRef.createProjectRef().resolve(project)
+            )
         if (defaultPackage != null) {
             this.nxPackageField.selected = defaultPackage
         }
-        this.packageManagerPackageField.setSelectedRef(settings.packageManagerPackageRef)
+        this.packageManagerPackageField.selectedRef = settings.packageManagerPackageRef
 
         tasksField.setTextAndAddToHistory(ParametersListUtil.join(settings.tasks))
         argumentsEditor.text = settings.arguments

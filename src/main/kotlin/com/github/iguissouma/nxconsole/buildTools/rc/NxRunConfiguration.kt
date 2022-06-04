@@ -38,7 +38,11 @@ class NxRunConfiguration(
     }
 
     private fun getNxPackage(project: Project, runSettings: NxRunSettings): NodePackage? {
-        val p = if (NxConfigProvider.getNxWorkspaceType(project, project.baseDir) == WorkspaceType.ANGULAR) "@angular/cli" else "@nrwl/cli"
+        val p = if (NxConfigProvider.getNxWorkspaceType(
+                project,
+                project.baseDir
+            ) == WorkspaceType.ANGULAR
+        ) "@angular/cli" else "@nrwl/cli"
         return NodePackage.findDefaultPackage(project, p, NodeJsInterpreterRef.createProjectRef().resolve(project))
     }
 
@@ -75,6 +79,7 @@ class NxRunConfiguration(
         super.writeExternal(element)
         runSettings.writeToXml(element)
     }
+
     override fun getInterpreter(): NodeJsInterpreter? {
         return this.runSettings.interpreterRef.resolve(this.project)
     }

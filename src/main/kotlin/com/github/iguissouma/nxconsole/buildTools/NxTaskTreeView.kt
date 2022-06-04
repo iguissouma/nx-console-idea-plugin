@@ -88,7 +88,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
     }
 
     override fun hasTaskNodes(nxTreeNode: DefaultMutableTreeNode): Boolean {
-        val childCount: Int = nxTreeNode.getChildCount()
+        val childCount: Int = nxTreeNode.childCount
         for (i in 0 until childCount) {
             val task =
                 NxTask.getUserObject(ObjectUtils.tryCast(nxTreeNode.getChildAt(i), DefaultMutableTreeNode::class.java))

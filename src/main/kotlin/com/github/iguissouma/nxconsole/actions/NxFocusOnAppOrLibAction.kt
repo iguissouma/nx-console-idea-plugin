@@ -47,7 +47,7 @@ class NxFocusOnAppOrLibAction : DumbAwareAction({ "Nx Focus on App or Lib" }, Nx
                     val projectGraph = depGraph["projectGraph"] as Map<*, *>
                     val map = projectGraph["dependencies"] as Map<*, *>
                     val moduleDescriptions: Map<String, NxModuleDescription> =
-                        nxConfig.projects.associateBy({ it.name }, { NxModuleDescription(it.name) }) ?: emptyMap()
+                        nxConfig.projects.associateBy({ it.name }, { NxModuleDescription(it.name) })
 
                     nxConfig.projects.forEach {
                         val nxModuleDescription = moduleDescriptions[it.name]

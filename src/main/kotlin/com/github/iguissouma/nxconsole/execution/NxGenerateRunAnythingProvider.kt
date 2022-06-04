@@ -174,7 +174,7 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
     private fun createContext(project: Project, context: RunAnythingContext, dataContext: DataContext): Context {
         val tasks = schematics
             .filterNot { it.name.isNullOrEmpty() }.map { it.name!! to it }.toMap()
-        val executor = RunAnythingAction.EXECUTOR_KEY.getData(dataContext)
+        val executor = EXECUTOR_KEY.getData(dataContext)
         return Context(context, project, tasks)
     }
 

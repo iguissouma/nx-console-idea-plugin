@@ -61,29 +61,29 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                             if (success) {
                                 val packageJson = findChildPackageJsonFile(project.baseDir)
                                 val content = "NX The migrate command has run successfully." +
-                                    "<br>" +
-                                    "- " +
-                                    (
-                                        if (packageJson != null) createFileLink(
-                                            project,
-                                            packageJson
-                                        ) else "package.json"
-                                        ) +
-                                    " has been updated" +
-                                    (
-                                        if (migrationsJsonHasBeenGenerated) {
-                                            val migrationsJson = findChildMigrationsJsonFile(project.baseDir)
-                                            "<br>" +
-                                                "- " +
-                                                (
-                                                    if (migrationsJson != null) createFileLink(
-                                                        project,
-                                                        migrationsJson
-                                                    ) else "migrations.json"
-                                                    ) +
-                                                " has been generated"
-                                        } else ""
-                                        )
+                                        "<br>" +
+                                        "- " +
+                                        (
+                                                if (packageJson != null) createFileLink(
+                                                    project,
+                                                    packageJson
+                                                ) else "package.json"
+                                                ) +
+                                        " has been updated" +
+                                        (
+                                                if (migrationsJsonHasBeenGenerated) {
+                                                    val migrationsJson = findChildMigrationsJsonFile(project.baseDir)
+                                                    "<br>" +
+                                                            "- " +
+                                                            (
+                                                                    if (migrationsJson != null) createFileLink(
+                                                                        project,
+                                                                        migrationsJson
+                                                                    ) else "migrations.json"
+                                                                    ) +
+                                                            " has been generated"
+                                                } else ""
+                                                )
 
                                 val msg = notificationGroup.createNotification(
                                     "Nx workspace migration",

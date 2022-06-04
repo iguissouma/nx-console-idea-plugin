@@ -70,6 +70,7 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
+import java.util.*
 import javax.swing.AbstractButton
 import javax.swing.ButtonGroup
 import javax.swing.DefaultComboBoxModel
@@ -86,7 +87,8 @@ import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
 import javax.swing.event.DocumentEvent
 
-class SpinnerPredicate(private val spinner: JBIntSpinner, private val predicate: (Int?) -> Boolean) : ComponentPredicate() {
+class SpinnerPredicate(private val spinner: JBIntSpinner, private val predicate: (Int?) -> Boolean) :
+    ComponentPredicate() {
     override fun addListener(listener: (Boolean) -> Unit) {
         spinner.addChangeListener { listener(invoke()) }
     }
@@ -126,7 +128,7 @@ class NxBuildersUiPanel(
         lateinit var groupPanel: JPanel
     }
 
-    private val settingsRows = mutableListOf<NxBuildersUiPanel.SettingsRow>()
+    private val settingsRows = mutableListOf<SettingsRow>()
     private val groupPanels = mutableListOf<JPanel>()
     private lateinit var nothingFoundRow: Row
 
@@ -156,7 +158,10 @@ class NxBuildersUiPanel(
         for (settingsRow in settingsRows) {
             // val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
             val idWords = settingsRow.id.split('.')
-            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
+            val textMatches = searchText == null || settingsRow.text.contains(
+                searchText,
+                ignoreCase = true
+            ) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
             // val idMatches =
             //    searchText == null || (filterWordsUnstemmed.isNotEmpty() && idWords.containsAll(filterWordsUnstemmed))
             val modifiedMatches = if (onlyShowModified) !settingsRow.isDefaultPredicate() else true
@@ -214,11 +219,11 @@ class NxBuildersUiPanel(
     init {
 
         builderOptions = NxCliBuildersRegistryService.getInstance()
-                .readBuilderSchema(
-                    project,
-                    nxConfig?.angularJsonFile!!,
-                    architect.builder!!
-                ) ?: emptyList()
+            .readBuilderSchema(
+                project,
+                nxConfig?.angularJsonFile!!,
+                architect.builder!!
+            ) ?: emptyList()
 
 
         builderOptions.map { it.name to it.default }.forEach { modelUI[it.first] = it.second }
@@ -288,7 +293,7 @@ class NxBuildersUiPanel(
 
             override fun update(e: AnActionEvent) {
                 val project = e.project ?: return
-                nxConfig ?: return
+                nxConfig
                 val presentation = e.presentation
                 presentation.isEnabled = isEnabled
                 presentation.text = this@NxBuildersUiPanel.target
@@ -388,7 +393,7 @@ class NxBuildersUiPanel(
 
     private fun RowBuilder.createComponentRow() {
         for (option in builderOptions) {
-            val settingsRowsInGroup = mutableListOf<NxBuildersUiPanel.SettingsRow>()
+            val settingsRowsInGroup = mutableListOf<SettingsRow>()
 
             val label: JLabel? = if (option.type() == OptionSettingType.Bool)
                 null
@@ -404,17 +409,17 @@ class NxBuildersUiPanel(
 
                     val textComponent = label ?: component.component
 
-                    val row = NxBuildersUiPanel.SettingsRow(
+                    val row = SettingsRow(
                         this@row,
                         textComponent,
-                        option.name!!,
-                        label?.text ?: option.name!!,
+                        option.name,
+                        label?.text ?: option.name,
                         isDefaultPredicate
                     )
                     settingsRows.add(row)
                 }
 
-                option.description?.let { description -> component.comment(description, 70, true) }
+                option.description.let { description -> component.comment(description, 70, true) }
             }
         }
 
@@ -448,46 +453,46 @@ class NxBuildersUiPanel(
             }
             OptionSettingType.String -> {
                 val textField = textField(
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it },
+                    { modelUI[option.name] as? String ?: "" },
+                    { modelUI[option.name] = it },
                 )
                 OptionSettingControl(
                     textField,
                     textField.component.enteredTextSatisfies { it == option.default },
-                    { textField.component.text = option.default as String }
+                    { textField.component.text = option.default }
                 )
             }
             OptionSettingType.Enum -> {
                 val comboBoxModel: CollectionComboBoxModel<String> = CollectionComboBoxModel(option.enum)
                 val cb = comboBox(
                     comboBoxModel,
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it ?: "" }
+                    { modelUI[option.name] as? String ?: "" },
+                    { modelUI[option.name] = it ?: "" }
                 )
                 OptionSettingControl(
                     cb,
-                    cb.component.selectedValueIs(option.default as String),
+                    cb.component.selectedValueIs(option.default),
                     { cb.component.selectedItem = option.default }
                 )
             }
 
             OptionSettingType.Int -> { // same as String
                 val textField = textField(
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it },
+                    { modelUI[option.name] as? String ?: "" },
+                    { modelUI[option.name] = it },
                     columns = 10
                 )
                 OptionSettingControl(
                     textField,
                     textField.component.enteredTextSatisfies { it == option.default },
-                    { textField.component.text = option.default as String }
+                    { textField.component.text = option.default }
                 )
             }
 
             OptionSettingType.Directory -> {
                 val textField = textFieldWithHistoryWithBrowseButton(
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it },
+                    { modelUI[option.name] as? String ?: "" },
+                    { modelUI[option.name] = it },
                     "Select ${option.name}",
                     project,
                     FileChooserDescriptorFactory.createSingleFolderDescriptor()
@@ -505,14 +510,14 @@ class NxBuildersUiPanel(
 
             OptionSettingType.Project -> {
                 val textField = SchematicProjectOptionsTextFieldCell(project, this).schematicProjectOptionsTextField(
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it },
+                    { modelUI[option.name] as? String ?: "" },
+                    { modelUI[option.name] = it },
                 )
 
                 OptionSettingControl(
                     textField,
                     textField.component.enteredTextSatisfies { it == option.default.toString() },
-                    { textField.component.text = option.default as String }
+                    { textField.component.text = option.default }
                 )
             }
         }
@@ -639,24 +644,24 @@ class NxBuildersUiPanel(
 
     private inline fun <T : JComponent> Row.buildComponentForOption(option: NxBuilderOptions) {
         when {
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "project".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "projectName".equals(option.name, ignoreCase = true)
-                ) -> buildProjectTextField(option)
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "path".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "directory".equals(option.name, ignoreCase = true)
-                ) -> buildDirectoryTextField(option)
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
-            (option.type?.toLowerCase() == "string" || option.type?.toLowerCase() == "enum") && option.enum.isNotEmpty() -> buildSelectField(
+            option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() && (
+                    "project".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "projectName".equals(option.name, ignoreCase = true)
+                    ) -> buildProjectTextField(option)
+            option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() && (
+                    "path".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "directory".equals(option.name, ignoreCase = true)
+                    ) -> buildDirectoryTextField(option)
+            option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
+            (option.type.lowercase(Locale.getDefault()) == "string" || option.type.lowercase(Locale.getDefault()) == "enum") && option.enum.isNotEmpty() -> buildSelectField(
                 option
             )
-            option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
-            option.type?.toLowerCase() == "number" -> buildNumberField(option)
+            option.type.lowercase(Locale.getDefault()) == "boolean" -> buildCheckboxField(option)
+            option.type.lowercase(Locale.getDefault()) == "number" -> buildNumberField(option)
             else -> buildTextField(option)
         }
     }
@@ -675,7 +680,7 @@ class NxBuildersUiPanel(
         textField.text = modelUI[option.name] as? String ?: ""
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {
-                modelUI[option.name ?: ""] = textField.text
+                modelUI[option.name] = textField.text
             }
 
             override fun textChanged(e: DocumentEvent) {
@@ -688,10 +693,10 @@ class NxBuildersUiPanel(
 
     private inline fun Row.buildCheckboxField(option: NxBuilderOptions) {
         // return checkBox(option.name?:"", option.default as? Boolean ?: false, option.description ?: "")
-        val key = option.name ?: ""
+        val key = option.name
         checkBox(
-            text = option.name ?: "",
-            comment = option.description ?: "",
+            text = option.name,
+            comment = option.description,
             isSelected = modelUI[key] as? Boolean ?: option.default.toBoolean(),
             // getter = { modelUI[key] as? Boolean ?: false },
             // setter = { modelUI[key] = it },
@@ -723,7 +728,7 @@ class NxBuildersUiPanel(
         val comboBox = ComboBox(model)
         comboBox.selectedItem = modelUI[option.name] ?: option.enum.first()
         comboBox.addActionListener {
-            modelUI[option.name ?: ""] = (comboBox.selectedItem as? String) ?: ""
+            modelUI[option.name] = (comboBox.selectedItem as? String) ?: ""
         }
         comboBox(comment = option.description)
     }
@@ -737,7 +742,7 @@ class NxBuildersUiPanel(
         jTextField.text = modelUI[option.name] as? String ?: option.default
         val docListener: javax.swing.event.DocumentListener = object : DocumentAdapter() {
             private fun updateValue() {
-                modelUI[option.name ?: ""] = jTextField.text
+                modelUI[option.name] = jTextField.text
             }
 
             override fun textChanged(e: DocumentEvent) {
@@ -764,7 +769,7 @@ class NxBuildersUiPanel(
         textField.document.addDocumentListener(
             object : DocumentListener {
                 private fun updateValue() {
-                    modelUI[option.name ?: ""] = textField.text
+                    modelUI[option.name] = textField.text
                 }
 
                 override fun documentChanged(event: com.intellij.openapi.editor.event.DocumentEvent) {

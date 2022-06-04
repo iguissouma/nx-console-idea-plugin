@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
+import java.util.*
 import javax.swing.Icon
 
 class NxCliAction(
@@ -22,7 +23,7 @@ class NxCliAction(
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val vFile = DefaultNxUiFile(
-            "${command.capitalize()}.nx",
+            "${command.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}.nx",
             NxBuildersUiPanel(project, command, target, architect, mutableListOf())
         )
         val fem = FileEditorManager.getInstance(project)

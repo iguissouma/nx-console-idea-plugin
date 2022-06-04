@@ -54,10 +54,12 @@ abstract class NxProject(internal val angularCliFolder: VirtualFile, internal va
     class Architect {
         val name: String? = null
         val project: String? = null
+
         @JsonProperty("builder")
         @JsonAlias(value = ["executor"])
         val builder: String? = null
         val description: String? = null
+
         // val configurations: List<ArchitectConfiguration> = emptyList()
         val configurations: Map<String, Any> = emptyMap()
         val options: Map<String, Any> = emptyMap()
@@ -111,7 +113,8 @@ internal class NxLegacyProjectImpl(
 
     override val name: String = app.name ?: angularJson.legacyProject?.name ?: "Angular project"
 
-    override val rootDir: VirtualFile = app.appRoot?.let { angularCliFolder.findFileByRelativePath(it) } ?: angularCliFolder
+    override val rootDir: VirtualFile =
+        app.appRoot?.let { angularCliFolder.findFileByRelativePath(it) } ?: angularCliFolder
 
     override val sourceDir: VirtualFile? get() = app.root?.let { rootDir.findFileByRelativePath(it) }
 

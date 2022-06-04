@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import java.util.*
 
 class NxCliActionGroup : ActionGroup(
     "Nx Task (Ui)...",
@@ -29,11 +30,11 @@ class NxCliActionGroup : ActionGroup(
         ).map { command ->
             object : ActionGroup(command, true) {
                 override fun getChildren(e: AnActionEvent?): Array<AnAction> {
-                    return nxConfig.projects.filter { it.architect.containsKey(command.toLowerCase()) }.map {
+                    return nxConfig.projects.filter { it.architect.containsKey(command.lowercase(Locale.getDefault())) }.map {
                         NxCliAction(
-                            command.toLowerCase(),
+                            command.lowercase(Locale.getDefault()),
                             it.name,
-                            it.architect[command.toLowerCase()]!!,
+                            it.architect[command.lowercase(Locale.getDefault())]!!,
                             virtualFile,
                             it.name,
                             it.name,

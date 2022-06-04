@@ -56,7 +56,11 @@ class NxModuleDescription(val myName: String, val myDependencyModuleNames: Mutab
     }
 }
 
-class NxConfigureUnloadedModulesDialog(private val project: Project, projectGraph:Map<*,*>, selectedModuleName: String?) :
+class NxConfigureUnloadedModulesDialog(
+    private val project: Project,
+    projectGraph: Map<*, *>,
+    selectedModuleName: String?
+) :
     DialogWrapper(project) {
     private val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
     private val loadedModulesTree = NxModuleDescriptionsTree(project)
@@ -278,7 +282,7 @@ class NxConfigureUnloadedModulesDialog(private val project: Project, projectGrap
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return initiallyFocusedTree?.tree
+        return initiallyFocusedTree.tree
     }
 
     override fun doOKAction() {
@@ -338,7 +342,7 @@ private class NxModuleDescriptionsTree(project: Project) {
     private val model = DefaultTreeModel(root)
 
     // private val helper = createModuleDescriptionHelper(project)
-    internal val tree = Tree(model)
+    val tree = Tree(model)
 
     init {
         tree.isRootVisible = false
@@ -363,8 +367,7 @@ private class NxModuleDescriptionsTree(project: Project) {
     fun installDoubleClickListener(action: () -> Unit) {
         object : DoubleClickListener() {
             override fun onDoubleClick(event: MouseEvent): Boolean {
-                if (tree.selectionPaths?.all { (it?.lastPathComponent as? NxModuleDescriptionTreeNode)?.isLeaf == true }
-                    ?: false
+                if (tree.selectionPaths?.all { (it?.lastPathComponent as? NxModuleDescriptionTreeNode)?.isLeaf == true } == true
                 ) {
                     action()
                     return true

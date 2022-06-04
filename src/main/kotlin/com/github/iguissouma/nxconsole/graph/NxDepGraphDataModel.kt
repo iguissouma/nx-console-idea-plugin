@@ -180,13 +180,13 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                         if (myLogErrors.get()) {
                             LOG.error(
                                 "Error while loading schematics info.\n" +
-                                    shortenOutput(output.stderr),
+                                        shortenOutput(output.stderr),
                                 Attachment("err-output", output.stderr)
                             )
                         } else {
                             LOG.info(
                                 "Error while loading schematics info.\n" +
-                                    shortenOutput(output.stderr)
+                                        shortenOutput(output.stderr)
                             )
                         }
                     }
@@ -194,14 +194,14 @@ fun grabCommandOutput(project: Project, commandLine: GeneralCommandLine, working
                 } else if (myLogErrors.get()) {
                     LOG.error(
                         "Failed to load schematics info.\n" +
-                            shortenOutput(output.stderr),
+                                shortenOutput(output.stderr),
                         Attachment("err-output", output.stderr),
                         Attachment("std-output", output.stdout)
                     )
                 } else {
                     LOG.info(
                         "Error while loading schematics info.\n" +
-                            shortenOutput(output.stderr)
+                                shortenOutput(output.stderr)
                     )
                 }
                 promise.setResult("")

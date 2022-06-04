@@ -38,7 +38,7 @@ class NxRunSettings(
             JDOMExternalizerUtil.writeCustomField(
                 parent,
                 "package-manager",
-                this.packageManagerPackageRef.getIdentifier()
+                this.packageManagerPackageRef.identifier
             )
         }
         this.envData.writeExternal(parent)

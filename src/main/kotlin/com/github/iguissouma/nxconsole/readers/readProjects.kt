@@ -12,18 +12,18 @@ fun readBuilderSchema(baseDir: String, builder: String, projectDeafaults: Map<St
         it.first() to it.last()
     }
 
-    val packagePath = workspaceDependencyPath(baseDir, packageName);
+    val packagePath = workspaceDependencyPath(baseDir, packageName)
 
     if (packagePath == null) {
-        return emptyList<Option>();
+        return emptyList<Option>()
     }
 
-    val packageJson =  readAndCacheJsonFile(
+    val packageJson = readAndCacheJsonFile(
         File(packagePath, "package.json").normalize().path
-    );
+    )
 
     val b = packageJson.json["builders"] as? String ?: packageJson.json["executors"] as? String
-    val buildersPath = if(b?.startsWith('.') == true)  b else "./${b}"
+    val buildersPath = if (b?.startsWith('.') == true) b else "./${b}"
 
     val buildersJson = readAndCacheJsonFile(
         buildersPath,
@@ -32,17 +32,17 @@ fun readBuilderSchema(baseDir: String, builder: String, projectDeafaults: Map<St
     )
 
     val builderDef: Map<String, Any?> = mapOf<String, Any?>()
-        .plus(buildersJson?.json.get("builders") as Map<String, Any?>? ?: emptyMap())
-        .plus(buildersJson?.json.get("executors") as Map<String, Any?>? ?: emptyMap())[builderName] as Map<String, Any?>
+        .plus(buildersJson.json.get("builders") as Map<String, Any?>? ?: emptyMap())
+        .plus(buildersJson.json.get("executors") as Map<String, Any?>? ?: emptyMap())[builderName] as Map<String, Any?>
 
 
     val builderSchema = readAndCacheJsonFile(
         builderDef["schema"] as String,
         File(buildersJson.get("path") as String).normalize().parentFile.path
-    );
+    )
 
     // TODO projectDefaults
-    return  normalizeSchema(builderSchema["json"] as Map<String, Any?>, null);
+    return normalizeSchema(builderSchema["json"] as Map<String, Any?>, null)
 
 
 }

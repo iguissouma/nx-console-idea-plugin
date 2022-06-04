@@ -84,7 +84,8 @@ class NxCliConfig(private val myConfig: VirtualFile) {
         val projectRootToNameMap = MultiMap.create<VirtualFile, String?>()
         val var3: Iterator<*> = projectsObj.entrySet().iterator()
         while (var3.hasNext()) {
-            val entry: java.util.Map.Entry<String, JsonElement> = var3.next() as java.util.Map.Entry<String, JsonElement>
+            val entry: java.util.Map.Entry<String, JsonElement> =
+                var3.next() as java.util.Map.Entry<String, JsonElement>
             val projectObj = JsonUtil.getAsObject(entry.value as JsonElement)
             if (projectObj == null) {
                 val root = (entry.value as? JsonPrimitive)?.let { getProjectRoot(it) }

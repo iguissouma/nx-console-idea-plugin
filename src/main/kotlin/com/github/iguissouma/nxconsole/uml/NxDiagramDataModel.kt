@@ -34,7 +34,7 @@ class NxDiagramDataModel(project: Project, val provider: NxDiagramProvider) :
                         NxGraphNode(
                             NxDiagramObject(
                                 node,
-                                nxConfig?.projects?.firstOrNull() { it.name == node }?.type?.name ?: "library"
+                                nxConfig?.projects?.firstOrNull { it.name == node }?.type?.name ?: "library"
                             ), provider
                         )
                     )

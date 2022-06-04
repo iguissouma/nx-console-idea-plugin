@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.scope.packageSet.FilteredPackageSet
 import com.intellij.psi.search.scope.packageSet.NamedScope
 import com.intellij.ui.IconManager
+import java.util.*
 
 class NxProjectFilesScope : NamedScope(
     NAME,
@@ -13,7 +14,7 @@ class NxProjectFilesScope : NamedScope(
     object : FilteredPackageSet(NAME) {
         override fun contains(file: VirtualFile, project: Project): Boolean {
             return (file.path.contains("apps") || file.path.contains("libs")) &&
-                !file.path.contains("node_modules")
+                    !file.path.contains("node_modules")
         }
     }
 ) {
@@ -23,11 +24,15 @@ class NxProjectFilesScope : NamedScope(
     }
 }
 
-private class NxProjectPackageSet(val type: String) : FilteredPackageSet("Nx ${type.capitalize()}", 1) {
+private class NxProjectPackageSet(val type: String) : FilteredPackageSet("Nx ${type.replaceFirstChar {
+    if (it.isLowerCase()) it.titlecase(
+        Locale.getDefault()
+    ) else it.toString()
+}}", 1) {
 
     override fun contains(file: VirtualFile, project: Project): Boolean {
         return file.path.contains(type) &&
-            !file.path.contains("node_modules")
+                !file.path.contains("node_modules")
     }
 }
 

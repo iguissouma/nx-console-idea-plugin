@@ -43,8 +43,12 @@ fun getPackageList(nxListOutput: String, from: String, to: String, trim: String)
         .toList()
 }
 
-private fun getInstalled(command: String) = getPackageList(command, ">  NX   Installed plugins:", ">  NX   Also available:", " (")
-private fun getAlsoAvailable(command: String) = getPackageList(command, ">  NX   Also available:", ">  NX   Community plugins:", " (")
+private fun getInstalled(command: String) =
+    getPackageList(command, ">  NX   Installed plugins:", ">  NX   Also available:", " (")
+
+private fun getAlsoAvailable(command: String) =
+    getPackageList(command, ">  NX   Also available:", ">  NX   Community plugins:", " (")
+
 private fun getCommunityPlugins(command: String) = getPackageList(
     command,
     ">  NX   Community plugins:",
@@ -161,7 +165,7 @@ class NxDevToolsPackagingService(
             while (var3.hasNext()) {
                 val installedPackage = var3.next() as InstalledPackage
                 if (installedPackage is NodeInstalledPackage) {
-                    this.uninstallPackage(installedPackage as NodeInstalledPackage, listener)
+                    this.uninstallPackage(installedPackage, listener)
                 }
             }
         }

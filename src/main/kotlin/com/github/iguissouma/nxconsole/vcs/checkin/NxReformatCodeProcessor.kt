@@ -21,7 +21,8 @@ class NxReformatCodeProcessor(val myProject: Project, val psiFiles: Array<PsiFil
         val isSuccess = ProgressManager.getInstance().runProcessWithProgressSynchronously(
             ThrowableComputable<Boolean, RuntimeException> {
                 val indicator = ProgressManager.getInstance().progressIndicator
-                val projectBasePath: VirtualFile = getBasePathAsVirtualFile(myProject) ?: return@ThrowableComputable false
+                val projectBasePath: VirtualFile =
+                    getBasePathAsVirtualFile(myProject) ?: return@ThrowableComputable false
                 val files = psiFiles.map { it.virtualFile }
                     .flatMap { f: VirtualFile? -> VfsUtil.collectChildrenRecursively(f!!) }
                     .mapNotNull { f: VirtualFile? -> VcsFileUtil.getRelativeFilePath(f, projectBasePath) }

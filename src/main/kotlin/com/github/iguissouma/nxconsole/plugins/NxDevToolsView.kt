@@ -43,7 +43,7 @@ class NxDevToolsView(val myProject: Project) {
         this.myNxJsonField = createNxJsonField(myProject)
 
         myPackagesView = NxDevToolsPackagesView(myProject)
-        myNormalForeground = (this.myNxJsonField?.getChildComponent() as JTextField).foreground
+        myNormalForeground = (this.myNxJsonField?.childComponent as JTextField).foreground
         val panel: JPanel = FormBuilder.createFormBuilder().setAlignLabelOnRight(true)
             .addLabeledComponent(
                 NxBundle.message("nx.node.interpreter.mnenonic"),
@@ -52,10 +52,10 @@ class NxDevToolsView(val myProject: Project) {
                 NxBundle.message("nx.package"),
                 myNxPackageField!!
             ).addLabeledComponent(NxBundle.message("nx.json"), this.myNxJsonField!!)
-            .getPanel()
+            .panel
         myNodeInterpreterField!!.addChangeListener { newInterpreter: NodeJsInterpreter? -> this.updateLaterIfAllowed() }
         myNxPackageField!!.addSelectionListener { pkg: NodePackage? -> this.updateLaterIfAllowed() }
-        this.listenForChanges(this.myNxJsonField?.getChildComponent() as JTextComponent)
+        this.listenForChanges(this.myNxJsonField?.childComponent as JTextComponent)
         myComponent = createResult(panel, myPackagesView!!.getComponent())
     }
 
@@ -86,8 +86,8 @@ class NxDevToolsView(val myProject: Project) {
         val nxDevToolsSettings = NxDevToolsSettings(myProject)
         nxDevToolsSettings.apply {
             this.myInterpreterRef = myNodeInterpreterField!!.interpreterRef
-            this.myNxPackage = myNxPackageField?.getSelected()
-            this.myNxJsonPath = PathShortener.getAbsolutePath(myNxJsonField?.getTextField()!!)
+            this.myNxPackage = myNxPackageField?.selected
+            this.myNxJsonPath = PathShortener.getAbsolutePath(myNxJsonField?.textField!!)
         }
 
         val validationInfos: List<NxValidationInfo> = validate()
@@ -123,8 +123,8 @@ class NxDevToolsView(val myProject: Project) {
 
         try {
             this.myNodeInterpreterField!!.interpreterRef = settings.myInterpreterRef!!
-            this.myNxPackageField?.setSelected(settings.myNxPackage!!)
-            this.myNxJsonField?.setText(FileUtil.toSystemDependentName(settings.myNxJsonPath!!))
+            this.myNxPackageField?.selected = settings.myNxPackage!!
+            this.myNxJsonField?.text = FileUtil.toSystemDependentName(settings.myNxJsonPath!!)
             updateLater()
         } finally {
             myAllowUpdates = true
@@ -135,8 +135,8 @@ class NxDevToolsView(val myProject: Project) {
 
         return NxDevToolsSettings(myProject).apply {
             myInterpreterRef = myNodeInterpreterField!!.interpreterRef
-            myNxPackage = myNxPackageField?.getSelected()
-            myNxJsonPath = PathShortener.getAbsolutePath(myNxJsonField?.getTextField()!!)
+            myNxPackage = myNxPackageField?.selected
+            myNxJsonPath = PathShortener.getAbsolutePath(myNxJsonField?.textField!!)
         }
     }
 }

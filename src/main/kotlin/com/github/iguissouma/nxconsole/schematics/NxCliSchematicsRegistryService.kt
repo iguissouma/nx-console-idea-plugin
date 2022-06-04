@@ -9,7 +9,7 @@ interface NxCliSchematicsRegistryService {
      * Loads schematics available in a particular location. The results are cached
      * and recalculated on every change of package.json in any node_modules directory.
      */
-    abstract fun getSchematics(
+    fun getSchematics(
         project: Project,
         cliFolder: VirtualFile,
         includeHidden: Boolean,

@@ -85,8 +85,8 @@ class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {
                     myTrackers!!
                 ) { pair: Pair<Any, Long> ->
                     pair.second >= 0 && getTimestamp(
-                            pair.first
-                        ) == pair.second
+                        pair.first
+                    ) == pair.second
                 }
             ) {
                 return mySchematics

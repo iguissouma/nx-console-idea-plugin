@@ -5,7 +5,8 @@ import com.intellij.diagram.DiagramNodeBase
 import com.intellij.diagram.DiagramProvider
 import javax.swing.Icon
 
-class NxGraphNode(val diagramObject: NxDiagramObject, provider: DiagramProvider<NxDiagramObject>): DiagramNodeBase<NxDiagramObject>(provider) {
+class NxGraphNode(val diagramObject: NxDiagramObject, provider: DiagramProvider<NxDiagramObject>) :
+    DiagramNodeBase<NxDiagramObject>(provider) {
 
     override fun getIcon(): Icon? {
         return if (diagramObject.type == "LIBRARY") NxIcons.NX_LIB_FOLDER else NxIcons.NX_APP_FOLDER

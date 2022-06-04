@@ -18,6 +18,7 @@ class NxJsbtStartupActivity : StartupActivity.DumbAware {
         private val LOG = Logger.getInstance(
             NxJsbtStartupActivity::class.java
         )
+
         private fun setAvailable(project: Project, service: JsbtService, buildfilesToAdd: List<VirtualFile>) {
             ApplicationManager.getApplication().invokeLater(
                 {

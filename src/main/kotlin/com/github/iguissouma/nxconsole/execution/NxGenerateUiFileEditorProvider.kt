@@ -29,6 +29,7 @@ import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.util.ThrowableRunnable
 import java.awt.BorderLayout
 import java.lang.reflect.InvocationTargetException
+import java.util.*
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -53,6 +54,7 @@ class NxUiIconProvider : FileIconProvider {
     }
 
 }
+
 class NxUiFileType : FileType {
     override fun getName(): String = "NxUi"
     override fun getDescription(): String = ""
@@ -207,7 +209,7 @@ private class SchematicProjectCompletionProvider(options: List<NxProject>) :
     }
 
     override fun getTypeText(item: NxProject): String? {
-        return item.type?.name?.toLowerCase()
+        return item.type?.name?.lowercase(Locale.getDefault())
     }
 
     override fun compare(item1: NxProject, item2: NxProject): Int {
@@ -226,10 +228,12 @@ private class SchematicProjectCompletionProvider(options: List<NxProject>) :
 
 class EdtTestUtil {
     companion object {
-        @JvmStatic fun <V> runInEdtAndGet(computable: ThrowableComputable<V, Throwable>): V =
+        @JvmStatic
+        fun <V> runInEdtAndGet(computable: ThrowableComputable<V, Throwable>): V =
             runInEdtAndGet { computable.compute() }
 
-        @JvmStatic fun runInEdtAndWait(runnable: ThrowableRunnable<Throwable>) {
+        @JvmStatic
+        fun runInEdtAndWait(runnable: ThrowableRunnable<Throwable>) {
             runInEdtAndWait { runnable.run() }
         }
     }

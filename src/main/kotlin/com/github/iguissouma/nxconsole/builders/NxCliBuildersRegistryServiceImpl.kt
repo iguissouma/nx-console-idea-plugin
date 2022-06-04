@@ -16,10 +16,10 @@ class NxCliBuildersRegistryServiceImpl : NxCliBuildersRegistryService {
         builderName: String
     ): List<NxBuilderOptions> {
         return cache.getIfPresent(builderName) ?: return (
-            RUN_ONE_OPTIONS + doLoadBuilders(
-                project,
-                builderName,
-            )).also { cache.put(builderName, it) }
+                RUN_ONE_OPTIONS + doLoadBuilders(
+                    project,
+                    builderName,
+                )).also { cache.put(builderName, it) }
     }
 
     companion object {

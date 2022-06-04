@@ -65,6 +65,7 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
+import java.util.*
 import javax.swing.AbstractButton
 import javax.swing.ButtonGroup
 import javax.swing.DefaultComboBoxModel
@@ -134,7 +135,10 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
         for (settingsRow in settingsRows) {
             // val textWords = searchableOptionsRegistrar.getProcessedWords(settingsRow.text)
             val idWords = settingsRow.id.split('.')
-            val textMatches = searchText == null || settingsRow.text.contains(searchText, ignoreCase = true) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
+            val textMatches = searchText == null || settingsRow.text.contains(
+                searchText,
+                ignoreCase = true
+            ) // (filterWords.isNotEmpty() && textWords.any { it.contains(searchText, ignoreCase = true) }) //textWords.containsAll(filterWords))
             // val idMatches =
             //    searchText == null || (filterWordsUnstemmed.isNotEmpty() && idWords.containsAll(filterWordsUnstemmed))
             val modifiedMatches = if (onlyShowModified) !settingsRow.isDefaultPredicate() else true
@@ -295,9 +299,9 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
                 apply()
                 copyInfoToClipboard(
                     "nx  ${
-                    (computeGenerateRunCommand(schematic.name) + computeArgsFromModelUi()).joinToString(
-                        separator = " "
-                    )
+                        (computeGenerateRunCommand(schematic.name) + computeArgsFromModelUi()).joinToString(
+                            separator = " "
+                        )
                     }"
                 )
             }
@@ -320,7 +324,7 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
                 }
 
                 init {
-                    templatePresentation.setText(schematic.name)
+                    templatePresentation.text = schematic.name
                 }
             }
 
@@ -616,21 +620,21 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
 
     private inline fun <T : JComponent> Row.buildComponentForOption(option: Option) {
         when {
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "project".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "projectName".equals(option.name, ignoreCase = true)
-                ) -> buildProjectTextField(option)
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() && (
-                "path".equals(
-                    option.name,
-                    ignoreCase = true
-                ) || "directory".equals(option.name, ignoreCase = true)
-                ) -> buildDirectoryTextField(option)
-            option.type?.toLowerCase() == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
-            option.type?.toLowerCase() == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
-            option.type?.toLowerCase() == "boolean" -> buildCheckboxField(option)
+            option.type?.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() && (
+                    "project".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "projectName".equals(option.name, ignoreCase = true)
+                    ) -> buildProjectTextField(option)
+            option.type?.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() && (
+                    "path".equals(
+                        option.name,
+                        ignoreCase = true
+                    ) || "directory".equals(option.name, ignoreCase = true)
+                    ) -> buildDirectoryTextField(option)
+            option.type?.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
+            option.type?.lowercase(Locale.getDefault()) == "string" && option.enum.isNotEmpty() -> buildSelectField(option)
+            option.type?.lowercase(Locale.getDefault()) == "boolean" -> buildCheckboxField(option)
             else -> buildTextField(option)
         }
     }

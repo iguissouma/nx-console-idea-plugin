@@ -207,7 +207,8 @@ class NxDepGraphWindow(val project: Project) {
                             }
                     }
                 } else if (yarn.not()) {
-                    NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")?.configureNpmPackage(targetRun)
+                    NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")
+                        ?.configureNpmPackage(targetRun)
                 }
                 commandLine.addParameter("nx")
             }
@@ -234,7 +235,10 @@ class NxDepGraphWindow(val project: Project) {
                         throw NpmManager.InvalidNpmPackageException(
                             project,
                             HtmlBuilder().append(message).append(HtmlChunk.p())
-                                .toString() + JavaScriptBundle.message("please.specify.package.manager", *arrayOfNulls(0))
+                                .toString() + JavaScriptBundle.message(
+                                "please.specify.package.manager",
+                                *arrayOfNulls(0)
+                            )
                         ) {} // onNpmPackageRefResolved
                     } else {
                         throw ExecutionException(

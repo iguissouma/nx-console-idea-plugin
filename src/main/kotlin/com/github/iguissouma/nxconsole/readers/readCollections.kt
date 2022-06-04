@@ -176,9 +176,9 @@ data class ReadCollectionsOptions(val projects: WorkspaceProjects, val clearPack
 fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): List<CollectionInfo> {
     //TODO
     if (options?.clearPackageJsonCache == true) {
-        clearJsonCache("package.json", workspacePath);
+        clearJsonCache("package.json", workspacePath)
     }
-    val packages = workspaceDependencies(workspacePath, options?.projects);
+    val packages = workspaceDependencies(workspacePath, options?.projects)
 
     val collections = packages.map { packageDetails(it) }
 
@@ -187,10 +187,10 @@ fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): Li
     /**
      * Since we gather all collections, and collections listed in `extends`, we need to dedupe collections here if workspaces have that extended collection in their own package.json
      */
-    val dedupedCollections = mutableMapOf<String, CollectionInfo>();
+    val dedupedCollections = mutableMapOf<String, CollectionInfo>()
     for (singleCollection in allCollections) {
         if (singleCollection == null) {
-            continue;
+            continue
         }
 
         if (
@@ -198,11 +198,11 @@ fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): Li
                 collectionNameWithType(singleCollection.name, singleCollection.type)
             )
         ) {
-            dedupedCollections[collectionNameWithType(singleCollection.name, singleCollection.type)] = singleCollection;
+            dedupedCollections[collectionNameWithType(singleCollection.name, singleCollection.type)] = singleCollection
         }
     }
 
-    return dedupedCollections.values.toList();
+    return dedupedCollections.values.toList()
 }
 
 fun readCollection(workspacePath: String, packageDetails: PackageDetails): List<CollectionInfo>? {
@@ -222,7 +222,7 @@ fun readCollection(workspacePath: String, packageDetails: PackageDetails): List<
         )
 
     } catch (e: Exception) {
-        return null;
+        return null
     }
 }
 
@@ -258,7 +258,7 @@ fun getCollectionInfo(
 
     for ((key, schema) in executors.entries) {
         if (!canUse(key, schema as Map<String, Any?>)) {
-            continue;
+            continue
         }
         val collectionInfo = buildCollectionInfo(
             key,
@@ -269,7 +269,7 @@ fun getCollectionInfo(
         if (
             collectionMap.containsKey(collectionNameWithType(collectionInfo.name, executor))
         ) {
-            continue;
+            continue
         }
         collectionMap[collectionNameWithType(collectionInfo.name, executor)] = collectionInfo
     }
@@ -282,7 +282,7 @@ fun getCollectionInfo(
 
     for ((key, schema) in generators.entries) {
         if (!canUse(key, schema as Map<String, Any?>)) {
-            continue;
+            continue
         }
         try {
             val collectionInfo = buildCollectionInfo(
@@ -293,7 +293,7 @@ fun getCollectionInfo(
             ).copy(data = readCollectionGenerator(collectionName ?: "", key, schema))
 
             if (collectionMap.containsKey(collectionNameWithType(collectionInfo.name, generator))) {
-                continue;
+                continue
             }
 
             collectionMap[collectionNameWithType(collectionInfo.name, generator)] = collectionInfo
@@ -326,12 +326,12 @@ fun readCollectionGenerator(
         )
     } catch (e: Exception) {
         println("Invalid package.json for schematic ${collectionName}:${collectionSchemaName}")
-        return null;
+        return null
     }
 }
 
 fun collectionNameWithType(name: String, type: CollectionType): String {
-    return "${name}-${type.name}";
+    return "${name}-${type.name}"
 }
 
 /**
@@ -346,7 +346,7 @@ fun canUse(
 // s: { hidden: boolean; private: boolean; schema: string; extends: boolean }
 ): Boolean {
     return !(s?.get("hidden") as? Boolean ?: false) && !(s?.get("private") as? Boolean
-        ?: false) && !(s?.get("extends") as? Boolean ?: false) && name != "ng-add";
+        ?: false) && !(s?.get("extends") as? Boolean ?: false) && name != "ng-add"
 }
 
 
@@ -411,16 +411,16 @@ private operator fun <E> List<E>.get(fullFilePath: E): E {
  * @returns
  */
 fun workspaceDependencies(workspacePath: String, projects: WorkspaceProjects): List<String> {
-    val dependencies: MutableList<String> = mutableListOf();
-    dependencies.addAll(localDependencies(workspacePath, projects));
+    val dependencies: MutableList<String> = mutableListOf()
+    dependencies.addAll(localDependencies(workspacePath, projects))
 
     //if (await isWorkspaceInPnp(workspacePath)) {
     //    dependencies.push(...(await pnpDependencies(workspacePath)));
     //}
 
-    dependencies.addAll(npmDependencies(workspacePath));
+    dependencies.addAll(npmDependencies(workspacePath))
 
-    return dependencies;
+    return dependencies
 }
 
 /**
@@ -431,29 +431,29 @@ fun workspaceDependencies(workspacePath: String, projects: WorkspaceProjects): L
  * @returns
  */
 fun npmDependencies(workspacePath: String): Collection<String> {
-    val nodeModulesDir = File(workspacePath, "node_modules");
-    val res: MutableCollection<String> = mutableListOf();
+    val nodeModulesDir = File(workspacePath, "node_modules")
+    val res: MutableCollection<String> = mutableListOf()
     if (!nodeModulesDir.isDirectory) {
-        return res;
+        return res
     }
 
-    val dirContents = nodeModulesDir.listFiles() ?: return res;
+    val dirContents = nodeModulesDir.listFiles() ?: return res
     for (npmPackageOrScope in dirContents) {
         if (npmPackageOrScope.name.startsWith(".")) {
-            continue;
+            continue
         }
         //const packageStats = await stat(join(nodeModulesDir, npmPackageOrScope));
         val packageStats = npmPackageOrScope
         if (!packageStats.isDirectory) {
-            continue;
+            continue
         }
 
         if (npmPackageOrScope.name.startsWith("@")) {
             npmPackageOrScope.listFiles()?.forEach { p: File ->
-                res.add("${nodeModulesDir}/${npmPackageOrScope.name}/${p.name}");
+                res.add("${nodeModulesDir}/${npmPackageOrScope.name}/${p.name}")
             }
         } else {
-            res.add("${nodeModulesDir}/${npmPackageOrScope.name}");
+            res.add("${nodeModulesDir}/${npmPackageOrScope.name}")
         }
 
     }
@@ -466,24 +466,24 @@ fun workspaceDependencyPath(
     workspaceDependencyName: String
 ): File? {
     if (workspaceDependencyName.startsWith('.')) {
-        return File(workspacePath, workspaceDependencyName);
+        return File(workspacePath, workspaceDependencyName)
     }
 
     /*if (await isWorkspaceInPnp(workspacePath)) {
         return pnpDependencyPath(workspacePath, workspaceDependencyName);
     }*/
 
-    val nodeModulesDir = File(workspacePath, "node_modules");
-    val path = File(nodeModulesDir, workspaceDependencyName);
+    val nodeModulesDir = File(workspacePath, "node_modules")
+    val path = File(nodeModulesDir, workspaceDependencyName)
     if (path.exists() && path.isDirectory) {
-        return path;
+        return path
     }
     return null
 }
 
 fun localDependencies(workspacePath: String, projects: WorkspaceProjects): Collection<String> {
     if (projects == null) {
-        return emptyList();
+        return emptyList()
     }
 
     // TODO nx version
@@ -495,7 +495,7 @@ fun localDependencies(workspacePath: String, projects: WorkspaceProjects): Colle
     val packages = projects.filterIsInstance<ProjectConfiguration>().map {
         "${workspacePath}/${it.root}/package.json"
     }
-    val existingPackages: MutableList<String> = mutableListOf();
+    val existingPackages: MutableList<String> = mutableListOf()
 
     for (pkg in packages) {
         try {
@@ -508,23 +508,23 @@ fun localDependencies(workspacePath: String, projects: WorkspaceProjects): Colle
         }
     }
 
-    return existingPackages;
+    return existingPackages
 }
 
 //****utils----------------------------------------------------------------------------------------------------------------------
 val fileContents = mutableMapOf<String, Map<String, Any>>()
 fun clearJsonCache(filePath: String, basedir: String = ""): Boolean {
-    val fullFilePath = File(basedir, filePath);
-    fileContents.remove(fullFilePath.path);
-    return true;
+    val fullFilePath = File(basedir, filePath)
+    fileContents.remove(fullFilePath.path)
+    return true
 }
 
 
 /**
  * Caches already created json contents to a file path
  */
-fun cacheJson(filePath: String, basedir: String = "", content: Any?= null): Map<String, Any?> {
-    val fullFilePath = File(basedir, filePath);
+fun cacheJson(filePath: String, basedir: String = "", content: Any? = null): Map<String, Any?> {
+    val fullFilePath = File(basedir, filePath)
     if (fileContents.contains(fullFilePath.path)) {
         return mapOf(
             "path" to fullFilePath.path,
@@ -533,7 +533,7 @@ fun cacheJson(filePath: String, basedir: String = "", content: Any?= null): Map<
     }
 
     if (content != null) {
-        fileContents[fullFilePath.path] = content as Map<String, Any>;
+        fileContents[fullFilePath.path] = content as Map<String, Any>
     }
     // not same as vscode
     else {

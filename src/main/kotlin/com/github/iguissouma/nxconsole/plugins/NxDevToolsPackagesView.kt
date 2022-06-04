@@ -41,7 +41,11 @@ class NxDevToolsPackagesView(val myProject: Project) {
             myPackagesNotificationPanel!!.hide()
             myPackagesNotificationPanel!!.removeAllLinkHandlers()
             if (errors.isEmpty()) {
-                service = NxDevToolsPackagingService(this.myProject, settings, NodeJsInterpreterManager.getInstance(myProject).interpreter!!)
+                service = NxDevToolsPackagingService(
+                    this.myProject,
+                    settings,
+                    NodeJsInterpreterManager.getInstance(myProject).interpreter!!
+                )
                 // this.checkVersion(settings)
             } else {
                 // this.showErrors(errors)

@@ -43,7 +43,7 @@ class NxConfig(text: CharSequence, val angularJsonFile: VirtualFile, project: Pr
                             ?: error("cannot read project ...")
                         val psiFile =
                             PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
-                        NxProjectImpl(name, ngProjectJson, mapper.readValue(psiFile.text),  angularCliFolder, project)
+                        NxProjectImpl(name, ngProjectJson, mapper.readValue(psiFile.text), angularCliFolder, project)
                     }
                     is Map<*, *> -> NxProjectImpl(
                         name,

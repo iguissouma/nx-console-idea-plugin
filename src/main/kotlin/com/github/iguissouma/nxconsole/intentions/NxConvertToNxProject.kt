@@ -56,7 +56,9 @@ class NxConvertToNxProject : PsiElementBaseIntentionAction() {
             node = interpreter,
             nxExe = "nx",
             baseDir = nxConfig.angularJsonFile.parent,
-            workingDir = VfsUtilCore.virtualToIoFile(nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent),
+            workingDir = VfsUtilCore.virtualToIoFile(
+                nxConfig.angularJsonFile.parent ?: nxConfig.angularJsonFile.parent
+            ),
             project = project,
             callback = null,
             title = "convert-to-nx-project",

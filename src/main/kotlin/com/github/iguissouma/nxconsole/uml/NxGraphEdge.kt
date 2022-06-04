@@ -6,13 +6,15 @@ import com.intellij.diagram.DiagramRelationshipInfoAdapter
 import com.intellij.diagram.presentation.DiagramLineType
 
 
-class NxGraphEdge(val from: NxGraphNode, val to: NxGraphNode): DiagramEdgeBase<NxDiagramObject>(from, to,
+class NxGraphEdge(val from: NxGraphNode, val to: NxGraphNode) : DiagramEdgeBase<NxDiagramObject>(
+    from, to,
     DiagramRelationshipInfoAdapter.Builder()
         .setName("BUILTIN")
         .setLineType(DiagramLineType.SOLID)
         .setSourceArrow(DiagramRelationshipInfo.NONE)
         .setTargetArrow(DiagramRelationshipInfo.STANDARD)
-        .create()) {
+        .create()
+) {
 
     override fun toString(): String {
         return "NxGraphEdge(from=$from, to=$to)"

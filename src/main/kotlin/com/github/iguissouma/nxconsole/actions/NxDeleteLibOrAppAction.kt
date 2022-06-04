@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ApplicationBundle
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.ui.UIBundle
+import java.util.*
 
 class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
 
@@ -24,7 +25,9 @@ class NxDeleteLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
         }
         val nxConfig = NxConfigProvider.getNxConfig(project, appOrLibDirectory) ?: return
         val nxProjectToRemove = nxConfig.projects.firstOrNull { it.rootDir == appOrLibDirectory } ?: return
-        val title = "${nxProjectToRemove.type?.name?.toLowerCase()?.capitalize()} ''${nxProjectToRemove.name}''"
+        val title = "${
+            nxProjectToRemove.type?.name?.lowercase(Locale.getDefault())
+            ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }} ''${nxProjectToRemove.name}''"
         val message = "Are you sure you want to remove $title from the workspace?"
         val returnValue = Messages.showOkCancelDialog(
             message,

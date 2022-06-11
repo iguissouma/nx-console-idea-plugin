@@ -1,5 +1,7 @@
 package com.github.iguissouma.nxconsole.builders
 
+import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
+import com.github.iguissouma.nxconsole.cli.config.WorkspaceType.ANGULAR
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.project.Project
@@ -16,7 +18,8 @@ class NxCliBuildersRegistryServiceImpl : NxCliBuildersRegistryService {
         builderName: String
     ): List<NxBuilderOptions> {
         return cache.getIfPresent(builderName) ?: return (
-                RUN_ONE_OPTIONS + doLoadBuilders(
+                (RUN_ONE_OPTIONS.takeIf { NxConfigProvider.getNxWorkspaceType(project, cliFolder) != ANGULAR }
+                    ?: emptyList()) + doLoadBuilders(
                     project,
                     builderName,
                 )).also { cache.put(builderName, it) }

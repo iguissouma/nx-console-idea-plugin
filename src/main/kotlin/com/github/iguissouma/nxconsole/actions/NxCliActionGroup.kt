@@ -3,17 +3,30 @@ package com.github.iguissouma.nxconsole.actions
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
+import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
 import java.util.*
 
-class NxCliActionGroup : ActionGroup(
-    "Nx Task (Ui)...",
-    "Nx Task (ui)",
-    NxIcons.NRWL_ICON
-) {
+class NxCliActionGroup : ActionGroup() {
+
+    override fun update(e: AnActionEvent) {
+        val project = e.getData(LangDataKeys.PROJECT) ?: return
+        val file = e.getData(LangDataKeys.VIRTUAL_FILE) ?: return
+        val nxWorkspaceType = NxConfigProvider.getNxWorkspaceType(project, file)
+        if (nxWorkspaceType == WorkspaceType.UNKNOWN) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+        val label = nxWorkspaceType.name.lowercase().capitalized()
+        e.presentation.text = "$label Task (Ui)..."
+        e.presentation.description = "$label Task (Ui)..."
+        e.presentation.icon =
+            if (nxWorkspaceType == WorkspaceType.ANGULAR) NxIcons.ANGULAR
+            else NxIcons.NRWL_ICON
+    }
 
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val project = event?.project ?: return emptyArray()

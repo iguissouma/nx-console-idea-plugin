@@ -2,6 +2,7 @@
 
 package com.github.iguissouma.nxconsole.cli
 
+import com.github.iguissouma.nxconsole.cli.config.INxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.intellij.openapi.project.Project
@@ -35,7 +36,7 @@ private class NxCliEmptyConfig : NxCliConfig {
 }
 
 @Suppress("DEPRECATION")
-private class NxCliJsonFileConfig(private val config: NxConfig) : NxCliConfig {
+private class NxCliJsonFileConfig(private val config: INxConfig) : NxCliConfig {
 
     override fun getRootDirs(): Collection<VirtualFile> {
         return config.projects.mapNotNull { it.rootDir }

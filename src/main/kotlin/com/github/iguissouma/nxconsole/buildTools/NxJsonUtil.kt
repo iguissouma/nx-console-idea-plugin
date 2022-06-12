@@ -65,9 +65,9 @@ object NxJsonUtil {
         } else {
             val structure = NxFileStructure(nxJson)
             val angularJsonFile = findChildAngularJsonFile(nxJson.parent)
-            if (angularJsonFile == null) {
-                structure
-            } else {
+            //if (angularJsonFile == null) {
+            //    structure
+            //} else {
                 val nxConfig = NxConfigProvider.getNxConfig(project, nxJson)
                 structure.myNxProjectsTask = nxConfig?.projects?.map { nxProject ->
                     nxProject.name to nxProject.architect.keys.flatMap { task ->
@@ -90,7 +90,7 @@ object NxJsonUtil {
                 val scripts = listOf.map { NxTask(structure, it) }.toList()
                 structure.setScripts(scripts)
                 structure
-            }
+            //}
         }
     }
 

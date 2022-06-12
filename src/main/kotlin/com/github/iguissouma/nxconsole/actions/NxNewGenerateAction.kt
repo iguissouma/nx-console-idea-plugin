@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.actions
 
+import com.github.iguissouma.nxconsole.cli.config.INxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfig
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
@@ -28,7 +29,7 @@ class NxNewGenerateAction(
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val args = mutableListOf<String>()
-        val nxConfig: NxConfig = NxConfigProvider.getNxConfig(project, virtualFile) ?: return
+        val nxConfig: INxConfig = NxConfigProvider.getNxConfig(project, virtualFile) ?: return
         val nxWorkspaceType = NxConfigProvider.getNxWorkspaceType(project, virtualFile)
         val relativePath = VfsUtilCore.getRelativePath(virtualFile, nxConfig.angularJsonFile.parent)
         val pathArgument = relativePath?.let { "--path=$relativePath" }

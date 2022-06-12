@@ -2,6 +2,7 @@ package com.github.iguissouma.nxconsole.cli.config
 
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.schematics.NxCliUtil
+import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -18,7 +19,7 @@ class NxConfigProvider private constructor() {
 
     companion object {
 
-        private val NX_CLI_CONFIG_KEY = Key.create<CachedValue<NxConfig>>("NX_CONFIG_KEY")
+        private val NX_CLI_CONFIG_KEY = Key.create<CachedValue<INxConfig>>("NX_CONFIG_KEY")
         private val LOG = Logger.getInstance(NxConfigProvider::class.java)
 
         @JvmStatic
@@ -27,10 +28,30 @@ class NxConfigProvider private constructor() {
         }
 
         @JvmStatic
-        fun getNxConfig(project: Project, context: VirtualFile): NxConfig? {
+        fun getNxConfig(project: Project, context: VirtualFile): INxConfig? {
+            // get package.json file
+            val packageJsonFile = PackageJsonUtil.findChildPackageJsonFile(project.baseDir) ?: return null
             val angularCliJson = NxCliUtil.findAngularCliFolder(project, context)?.let {
                 NxCliUtil.findCliJson(it)
-            } ?: return null
+            } ?: return CachedValuesManager.getManager(project).getCachedValue(
+                PsiManager.getInstance(project).findFile(packageJsonFile) ?: return null,
+                NX_CLI_CONFIG_KEY,
+                {
+                    val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(packageJsonFile)
+                    val config =
+                        try {
+                            NxConfigFromGlobs(project, packageJsonFile)
+                        } catch (e: ProcessCanceledException) {
+                            throw e
+                        } catch (e: Exception) {
+                            LOG.warn("Cannot load " + packageJsonFile.name + ": " + e.message)
+                            null
+                        }
+                    CachedValueProvider.Result.create(config, cachedDocument ?: packageJsonFile)
+                },
+                false)
+
+
             val psiFile = PsiManager.getInstance(project).findFile(angularCliJson) ?: return null
             return CachedValuesManager.getManager(project).getCachedValue(
                 psiFile,

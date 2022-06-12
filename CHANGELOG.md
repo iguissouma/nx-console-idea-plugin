@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.44.1]
+### Fixed
+- Fix minor issues for angular projects
+
 ## [0.44.0]
 ### Added
 - Add support for angular projects without nx(Run action from Gutter and Schematics generation)

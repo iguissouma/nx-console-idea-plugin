@@ -313,7 +313,7 @@ fun readWorkspaceGeneratorsCollection(
             collection["json"] as Map<String, Any>,
         ) ?: emptyList()
     } else {
-        return collectionDir.listFiles()?.filter { it.name == "schema.json" }?.map {
+        return collectionDir.walkBottomUp().filter { it.name == "schema.json" }.map {
             val schemaJson = readAndCacheJsonFile(filePath = it.path)
             val json = schemaJson["json"] as Map<String, Any?>
             val name = (json["id"] ?: json["\$id"]) as String
@@ -327,16 +327,16 @@ fun readWorkspaceGeneratorsCollection(
             CollectionInfo(
                 name = name,
                 type = CollectionType.generator,
-                path = collectionDir.path,
+                path = it.path,
                 data = Generator(
                     name = name,
                     collection = collectionName,
-                    options = emptyList(),
+                    options = normalizeSchema(json),
                     description = json["description"] as String? ?: "",
                     type = type,
                 )
             )
-        } ?: emptyList()
+        }.toList()
     }
 
 

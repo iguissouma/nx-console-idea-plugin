@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.45.0]
+### Added
+- Add first support for yarn workspace
+
+### Fixed
+- Fix workspace level generator
+
 ## [0.44.1]
 ### Fixed
 - Fix minor issues for angular projects

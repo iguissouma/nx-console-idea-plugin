@@ -86,16 +86,8 @@
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.iguissouma.nxconsole.annotators.NxStandaloneConfigProjectAnnotator"/>
 
-        <notification.parentGroup
-                id="nx.notifications"
-                title="Nx notifications"/>
+        <notificationGroup id="Nx Console" displayType="BALLOON" bundle="messages.NxBundle" key="notification.group.nx.console"/>
 
-        <notification.group
-                parentId="nx.notifications"
-                groupId="nx.notifications.balloon"/>
-        <notification.group
-                parentId="nx.notifications"
-                groupId="nx.notifications.stickyBalloon"/>
         <postStartupActivity
                 implementation="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction$MyStartupActivity"/>
 

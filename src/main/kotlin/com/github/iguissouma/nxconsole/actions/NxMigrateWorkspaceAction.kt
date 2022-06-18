@@ -53,11 +53,6 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                         override fun processTerminated(event: ProcessEvent) {
                             // TODO("Not yet implemented")
                             println("process terminated...")
-                            val notificationGroup = NotificationGroup(
-                                "nx.notifications.balloon",
-                                NotificationDisplayType.BALLOON,
-                                true
-                            )
                             if (success) {
                                 val packageJson = findChildPackageJsonFile(project.baseDir)
                                 val content = "NX The migrate command has run successfully." +
@@ -85,19 +80,22 @@ class NxMigrateWorkspaceAction : DumbAwareAction({ "Nx Migrate Workspace" }, NxI
                                                 } else ""
                                                 )
 
-                                val msg = notificationGroup.createNotification(
+                                val msg = NxConsoleNotificationGroup.GROUP.createNotification(
                                     "Nx workspace migration",
                                     content,
                                     NotificationType.INFORMATION,
-                                    MyNotificationListener(project)
-                                )
+                                ).apply {
+                                    this.setListener(MyNotificationListener(project))
+                                }
+
+
                                 if (migrationsJsonHasBeenGenerated) {
                                     msg.addAction(NxRunMigrationsAction())
                                 }
                                 msg.notify(project)
                             } else {
                                 val content = "NX The migrate command failed."
-                                val msg = notificationGroup.createNotification(
+                                val msg = NxConsoleNotificationGroup.GROUP.createNotification(
                                     "Nx workspace migration",
                                     content,
                                     NotificationType.ERROR

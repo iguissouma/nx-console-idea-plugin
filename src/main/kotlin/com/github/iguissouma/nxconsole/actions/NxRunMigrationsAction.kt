@@ -7,8 +7,6 @@ import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.notification.Notification
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -42,19 +40,15 @@ class NxRunMigrationsAction : DumbAwareAction({ "Nx Run Migration" }, NxIcons.NR
                         }
 
                         override fun processTerminated(event: ProcessEvent) {
-                            val notificationGroup = NotificationGroup(
-                                "nx.notifications.balloon",
-                                NotificationDisplayType.BALLOON,
-                                true
-                            )
+                            val notificationGroup = NxConsoleNotificationGroup.GROUP
                             if (success) {
                                 val content = "NX Successfully finished running migrations from migrations.json"
-                                val msg = notificationGroup.createNotification(
+                                val msg = NxConsoleNotificationGroup.GROUP.createNotification(
                                     "Nx Run Migration",
                                     content,
                                     NotificationType.INFORMATION,
-                                    MyNotificationListener(project)
-                                )
+                                ).setListener( MyNotificationListener(project))
+
                                 msg.notify(project)
                             } else {
                                 val content = "NX The migrate command failed."

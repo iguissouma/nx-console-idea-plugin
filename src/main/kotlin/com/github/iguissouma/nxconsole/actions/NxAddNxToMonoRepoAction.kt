@@ -26,8 +26,7 @@ import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.findChildPack
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.findDependencyByName
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.isPackageJsonWithTopLevelProperty
 import com.intellij.lang.javascript.modules.ConsoleProgress
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -40,8 +39,13 @@ import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.psi.PsiManager
 import com.intellij.util.ThreeState
-import java.util.List
 import javax.swing.Icon
+
+
+object NxConsoleNotificationGroup {
+    @JvmField
+    val GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Nx Console")
+}
 
 class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcons.NRWL_ICON) {
 
@@ -62,7 +66,7 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
             node,
             project,
             null as CommandLineDebugConfigurator?,
-            NodeTargetRun.createOptions(if (useConsoleViewImpl) ThreeState.NO else ThreeState.YES, List.of())
+            NodeTargetRun.createOptions(if (useConsoleViewImpl) ThreeState.NO else ThreeState.YES, emptyList())
         )
         val commandLine = targetRun.commandLineBuilder
         val npmPackageRef = NpmUtil.createProjectPackageManagerPackageRef()
@@ -136,13 +140,8 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
                     val psiFile = PsiManager.getInstance(project).findFile(packageJsonFile) as? JsonFile ?: return@invokeLater
                     val isWorkspace = isPackageJsonWithTopLevelProperty(packageJsonFile, "workspaces")
                     if (isWorkspace && hasNx(psiFile).not()) {
-                        val notificationGroup = NotificationGroup(
-                            "nx.notifications.balloon",
-                            NotificationDisplayType.BALLOON,
-                            true
-                        )
                         //Nx is not installed in your MonoRepo workspace. Do you want to add it?
-                        val msg = notificationGroup.createNotification(
+                        val msg = NxConsoleNotificationGroup.GROUP.createNotification(
                             "Add Nx to monorepo",
                             "You can use Nx easily together with your current Lerna/Yarn/PNPM/NPM monorepo setup. " +
                                     "Why? To speed up your tasks by leveraging Nx's powerful scheduling and caching capabilities." + createLink(

@@ -1,6 +1,7 @@
 package com.github.iguissouma.nxconsole.schematics
 
 import com.github.iguissouma.nxconsole.NxBundle
+import com.github.iguissouma.nxconsole.actions.NxConsoleNotificationGroup
 import com.intellij.javascript.nodejs.CompletionModuleInfo
 import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.packageJson.notification.PackageJsonGetDependenciesAction
@@ -13,11 +14,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
 object NxCliUtil {
-    private val NX_CLI_PACKAGE: String = "@nrwl/cli"
-    private const val NOTIFICATION_GROUP_ID = "NX CLI"
 
-    private val NOTIFICATION_GROUP =
-        NotificationGroup(NOTIFICATION_GROUP_ID, NotificationDisplayType.BALLOON, true)
+    private val NX_CLI_PACKAGE: String = "@nrwl/cli"
 
     fun findCliJson(dir: VirtualFile?): VirtualFile? {
         if (dir == null || !dir.isValid) return null
@@ -61,12 +59,10 @@ object NxCliUtil {
     ) {
         val packageJson = PackageJsonUtil.findChildPackageJsonFile(cliFolder)
         val notification: Notification =
-            // TODO use NotificationGroupManager
-            NOTIFICATION_GROUP.createNotification(
+            NxConsoleNotificationGroup.GROUP.createNotification(
                 message,
                 NxBundle.message("nx.notify.cli.required-package-not-installed"),
                 NotificationType.WARNING,
-                null
             )
         if (packageJson != null) {
             notification.addAction(PackageJsonGetDependenciesAction(project, packageJson, notification))

@@ -138,8 +138,9 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
             if (packageJsonFile != null) {
                 invokeLater {
                     val psiFile = PsiManager.getInstance(project).findFile(packageJsonFile) as? JsonFile ?: return@invokeLater
-                    val isWorkspace = isPackageJsonWithTopLevelProperty(packageJsonFile, "workspaces")
-                    if (isWorkspace && hasNx(psiFile).not()) {
+                    val isYarnWorkspaces = isPackageJsonWithTopLevelProperty(packageJsonFile, "workspaces")
+                    val isLerna = project.baseDir.findChild("lerna.json") != null
+                    if ((isYarnWorkspaces or isLerna) and hasNx(psiFile).not()) {
                         //Nx is not installed in your MonoRepo workspace. Do you want to add it?
                         val msg = NxConsoleNotificationGroup.GROUP.createNotification(
                             "Add Nx to monorepo",

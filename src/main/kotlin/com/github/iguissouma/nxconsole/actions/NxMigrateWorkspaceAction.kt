@@ -209,6 +209,6 @@ private fun createFileLink(projet: Project, file: VirtualFile): String {
     return createLink(file.path, JsbtUtil.getRelativePath(projet, file, false))
 }
 
-private fun createLink(href: String, linkText: String): String {
+fun createLink(href: String, linkText: String): String {
     return "<a href='" + StringUtil.escapeXmlEntities(href) + "'>" + StringUtil.escapeXmlEntities(linkText) + "</a>"
 }

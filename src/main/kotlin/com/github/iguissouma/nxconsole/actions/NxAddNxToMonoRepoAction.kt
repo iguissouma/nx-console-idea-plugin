@@ -47,7 +47,7 @@ object NxConsoleNotificationGroup {
     val GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Nx Console")
 }
 
-class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcons.NRWL_ICON) {
+class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAwareAction({ text }, NxIcons.NRWL_ICON) {
 
     companion object {
         private val GENERATING = Key.create<kotlin.Boolean>(
@@ -95,7 +95,7 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
         NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
         NpmPackageDescriptor.findBinaryFilePackage(node, "npx")?.configureNpmPackage(targetRun)
-        commandLine.addParameter("add-nx-to-monorepo")
+        commandLine.addParameter(command)
         val workingDir = project.baseDir
         commandLine.setWorkingDirectory(targetRun.path(workingDir.path))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
@@ -119,12 +119,11 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
             }
         })
         val defaultExecutor = DefaultRunExecutor.getRunExecutorInstance()
-        val title = "Add Nx to MonoRepo"
-        val ui = RunnerLayoutUi.Factory.getInstance(project).create("none", title, title, project)
+        val ui = RunnerLayoutUi.Factory.getInstance(project).create("none", text, text, project)
         val consoleContent =
-            ui.createContent("none", console.component, title, null as Icon?, console.preferredFocusableComponent)
+            ui.createContent("none", console.component, text, null as Icon?, console.preferredFocusableComponent)
         ui.addContent(consoleContent)
-        val descriptor = RunContentDescriptor(console, handler, console.component, title)
+        val descriptor = RunContentDescriptor(console, handler, console.component, text)
         descriptor.isAutoFocusContent = true
         RunContentManager.getInstance(project).showRunContent(defaultExecutor, descriptor)
         handler.startNotify()
@@ -137,7 +136,8 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
             val packageJsonFile = findChildPackageJsonFile(project.baseDir)
             if (packageJsonFile != null) {
                 invokeLater {
-                    val psiFile = PsiManager.getInstance(project).findFile(packageJsonFile) as? JsonFile ?: return@invokeLater
+                    val psiFile =
+                        PsiManager.getInstance(project).findFile(packageJsonFile) as? JsonFile ?: return@invokeLater
                     val isYarnWorkspaces = isPackageJsonWithTopLevelProperty(packageJsonFile, "workspaces")
                     val isLerna = project.baseDir.findChild("lerna.json") != null
                     if ((isYarnWorkspaces or isLerna) and hasNx(psiFile).not()) {
@@ -151,9 +151,25 @@ class NxAddNxToMonoRepoAction : DumbAwareAction({ "Add Nx to MonoRepo" }, NxIcon
                             ),
                             NotificationType.INFORMATION,
                         )
-                        msg.addAction(NxAddNxToMonoRepoAction())
+                        msg.addAction(NxAddNxToMonoRepoAction("Add Nx To Monorepo", "add-nx-to-monorepo"))
                         msg.notify(project)
                     }
+
+                    val isCreateReactApp = findDependencyByName(psiFile, "react-scripts") != null
+                    if (isCreateReactApp and hasNx(psiFile).not()) {
+                        val msg = NxConsoleNotificationGroup.GROUP.createNotification(
+                            "Add Nx to your Create-React-App(CRA)",
+                            "Do you want to migrate your CRA project into an Nx Workspace? " +
+                                    "Once the migration process is complete, you'll be able to take advantage of all of Nx's features without needing to completely recreate your build process." + createLink(
+                                "https://nx.dev/migration/migration-cra",
+                                " Learn more"
+                            ),
+                            NotificationType.INFORMATION,
+                        )
+                        msg.addAction(NxAddNxToMonoRepoAction("Add Nx to CRA", "cra-to-nx"))
+                        msg.notify(project)
+                    }
+
                 }
 
             }

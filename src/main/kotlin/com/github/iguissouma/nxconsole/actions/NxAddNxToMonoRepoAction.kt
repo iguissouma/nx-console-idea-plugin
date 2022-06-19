@@ -95,7 +95,13 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
         NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
         NpmPackageDescriptor.findBinaryFilePackage(node, "npx")?.configureNpmPackage(targetRun)
-        commandLine.addParameter(command)
+        if (command == "angular-to-nx") {
+            commandLine.addParameter("ng")
+            commandLine.addParameter("add")
+            commandLine.addParameter("@nrwl/angular")
+        } else {
+            commandLine.addParameter(command)
+        }
         val workingDir = project.baseDir
         commandLine.setWorkingDirectory(targetRun.path(workingDir.path))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
@@ -167,6 +173,21 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
                             NotificationType.INFORMATION,
                         )
                         msg.addAction(NxAddNxToMonoRepoAction("Add Nx to CRA", "cra-to-nx"))
+                        msg.notify(project)
+                    }
+
+                    val isAngularApp = findDependencyByName(psiFile, "@angular/cli") != null
+                    if (isAngularApp and hasNx(psiFile).not()) {
+                        val msg = NxConsoleNotificationGroup.GROUP.createNotification(
+                            "Add Nx to your angular app",
+                            "Do you want to migrate your Angular app into an Nx Workspace? " +
+                                    "Once the migration process is complete, you'll be able to take advantage of all of Nx's features without needing to completely recreate your build process." + createLink(
+                                "https://nx.dev/migration/migration-angular",
+                                " Learn more"
+                            ),
+                            NotificationType.INFORMATION,
+                        )
+                        msg.addAction(NxAddNxToMonoRepoAction("Add Nx to Angular", "angular-to-nx"))
                         msg.notify(project)
                     }
 

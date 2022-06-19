@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.actions
 
+import com.github.iguissouma.nxconsole.NxBundle
 import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.intellij.execution.ExecutionException
@@ -11,6 +12,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.execution.ui.RunnerLayoutUi
 import com.intellij.ide.file.BatchFileChangeListener
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.javascript.debugger.CommandLineDebugConfigurator
 import com.intellij.javascript.nodejs.NodeCommandLineUtil
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
@@ -26,6 +28,8 @@ import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.findChildPack
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.findDependencyByName
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil.isPackageJsonWithTopLevelProperty
 import com.intellij.lang.javascript.modules.ConsoleProgress
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -41,6 +45,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.util.ThreeState
 import javax.swing.Icon
 
+internal const val SHOW_ADD_NX_NOTIFICATION = "nx.show.add.nx.notification"
 
 object NxConsoleNotificationGroup {
     @JvmField
@@ -50,7 +55,7 @@ object NxConsoleNotificationGroup {
 class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAwareAction({ text }, NxIcons.NRWL_ICON) {
 
     companion object {
-        private val GENERATING = Key.create<kotlin.Boolean>(
+        private val GENERATING = Key.create<Boolean>(
             NxAddNxToMonoRepoAction::class.java.simpleName + ".generating"
         )
     }
@@ -139,6 +144,9 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
     class MyStartupActivity : StartupActivity.Background {
 
         override fun runActivity(project: Project) {
+            if (!PropertiesComponent.getInstance().getBoolean(SHOW_ADD_NX_NOTIFICATION, true)) {
+                return
+            }
             val packageJsonFile = findChildPackageJsonFile(project.baseDir)
             if (packageJsonFile != null) {
                 invokeLater {
@@ -158,6 +166,12 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
                             NotificationType.INFORMATION,
                         )
                         msg.addAction(NxAddNxToMonoRepoAction("Add Nx To Monorepo", "add-nx-to-monorepo"))
+                        msg.addAction(object : NotificationAction(NxBundle.message("notification.do.not.ask.me.again")) {
+                            override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                                PropertiesComponent.getInstance().setValue(SHOW_ADD_NX_NOTIFICATION, false, true)
+                                msg.expire()
+                            }
+                        })
                         msg.notify(project)
                     }
 
@@ -173,6 +187,12 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
                             NotificationType.INFORMATION,
                         )
                         msg.addAction(NxAddNxToMonoRepoAction("Add Nx to CRA", "cra-to-nx"))
+                        msg.addAction(object : NotificationAction(NxBundle.message("notification.do.not.ask.me.again")) {
+                            override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                                PropertiesComponent.getInstance().setValue(SHOW_ADD_NX_NOTIFICATION, false, true)
+                                msg.expire()
+                            }
+                        })
                         msg.notify(project)
                     }
 
@@ -188,6 +208,12 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
                             NotificationType.INFORMATION,
                         )
                         msg.addAction(NxAddNxToMonoRepoAction("Add Nx to Angular", "angular-to-nx"))
+                        msg.addAction(object : NotificationAction(NxBundle.message("notification.do.not.ask.me.again")) {
+                            override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                                PropertiesComponent.getInstance().setValue(SHOW_ADD_NX_NOTIFICATION, false, true)
+                                msg.expire()
+                            }
+                        })
                         msg.notify(project)
                     }
 

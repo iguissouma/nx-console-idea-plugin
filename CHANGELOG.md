@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.46.0]
+### Added
+- Add support for add nx to workspaces(Lerna, Yarn)
+- Add support for cra to nx
+- Add support for ng add @nrwl/angular
+
 ## [0.45.0]
 ### Added
 - Add first support for yarn workspace

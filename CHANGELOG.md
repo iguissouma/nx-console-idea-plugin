@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.46.1]
+### Fixed
+- Fix fileNames on for fileType extension
+
 ## [0.46.0]
 ### Added
 - Add support for add nx to workspaces(Lerna, Yarn)

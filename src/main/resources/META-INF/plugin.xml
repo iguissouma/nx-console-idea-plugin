@@ -53,7 +53,7 @@
                       order="before directory, before javaDirectory"/>
 
         <fileType name="nx workspace"
-                  fileNames="workspace.json;angular.json;.angular-cli.json;angular-cli.json;workspace.json"
+                  fileNames="workspace.json;angular.json;.angular-cli.json;angular-cli.json"
                   implementationClass="com.github.iguissouma.nxconsole.NxWorkspaceFileType"
                   fieldName="INSTANCE"/>
 

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.46.2]
+### Fixed
+- Fix persist don't ask again at project level
+- Fix NxAddNxToMonoRepoAction declaration in plugin.xml
+
 ## [0.46.1]
 ### Fixed
 - Fix fileNames on for fileType extension

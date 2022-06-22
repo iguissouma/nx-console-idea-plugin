@@ -144,7 +144,7 @@ class NxAddNxToMonoRepoAction(val text: String, val command: String) : DumbAware
     class MyStartupActivity : StartupActivity.Background {
 
         override fun runActivity(project: Project) {
-            if (!PropertiesComponent.getInstance().getBoolean(SHOW_ADD_NX_NOTIFICATION, true)) {
+            if (!PropertiesComponent.getInstance(project).getBoolean(SHOW_ADD_NX_NOTIFICATION, true)) {
                 return
             }
             val packageJsonFile = findChildPackageJsonFile(project.baseDir)

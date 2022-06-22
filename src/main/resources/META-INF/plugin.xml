@@ -213,10 +213,6 @@
         <action id="NxMigrateWorkspaceAction" class="com.github.iguissouma.nxconsole.actions.NxMigrateWorkspaceAction">
         </action>
 
-        <action id="NxAddNxToMonoRepoAction" class="com.github.iguissouma.nxconsole.actions.NxAddNxToMonoRepoAction">
-        </action>
-
-
         <action class="com.github.iguissouma.nxconsole.uml.ShowNxGraphNewDiagramAction"
                 id="ShowNxGraphNewDiagram"
                 text="Show Nx Graph Dependency Diagram"

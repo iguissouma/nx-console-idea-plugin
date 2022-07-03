@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.46.3]
+### Fixed
+- Fix load generators when `id` or `$id` is missing in `schema.json`
+
 ## [0.46.2]
 ### Fixed
 - Fix persist don't ask again at project level

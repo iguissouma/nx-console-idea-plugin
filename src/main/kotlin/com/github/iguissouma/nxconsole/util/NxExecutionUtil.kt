@@ -1,6 +1,8 @@
 package com.github.iguissouma.nxconsole.util
 
+import com.github.iguissouma.nxconsole.cli.config.exe
 import com.intellij.execution.ExecutionException
+import com.intellij.execution.Platform
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.AnsiEscapeDecoder.ColoredTextAcceptor
 import com.intellij.execution.process.CapturingProcessAdapter
@@ -11,12 +13,14 @@ import com.intellij.javascript.nodejs.NodeCommandLineUtil
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeCommandLineConfigurator
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.intellij.javascript.nodejs.interpreter.remote.NodeJsRemoteInterpreter
 import com.intellij.javascript.nodejs.npm.NpmManager
 import com.intellij.javascript.nodejs.npm.NpmNodePackage
 import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
 import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
 import com.intellij.lang.javascript.JavaScriptBundle
+import com.intellij.lang.javascript.buildTools.npm.rc.NpmCommand
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -107,37 +111,61 @@ class NxExecutionUtil(val project: Project) {
         } else {
 
             val commandLine = targetRun.commandLineBuilder
-
             targetRun.enableWrappingWithYarnPnpNode = false
-            NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
             NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
 
-            val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
-            if (NpmUtil.isPnpmPackage(npmPkg)) {
-                var version: SemVer? = null
-                WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
-                    .fetchVersion(targetRun.interpreter, npmPkg, File(project.basePath!!)) {
-                        version = it
-                    }
-
-                // version is null first time use exec
-                if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
-                    // useExec like vscode extension
-                    commandLine.addParameter("exec")
-                } else {
-                    NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
-                        .let {
-                            if (it.isValid(targetRun.project, targetRun.interpreter)) {
-                                it.configureNpmPackage(targetRun)
-                            }
+            if (targetRun.interpreter !is NodeJsRemoteInterpreter) {
+                NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
+                val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
+                if (NpmUtil.isPnpmPackage(npmPkg)) {
+                    var version: SemVer? = null
+                    WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
+                        .fetchVersion(targetRun.interpreter, npmPkg, File(project.basePath!!)) {
+                            version = it
                         }
+
+                    // version is null first time use exec
+                    if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
+                        // useExec like vscode extension
+                        commandLine.addParameter("exec")
+                    } else {
+                        NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
+                            .let {
+                                if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                    it.configureNpmPackage(targetRun)
+                                }
+                            }
+                    }
+                } else if (yarn.not()) {
+                    val findBinaryFilePackage = NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")
+                    if (findBinaryFilePackage != null) {
+                        findBinaryFilePackage.configureNpmPackage(targetRun)
+                    } else {
+                        val validNpmCliJsFilePath = NpmUtil.getValidNpmCliJsFilePath(npmPkg, targetRun.interpreter)
+                        NpmNodePackage(replaceNpmCliJsFilePathToNpx(validNpmCliJsFilePath))
+                            .let {
+                                if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                    it.configureNpmPackage(targetRun)
+                                }
+                            }
+                    }
                 }
-            } else if (yarn.not()) {
-                NpmPackageDescriptor.findBinaryFilePackage(nodeInterpreter, "npx")?.configureNpmPackage(targetRun)
+            } else {
+                NpmUtil.configureNpmCommand(
+                    targetRun,
+                    npmPackageRef,
+                    project.basePath?.let { File(it).toPath() },
+                    NpmCommand.RUN_SCRIPT,
+                    emptyList(),
+                    {}
+                )
             }
 
             commandLine.setWorkingDirectory(project.basePath!!)
             commandLine.addParameter("nx")
+            if (targetRun.interpreter is NodeJsRemoteInterpreter) {
+                commandLine.addParameter("--")
+            }
             commandLine.addParameter(command)
             commandLine.addParameter(args.joinToString(" "))
             val handler: ProcessHandler = targetRun.startProcess()
@@ -161,6 +189,18 @@ fun replacePnpmToPnpx(pnpmPath: String): String {
         pnpmPath.lastIndexOf("pnpm")
     ) + "pnpx" + pnpmPath.substring(pnpmPath.lastIndexOf("pnpm") + 1)
 }
+
+fun replaceNpmToNpx(pnpmPath: String): String {
+    return pnpmPath.substring(
+        0,
+        pnpmPath.lastIndexOf("npm")
+    ) + "npx" + pnpmPath.substring(pnpmPath.lastIndexOf("npm") + 3)
+}
+
+fun replaceNpmCliJsFilePathToNpx(npmCLiJsFilePath: String): String {
+    return npmCLiJsFilePath.replace("npm-cli.js", "npx" + if (Platform.current() == Platform.WINDOWS) ".cmd" else "")
+}
+
 
 class AnsiEscapesAwareAdapter(output: ProcessOutput?) :
     CapturingProcessAdapter(output!!), ColoredTextAcceptor {

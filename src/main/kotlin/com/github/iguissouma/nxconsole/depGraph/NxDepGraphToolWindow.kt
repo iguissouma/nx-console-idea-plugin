@@ -5,6 +5,9 @@ import com.github.iguissouma.nxconsole.NxIcons
 import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.NxProject
+import com.github.iguissouma.nxconsole.cli.config.exe
+import com.github.iguissouma.nxconsole.util.replaceNpmCliJsFilePathToNpx
+import com.github.iguissouma.nxconsole.util.replaceNpmToNpx
 import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.KillableProcessHandler
@@ -19,6 +22,7 @@ import com.intellij.ide.util.ElementsChooser
 import com.intellij.javascript.debugger.CommandLineDebugConfigurator
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
+import com.intellij.javascript.nodejs.interpreter.remote.NodeJsRemoteInterpreter
 import com.intellij.javascript.nodejs.npm.NpmManager
 import com.intellij.javascript.nodejs.npm.NpmNodePackage
 import com.intellij.javascript.nodejs.npm.NpmPackageDescriptor
@@ -26,6 +30,7 @@ import com.intellij.javascript.nodejs.npm.NpmUtil
 import com.intellij.javascript.nodejs.npm.WorkingDirectoryDependentNpmPackageVersionManager
 import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.lang.javascript.JavaScriptBundle
+import com.intellij.lang.javascript.buildTools.npm.rc.NpmCommand
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
@@ -184,33 +189,63 @@ class NxDepGraphWindow(val project: Project) {
                 val commandLine = targetRun.commandLineBuilder
                 commandLine.setCharset(StandardCharsets.UTF_8)
                 commandLine.setWorkingDirectory(targetRun.path(workingDirectory.absolutePath))
-                NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
-                val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
-                if (NpmUtil.isPnpmPackage(npmPkg)) {
-                    var version: SemVer? = null
-                    WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
-                        .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
-                            version = it
-                        }
 
-                    // version is null first time use exec
-                    if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
-                        // useExec like vscode extension
-                        commandLine.addParameter("exec")
-                    } else {
-                        // use pnpx
-                        NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
-                            .let {
-                                if (it.isValid(targetRun.project, targetRun.interpreter)) {
-                                    it.configureNpmPackage(targetRun)
-                                }
+                if (targetRun.interpreter !is NodeJsRemoteInterpreter) {
+
+                    NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
+                    val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
+                    if (NpmUtil.isPnpmPackage(npmPkg)) {
+                        var version: SemVer? = null
+                        WorkingDirectoryDependentNpmPackageVersionManager.getInstance(project)
+                            .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
+                                version = it
                             }
+
+                        // version is null first time use exec
+                        if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
+                            // useExec like vscode extension
+                            commandLine.addParameter("exec")
+                        } else {
+                            // use pnpx
+                            NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
+                                .let {
+                                    if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                        it.configureNpmPackage(targetRun)
+                                    }
+                                }
+                        }
+                    } else if (yarn.not()) {
+                        val findBinaryFilePackage =
+                            NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")
+                        if (findBinaryFilePackage != null) {
+                            findBinaryFilePackage.configureNpmPackage(targetRun)
+                        } else {
+
+                            val validNpmCliJsFilePath = NpmUtil.getValidNpmCliJsFilePath(npmPkg, targetRun.interpreter)
+                            NpmNodePackage(replaceNpmCliJsFilePathToNpx(validNpmCliJsFilePath))
+                                .let {
+                                    if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                        it.configureNpmPackage(targetRun)
+                                    }
+                                }
+                        }
                     }
-                } else if (yarn.not()) {
-                    NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")
-                        ?.configureNpmPackage(targetRun)
+                } else {
+                    val npmPkgRef = NpmUtil.createProjectPackageManagerPackageRef()
+                    NpmUtil.configureNpmCommand(
+                        targetRun,
+                        npmPkgRef,
+                        workingDirectory.toPath(),
+                        NpmCommand.RUN_SCRIPT,
+                        emptyList(),
+                        {}
+                    )
                 }
                 commandLine.addParameter("nx")
+                if (targetRun.interpreter is NodeJsRemoteInterpreter) {
+                    commandLine.addParameter("--")
+                }
+
             }
 
             override fun actionPerformed(e: AnActionEvent) {

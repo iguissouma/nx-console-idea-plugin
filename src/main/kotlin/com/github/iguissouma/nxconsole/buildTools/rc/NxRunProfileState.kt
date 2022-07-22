@@ -4,6 +4,7 @@ import com.github.iguissouma.nxconsole.buildTools.NxRunSettings
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
 import com.github.iguissouma.nxconsole.cli.config.exe
+import com.github.iguissouma.nxconsole.util.replaceNpmCliJsFilePathToNpx
 import com.github.iguissouma.nxconsole.util.replacePnpmToPnpx
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
@@ -21,6 +22,7 @@ import com.intellij.javascript.nodejs.debug.NodeCommandLineOwner
 import com.intellij.javascript.nodejs.execution.NodeBaseRunProfileState
 import com.intellij.javascript.nodejs.execution.NodeTargetRun
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
+import com.intellij.javascript.nodejs.interpreter.remote.NodeJsRemoteInterpreter
 import com.intellij.javascript.nodejs.npm.NpmManager
 import com.intellij.javascript.nodejs.npm.NpmManager.InvalidNpmPackageException
 import com.intellij.javascript.nodejs.npm.NpmNodePackage
@@ -31,6 +33,7 @@ import com.intellij.javascript.nodejs.util.NodePackage
 import com.intellij.javascript.nodejs.util.NodePackageRef
 import com.intellij.lang.javascript.JavaScriptBundle
 import com.intellij.lang.javascript.buildTools.TypeScriptErrorConsoleFilter
+import com.intellij.lang.javascript.buildTools.npm.rc.NpmCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.openapi.util.text.HtmlChunk
@@ -126,32 +129,59 @@ class NxRunProfileState(
             configureNxCommand(targetRun, npmPkg, workingDirectory.toPath())
         }
 
-        val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
-        if (NpmUtil.isPnpmPackage(npmPkg)) {
-            var version: SemVer? = null
-            WorkingDirectoryDependentNpmPackageVersionManager.getInstance(environment.project)
-                .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
-                    version = it
-                }
-
-            // version is null first time use exec
-            if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
-                // useExec like vscode extension
-                commandLine.addParameter("exec")
-            } else {
-                // use pnpx
-                NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
-                    .let {
-                        if (it.isValid(targetRun.project, targetRun.interpreter)) {
-                            it.configureNpmPackage(targetRun)
-                        }
+        if (targetRun.interpreter !is NodeJsRemoteInterpreter) {
+            NpmNodePackage.configureNpmPackage(targetRun, npmPkg, *arrayOfNulls(0))
+            val yarn = NpmUtil.isYarnAlikePackage(npmPkg)
+            if (NpmUtil.isPnpmPackage(npmPkg)) {
+                var version: SemVer? = null
+                WorkingDirectoryDependentNpmPackageVersionManager.getInstance(environment.project)
+                    .fetchVersion(targetRun.interpreter, npmPkg, workingDirectory) {
+                        version = it
                     }
+
+                // version is null first time use exec
+                if (version == null || (version!!.major >= 6 && version!!.minor >= 13)) {
+                    // useExec like vscode extension
+                    commandLine.addParameter("exec")
+                } else {
+                    // use pnpx
+                    NpmNodePackage(replacePnpmToPnpx(npmPkg.systemIndependentPath))
+                        .let {
+                            if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                it.configureNpmPackage(targetRun)
+                            }
+                        }
+                }
+            } else if (yarn.not()) {
+                val findBinaryFilePackage = NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")
+                if (findBinaryFilePackage != null) {
+                    findBinaryFilePackage.configureNpmPackage(targetRun)
+                } else {
+                    val validNpmCliJsFilePath = NpmUtil.getValidNpmCliJsFilePath(npmPkg, targetRun.interpreter)
+                    NpmNodePackage(replaceNpmCliJsFilePathToNpx(validNpmCliJsFilePath))
+                        .let {
+                            if (it.isValid(targetRun.project, targetRun.interpreter)) {
+                                it.configureNpmPackage(targetRun)
+                            }
+                        }
+                }
             }
-        } else if (yarn.not()) {
-            NpmPackageDescriptor.findBinaryFilePackage(targetRun.interpreter, "npx")?.configureNpmPackage(targetRun)
+        } else {
+            NpmUtil.configureNpmCommand(
+                targetRun,
+                npmPackageRef,
+                workingDirectory.toPath(),
+                NpmCommand.RUN_SCRIPT,
+                emptyList(),
+                {}
+            )
         }
+
         val nxWorkspaceType = NxConfigProvider.getNxWorkspaceType(targetRun.project, targetRun.project.baseDir)
-        commandLine.addParameter(nxWorkspaceType.exe())
+        commandLine.addParameter( nxWorkspaceType.exe())
+        if (targetRun.interpreter is NodeJsRemoteInterpreter) {
+            commandLine.addParameter("--")
+        }
         val tasks = this.runSettings.tasks
         if (tasks.size > 1 && nxWorkspaceType == WorkspaceType.NX) {
             commandLine.addParameters("run-many")
@@ -182,7 +212,6 @@ class NxRunProfileState(
             commandLineBuilder.setWorkingDirectory(targetRun.path(workingDirectory.toString()))
         }
         targetRun.enableWrappingWithYarnPnpNode = false
-        NpmNodePackage.configureNpmPackage(targetRun, npmPackage, *arrayOfNulls(0))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
     }
 
@@ -194,4 +223,9 @@ class NxRunProfileState(
         consoleView.addMessageFilter(TypeScriptErrorConsoleFilter(project, cwd))
         return consoleView
     }
+}
+
+
+fun getNxBinFile(nxPackage: NodePackage): File {
+    return File(nxPackage.systemDependentPath, "bin" + File.separator + "nx.js")
 }

@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.47.1]
+### Added
+- Add support for node remote interpreter for executing nx tasks using nx npm run scritpts (#90)
+
 ## [0.46.3]
 ### Fixed
 - Fix load generators when `id` or `$id` is missing in `schema.json`

@@ -3,11 +3,15 @@ package com.github.iguissouma.nxconsole.readers
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.generators
 import com.github.iguissouma.nxconsole.readers.WorkspaceGeneratorType.schematics
+import com.google.common.base.CaseFormat
+import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
 import com.intellij.openapi.project.ProjectLocator
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
+
 
 fun getGenerators(
     workspacePath: String,
@@ -36,7 +40,8 @@ fun getGeneratorOptions(
     workspacePath: String,
     collectionName: String,
     generatorName: String,
-    generatorPath: String
+    generatorPath: String,
+    workspaceType: WorkspaceType,
 ): List<Option> {
     val generatorSchema = readAndCacheJsonFile(generatorPath)
     val workspaceDefaults = readWorkspaceJsonDefaults(workspacePath)
@@ -52,7 +57,7 @@ fun getGeneratorOptions(
     } else
         emptyMap<String, Any>()
 
-    return normalizeSchema(generatorSchema["json"] as Map<String, Any?>, defaults)
+    return normalizeSchema(generatorSchema["json"] as Map<String, Any?>, workspaceType ,defaults)
 
 }
 
@@ -71,8 +76,15 @@ val IMPORTANT_FIELD_NAMES = arrayOf(
 )
 val IMPORTANT_FIELDS_SET = IMPORTANT_FIELD_NAMES.toSet()
 
-fun normalizeSchema(s: Map<String, Any?>, projectDefaults: Map<String, Any>? = null): List<Option> {
-    val options = schemaToOptions(s)
+enum class WorkspaceType { nx, ng }
+
+fun normalizeSchema(
+    s: Map<String, Any?>,
+    workspaceType: WorkspaceType = WorkspaceType.nx,
+    projectDefaults: Map<String, Any>? = null
+): List<Option> {
+    val hyphenate = workspaceType == WorkspaceType.ng && ngVersion() >= 14;
+    val options = schemaToOptions(s, SchemaToOptionsConfig(hyphenate))
     val requiredFields = (s["required"] as? List<String> ?: emptyList()).distinct()
 
     val nxOptions = options.map { option: Option ->
@@ -139,6 +151,12 @@ fun normalizeSchema(s: Map<String, Any?>, projectDefaults: Map<String, Any>? = n
 
 }
 
+fun ngVersion(): Int {
+    val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return 0
+    val nodeInstalledPackageFinder = NodeInstalledPackageFinder(project, project.baseDir)
+    return nodeInstalledPackageFinder.findInstalledPackage("@angular/cli")?.version?.major ?: 0
+}
+
 fun getItems(option: Option): Any? {
     when (option.items) {
         is List<*> -> return option.items
@@ -158,7 +176,9 @@ fun isFieldRequired(requiredFields: List<String>, option: Option, xPrompt: Any?,
             (xPrompt != null && `$default` != null && option.type != "boolean")
 }
 
-fun schemaToOptions(schema: Map<String, Any?>): List<Option> {
+data class SchemaToOptionsConfig(val hyphenate: Boolean = false)
+
+fun schemaToOptions(schema: Map<String, Any?>, config: SchemaToOptionsConfig? = null): List<Option> {
     val properties = schema["properties"] as Map<String, Any?>?
     val res = mutableListOf<Option>()
     properties?.entries?.forEach {
@@ -171,9 +191,10 @@ fun schemaToOptions(schema: Map<String, Any?>): List<Option> {
         if (!visible) {
             return@forEach
         }
+        val name = if (config?.hyphenate == true) CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, option)  else option;
         res.add(
             Option(
-                name = option,
+                name = name,
                 type = currentProperty["type"] as? String?,
                 description = currentProperty["description"] as? String?,
                 enum = currentProperty["enum"] as? List<String>? ?: emptyList(),

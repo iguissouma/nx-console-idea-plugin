@@ -42,7 +42,7 @@ fun readBuilderSchema(baseDir: String, builder: String, projectDeafaults: Map<St
     )
 
     // TODO projectDefaults
-    return normalizeSchema(builderSchema["json"] as Map<String, Any?>, null)
+    return normalizeSchema(builderSchema["json"] as Map<String, Any?>, WorkspaceType.nx, null)
 
 
 }

@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.47.2]
+### Fixed
+- Fix hyphenate arguments for ng workspaces
+
 ## [0.47.1]
 ### Added
 - Add support for node remote interpreter for executing nx tasks using nx npm run scritpts (#90)

@@ -471,7 +471,7 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             OptionSettingType.Bool -> {
                 val cb = checkBox(
                     option.name!!,
-                    { modelUI[option.name!!] as? Boolean ?: false },
+                    { modelUI[option.name!!].toString().lowercase().toBooleanStrictOrNull() ?: false },
                     { modelUI[option.name!!] = it }
                 )
                 OptionSettingControl(cb, cb.component.selected, {})

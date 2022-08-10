@@ -1,6 +1,7 @@
 package com.github.iguissouma.nxconsole.execution
 
 import com.github.iguissouma.nxconsole.NxIcons
+import com.github.iguissouma.nxconsole.actions.wildcardToRegex
 import com.github.iguissouma.nxconsole.cli.NxCliFilter
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.exe
@@ -17,6 +18,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.options.advanced.AdvancedSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import javax.swing.Icon
@@ -156,8 +158,15 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
             // TODO java.lang.Throwable: Synchronous execution on EDT
             ApplicationManager.getApplication().executeOnPooledThread {
                 ApplicationManager.getApplication().invokeLater {
+                    val nxExcludeGenerators: List<Regex> = AdvancedSettings.getString("nx.exclude.generators")
+                        .takeIf { it.isNotBlank() }?.split(";")?.map { wildcardToRegex(it) }
+                        ?: emptyList()
                     val mySchematics = runCatching {
                         NxCliSchematicsRegistryService.getInstance().getSchematics(project, project.baseDir)
+                            .filterNot { s ->
+                                nxExcludeGenerators.any { it.matches(s.name!!) }
+                            }
+                            .sortedBy { it.name } // not same as vscode
                     }.getOrNull() ?: emptyList()
                     schematics.clear()
                     schematics.addAll(mySchematics)

@@ -30,7 +30,7 @@ class NxNewGenerateActionGroup : ActionGroup() {
             e.presentation.isEnabledAndVisible = false
             return
         }
-        val label = nxWorkspaceType.name.lowercase().capitalized()
+        val label = nxWorkspaceType.label().lowercase().capitalized()
         e.presentation.text = "$label Generate (Ui)..."
         e.presentation.description = "$label Generate (Ui)..."
         e.presentation.icon =

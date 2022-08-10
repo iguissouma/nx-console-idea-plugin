@@ -20,7 +20,7 @@ class NxCliActionGroup : ActionGroup() {
             e.presentation.isEnabledAndVisible = false
             return
         }
-        val label = nxWorkspaceType.name.lowercase().capitalized()
+        val label = nxWorkspaceType.label().lowercase().capitalized()
         e.presentation.text = "$label Task (Ui)..."
         e.presentation.description = "$label Task (Ui)..."
         e.presentation.icon =
@@ -59,4 +59,8 @@ class NxCliActionGroup : ActionGroup() {
             }
         }.toTypedArray()
     }
+}
+
+fun WorkspaceType.label(): String {
+    return if (this == WorkspaceType.ANGULAR) WorkspaceType.ANGULAR.name else WorkspaceType.NX.name
 }

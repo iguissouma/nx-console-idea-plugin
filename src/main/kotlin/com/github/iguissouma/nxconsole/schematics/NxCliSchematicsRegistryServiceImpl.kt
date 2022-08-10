@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.schematics
 
+import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.intellij.javascript.nodejs.library.NodeModulesDirectoryManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
@@ -39,7 +40,7 @@ class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {
         includeHidden: Boolean,
         logErrors: Boolean
     ): List<Schematic> {
-        return NxCliUtil.findCliJson(cliFolder)
+        return listOfNotNull(NxCliUtil.findCliJson(cliFolder), NxJsonUtil.findChildNxJsonFile(cliFolder)).firstOrNull()
             ?.let { ReadAction.compute<PsiFile, Throwable> { PsiManager.getInstance(project).findFile(it) } }
             ?.let { angularJson ->
                 getCachedSchematics(

@@ -79,7 +79,7 @@ class NxConfigProvider private constructor() {
 
         fun getNxWorkspaceType(project: Project, context: VirtualFile): WorkspaceType {
             val findAngularCliFolder = NxCliUtil.findAngularCliFolder(project, context)
-            return findAngularCliFolder?.let {
+            return (findAngularCliFolder?.let {
                 NxCliUtil.findCliJson(it)
             }?.let {
                 if (it.name != "workspace.json") {
@@ -91,7 +91,8 @@ class NxConfigProvider private constructor() {
                 } else {
                     WorkspaceType.NX
                 }
-            } ?: WorkspaceType.UNKNOWN
+            } ?: NxJsonUtil.findChildNxJsonFile(project.baseDir)?.let { WorkspaceType.NX }
+                    )?: WorkspaceType.UNKNOWN
         }
     }
 }

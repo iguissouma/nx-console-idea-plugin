@@ -183,8 +183,8 @@ fun schemaToOptions(schema: Map<String, Any?>, config: SchemaToOptionsConfig? = 
     val res = mutableListOf<Option>()
     properties?.entries?.forEach {
         val option = it.key
-        val currentProperty = it.value as Map<String, Any?>
-        val _default = currentProperty["\$default"] as Map<String, Any?>?
+        val currentProperty = it.value as? Map<String, Any?> ?: return@forEach
+        val _default = currentProperty["\$default"] as? Map<String, Any?>?
         val _defaultIndex = if (_default?.get("\$source") == "argv") _default["index"] else null
         val positional: Int? = (_defaultIndex as? Double)?.toInt()
         val visible = isPropertyVisible(option, currentProperty)

@@ -36,6 +36,13 @@ class NxNewGenerateActionGroup : ActionGroup() {
         e.presentation.icon =
             if (nxWorkspaceType == WorkspaceType.ANGULAR) NxIcons.ANGULAR
             else NxIcons.NRWL_ICON
+
+        templatePresentation.text = "$label Generate (Ui)..."
+        templatePresentation.description = "$label Generate (Ui)..."
+        templatePresentation.icon =
+            if (nxWorkspaceType == WorkspaceType.ANGULAR) NxIcons.ANGULAR
+            else NxIcons.NRWL_ICON
+
     }
 
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {

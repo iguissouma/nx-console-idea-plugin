@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.48.0]
+### Fixed
+- Fix loading generators without workspace.json
+- Fix java.lang.ClassCastException #98
+- Fix Override schematics #97
+
 ## [0.47.2]
 ### Fixed
 - Fix hyphenate arguments for ng workspaces

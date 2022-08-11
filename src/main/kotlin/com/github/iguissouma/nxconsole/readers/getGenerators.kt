@@ -201,7 +201,7 @@ fun schemaToOptions(schema: Map<String, Any?>, config: SchemaToOptionsConfig? = 
                 format = currentProperty["format"] as? String?,
                 `x-prompt` = currentProperty["\$x-prompt"] as? String?,
                 `$default` = currentProperty["\$default"] as? String?,
-                default = currentProperty["default"] as? String?,
+                default = currentProperty["default"]?.toString(),
 
                 positional = positional,
                 alias = currentProperty["alias"] as? String,

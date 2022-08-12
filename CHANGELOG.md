@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.48.1]
+### Fixed
+- Fix Override schematics #97
+
 ## [0.48.0]
 ### Fixed
 - Fix loading generators without workspace.json

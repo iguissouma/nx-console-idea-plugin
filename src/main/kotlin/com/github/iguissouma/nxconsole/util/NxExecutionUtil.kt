@@ -167,7 +167,7 @@ class NxExecutionUtil(val project: Project) {
                 commandLine.addParameter("--")
             }
             commandLine.addParameter(command)
-            commandLine.addParameter(args.joinToString(" "))
+            commandLine.addParameters(args.toList())
             val handler: ProcessHandler = targetRun.startProcess()
             return handler
         }

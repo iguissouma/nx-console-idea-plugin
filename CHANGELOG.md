@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.48.2]
+### Fixed
+
+- Fix run nx dep graph from toolwindow
+
 ## [0.48.1]
 ### Fixed
 - Fix Override schematics #97

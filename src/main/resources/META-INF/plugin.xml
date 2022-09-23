@@ -110,6 +110,11 @@
         <!--advanced settings-->
         <advancedSetting id="nx.exclude.generators" groupKey="group.advanced.settings.nx" bundle="messages.NxBundle"
                          default="" descriptionKey="advanced.setting.nx.exclude.generators.description"/>
+
+        <psi.referenceContributor language="JSON" implementation="com.github.iguissouma.nxconsole.references.NxProjectJsonReferenceContributor"/>
+        <completion.contributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.completions.NxProjetJsonCompletionContributor" order="first" />
+
+
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript">

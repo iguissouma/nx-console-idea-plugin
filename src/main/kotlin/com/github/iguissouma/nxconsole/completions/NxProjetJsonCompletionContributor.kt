@@ -62,6 +62,27 @@ class NxProjetJsonCompletionContributor : CompletionContributor() {
 
             }
         )
+
+        extend(CompletionType.BASIC, Holder.PATTERN_DEPENDS_ON,
+            object : CompletionProvider<CompletionParameters>() {
+                override fun addCompletions(
+                    parameters: CompletionParameters,
+                    context: ProcessingContext,
+                    result: CompletionResultSet
+                ) {
+                    val project = parameters.position.containingFile.project
+                    val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir) ?: return
+                    val distinct = nxConfig.projects.flatMap { it.architect.keys }.distinct()
+                    distinct.forEach {
+                        result.addElement(LookupElementBuilder.create("^$it"))
+                    }
+                    distinct.forEach {
+                        result.addElement(LookupElementBuilder.create(it))
+                    }
+                }
+
+            }
+        )
     }
 
     private object Holder {
@@ -91,6 +112,14 @@ class NxProjetJsonCompletionContributor : CompletionContributor() {
             .withSuperParent(2, JsonArray::class.java)
             .and(PlatformPatterns.psiElement().withParent(JsonStringLiteral::class.java))
             .withSuperParent(3, PlatformPatterns.psiElement(JsonProperty::class.java).withName("cacheableOperations"))
+
+
+        val PATTERN_DEPENDS_ON = PlatformPatterns.psiElement()
+            .inFile(NX_CONFIG_PATTERN)
+            .withSuperParent(2, JsonArray::class.java)
+            .and(PlatformPatterns.psiElement().withParent(JsonStringLiteral::class.java))
+            .withSuperParent(3, PlatformPatterns.psiElement(JsonProperty::class.java).withName("dependsOn"))
+
 
 
     }

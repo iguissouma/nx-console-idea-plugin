@@ -4,9 +4,16 @@
 
 ## [Unreleased]
 
+## [0.49.0]
+### Added
+
+- Add dependsOn autocompletion in nx.json
+- Add cacheable operation autocompletion in nx.json
+- Add root directory autocompletion in project.json
+- Add buildTarget autocompletion in project.json
+
 ## [0.48.2]
 ### Fixed
-
 - Fix run nx dep graph from toolwindow
 
 ## [0.48.1]

@@ -4,9 +4,13 @@
 
 ## [Unreleased]
 
-## [0.49.0]
+## [0.49.1]
 ### Added
 
+- Add support  for 2022.3 EAP version #109
+
+## [0.49.0]
+### Added
 - Add dependsOn autocompletion in nx.json
 - Add cacheable operation autocompletion in nx.json
 - Add root directory autocompletion in project.json

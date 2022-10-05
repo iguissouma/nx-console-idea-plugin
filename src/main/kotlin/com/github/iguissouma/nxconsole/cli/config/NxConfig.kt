@@ -10,6 +10,7 @@ import com.intellij.json.psi.JsonObject
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
 import com.intellij.lang.javascript.library.JSLibraryUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -62,29 +63,42 @@ class NxConfigFromGlobs(
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
         val scope = JSLibraryUtil.getContentScopeWithoutLibraries(project)
-        val files = FilenameIndex.getVirtualFilesByName("package.json", scope)
+
+        val packageJsonFiles = FilenameIndex.getVirtualFilesByName("package.json", scope)
             .filterNot { it == packageJsonFile }
 
-        projects = files.map {
+
+        val projectJsonFiles = FilenameIndex.getVirtualFilesByName("project.json", scope)
+
+        projects = packageJsonFiles.map {
             val relativePath = VfsUtilCore.getRelativePath(it, project.baseDir)
             val psiFile = PsiManager.getInstance(project).findFile(it) as? JsonFile
             val scriptsProperty = NpmScriptsUtil.findScriptsProperty(psiFile)
             NxProjectImpl(
-                it.parent.nameWithoutExtension,
-                it.parent.path,
-                mapper.readValue("""
-                {
-                  "name": "${it.parent.nameWithoutExtension}",
-                  "projectType": "library",
-                  "root": "$relativePath",
-                  "sourceRoot": "$relativePath",
-                  "targets": {
-                      ${(scriptsProperty?.value as? JsonObject)?.propertyList?.map { it.name }?.joinToString(",") { "\"${it}\": {}" } ?: ""}
-                   }
-                }
-                """.trimIndent()),
-                packageJsonFile,
-                project
+                name = it.parent.nameWithoutExtension,
+                projectPath = FileUtil.getRelativePath(packageJsonFile.path, it.parent.path, '/') ,
+                ngProject = mapper.readValue("""
+                                {
+                                  "name": "${it.parent.nameWithoutExtension}",
+                                  "projectType": "library",
+                                  "root": "$relativePath",
+                                  "sourceRoot": "$relativePath",
+                                  "targets": {
+                                      ${(scriptsProperty?.value as? JsonObject)?.propertyList?.map { it.name }?.joinToString(",") { "\"${it}\": {}" } ?: ""}
+                                   }
+                                }
+                                """.trimIndent()),
+                angularCliFolder = packageJsonFile,
+                project = project
+            )
+        } + projectJsonFiles.map {
+            val psiFile = PsiManager.getInstance(project).findFile(it) ?: error("cannot PsiFile for file ${it.path}")
+            NxProjectImpl(
+                name = it.parent.nameWithoutExtension,
+                projectPath = FileUtil.getRelativePath(packageJsonFile.path, it.parent.path, '/') ,
+                ngProject = mapper.readValue(psiFile.text),
+                angularCliFolder = packageJsonFile,
+                project = project
             )
         }
 

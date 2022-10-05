@@ -4,9 +4,13 @@
 
 ## [Unreleased]
 
+## [0.50.0]
+### Fixed
+
+- Fix nx config for workspaces without workspace.json and project.json files
+
 ## [0.49.1]
 ### Added
-
 - Add support  for 2022.3 EAP version #109
 
 ## [0.49.0]

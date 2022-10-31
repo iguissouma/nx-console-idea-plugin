@@ -4,6 +4,8 @@ import com.github.iguissouma.nxconsole.buildTools.NxJsonUtil
 import com.github.iguissouma.nxconsole.schematics.NxCliUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
@@ -15,12 +17,13 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 
+private val LOG = logger<NxConfigProvider>()
+
 class NxConfigProvider private constructor() {
 
     companion object {
 
         private val NX_CLI_CONFIG_KEY = Key.create<CachedValue<INxConfig>>("NX_CONFIG_KEY")
-        private val LOG = Logger.getInstance(NxConfigProvider::class.java)
 
         @JvmStatic
         fun getNxProject(project: Project, context: VirtualFile): NxProject? {
@@ -29,8 +32,12 @@ class NxConfigProvider private constructor() {
 
         @JvmStatic
         fun getNxConfig(project: Project, context: VirtualFile): INxConfig? {
+            LOG.info("getNxConfig called for idea project ${project.name} with context vf path ${context.path}")
             // get package.json file
-            val packageJsonFile = PackageJsonUtil.findChildPackageJsonFile(project.baseDir) ?: return null
+            val packageJsonFile = PackageJsonUtil.findChildPackageJsonFile(project.baseDir) ?: return null.also {
+                LOG.info("getNxConfig package.json not found in project.baseDir=${project.baseDir.path}")
+            }
+            LOG.info("root package.json found=${packageJsonFile.path}")
             val angularCliJson = NxCliUtil.findAngularCliFolder(project, context)?.let {
                 NxCliUtil.findCliJson(it)
             } ?: return CachedValuesManager.getManager(project).getCachedValue(
@@ -42,17 +49,22 @@ class NxConfigProvider private constructor() {
                         try {
                             NxConfigFromGlobs(project, packageJsonFile)
                         } catch (e: ProcessCanceledException) {
+                            thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
                             throw e
                         } catch (e: Exception) {
-                            LOG.warn("Cannot load " + packageJsonFile.name + ": " + e.message)
+                            thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
+                            LOG.info("Cannot load nx config from glob root package json file=" + packageJsonFile.path + ": " + e.message)
                             null
                         }
                     CachedValueProvider.Result.create(config, cachedDocument ?: packageJsonFile)
                 },
-                false)
+                false
+            )
 
 
-            val psiFile = PsiManager.getInstance(project).findFile(angularCliJson) ?: return null
+            val psiFile = PsiManager.getInstance(project).findFile(angularCliJson) ?: return null.also {
+                LOG.info("cannot find psiFile from vf=${angularCliJson.path}")
+            }
             return CachedValuesManager.getManager(project).getCachedValue(
                 psiFile,
                 NX_CLI_CONFIG_KEY,
@@ -66,9 +78,10 @@ class NxConfigProvider private constructor() {
                                 psiFile.project
                             )
                         } catch (e: ProcessCanceledException) {
+                            thisLogger().error("an error occurred while loading NxConfig", e)
                             throw e
                         } catch (e: Exception) {
-                            LOG.warn("Cannot load " + angularCliJson.name + ": " + e.message)
+                            LOG.warn("Cannot load nx config from " + angularCliJson.path + ": " + e.message)
                             null
                         }
                     CachedValueProvider.Result.create(config, cachedDocument ?: angularCliJson)
@@ -92,7 +105,7 @@ class NxConfigProvider private constructor() {
                     WorkspaceType.NX
                 }
             } ?: NxJsonUtil.findChildNxJsonFile(project.baseDir)?.let { WorkspaceType.NX }
-                    )?: WorkspaceType.UNKNOWN
+                    ) ?: WorkspaceType.UNKNOWN
         }
     }
 }

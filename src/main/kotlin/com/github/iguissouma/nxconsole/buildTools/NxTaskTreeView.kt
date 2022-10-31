@@ -14,6 +14,7 @@ import com.intellij.lang.javascript.buildTools.base.JsbtTaskSet
 import com.intellij.lang.javascript.buildTools.base.JsbtTaskTreeView
 import com.intellij.lang.javascript.buildTools.base.JsbtUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
@@ -23,6 +24,8 @@ import com.intellij.util.ObjectUtils
 import com.intellij.util.SmartList
 import javax.swing.tree.DefaultMutableTreeNode
 
+private val LOG = logger<NxTaskTreeView>()
+
 class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutPlace: String?) :
     JsbtTaskTreeView(nxService, project, layoutPlace), Disposable {
 
@@ -30,11 +33,11 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
     var isAffected = false
 
     companion object {
-
         private const val NO_TASKS_FOUND = "No tasks found"
     }
 
     override fun addBuildfileChildren(buildfileTreeNode: DefaultMutableTreeNode, _structure: JsbtFileStructure) {
+        LOG.info("addBuildfileChildren called")
 
         val structure = _structure as NxFileStructure
 
@@ -46,6 +49,9 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         // buildfileTreeNode.add(generateAndRunTargetNode)
 
         val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+
+        LOG.info("Loaded nxConfig with projects (${nxConfig?.projects?.size})")
+
         val module = ModuleManager.getInstance(project).modules.first()
         val unloadedModules =
             nxConfig?.projects?.filter { it.rootDir != null }

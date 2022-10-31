@@ -9,6 +9,7 @@ import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
 import com.intellij.lang.javascript.library.JSLibraryUtil
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -19,6 +20,8 @@ import com.intellij.psi.search.FilenameIndex
 import com.intellij.util.text.CharSequenceReader
 import one.util.streamex.StreamEx
 import java.nio.file.Paths
+
+private val LOG = logger<NxConfig>()
 
 open class INxConfig(open val angularJsonFile: VirtualFile) {
     var projects: List<NxProject> = emptyList()
@@ -51,6 +54,7 @@ class NxConfigFromGlobs(
 
     init {
 
+        LOG.info("init NxConfigFromGlobs...")
         val mapper = ObjectMapper(
             JsonFactory.builder()
                 .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
@@ -67,8 +71,17 @@ class NxConfigFromGlobs(
         val packageJsonFiles = FilenameIndex.getVirtualFilesByName("package.json", scope)
             .filterNot { it == packageJsonFile }
 
+        LOG.info("Found (${packageJsonFiles.size}) package.json files")
+        packageJsonFiles.forEach {
+            LOG.info("Found ${it.path}")
+        }
 
         val projectJsonFiles = FilenameIndex.getVirtualFilesByName("project.json", scope)
+
+        LOG.info("Found (${projectJsonFiles.size}) project.json files")
+        projectJsonFiles.forEach {
+            LOG.info("Found ${it.path}")
+        }
 
         projects = packageJsonFiles.map {
             val relativePath = VfsUtilCore.getRelativePath(it, project.baseDir)
@@ -93,10 +106,11 @@ class NxConfigFromGlobs(
             )
         } + projectJsonFiles.map {
             val psiFile = PsiManager.getInstance(project).findFile(it) ?: error("cannot PsiFile for file ${it.path}")
+            val ngProject: AngularJsonProject = mapper.readValue(psiFile.text)
             NxProjectImpl(
                 name = it.parent.nameWithoutExtension,
                 projectPath = FileUtil.getRelativePath(packageJsonFile.path, it.parent.path, '/') ,
-                ngProject = mapper.readValue(psiFile.text),
+                ngProject = ngProject,
                 angularCliFolder = packageJsonFile,
                 project = project
             )
@@ -121,6 +135,7 @@ class NxConfig(text: CharSequence, override val angularJsonFile: VirtualFile, pr
     INxConfig(angularJsonFile) {
 
     init {
+        LOG.info("init NxConfig...")
         val angularCliFolder = angularJsonFile.parent
         val mapper = ObjectMapper(
             JsonFactory.builder()
@@ -135,15 +150,17 @@ class NxConfig(text: CharSequence, override val angularJsonFile: VirtualFile, pr
             .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
         val angularJson = mapper.readValue(CharSequenceReader(text), AngularJson::class.java)
         if (angularJson.projects.isNotEmpty()) {
+            LOG.info("found project when deserializing ${angularJsonFile.path}")
             projects = angularJson.projects.map { (name, ngProjectJson) ->
+                LOG.info("Trying to map project=$name")
                 when (ngProjectJson) {
                     is String -> {
                         val projectPath = angularCliFolder.path + "/" + ngProjectJson
                         val path = "$projectPath/project.json"
                         val virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(path))
-                            ?: error("cannot read project ...")
+                            ?: error("cannot find psiFile from vf $path")
                         val psiFile =
-                            PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot read project ...")
+                            PsiManager.getInstance(project).findFile(virtualFile) ?: error("cannot find psiFile from vf ${virtualFile.path}")
                         NxProjectImpl(name, ngProjectJson, mapper.readValue(psiFile.text), angularCliFolder, project)
                     }
                     is Map<*, *> -> NxProjectImpl(
@@ -153,13 +170,14 @@ class NxConfig(text: CharSequence, override val angularJsonFile: VirtualFile, pr
                         angularCliFolder,
                         project
                     )
-                    else -> error("cannot read project ...")
+                    else -> error("cannot map project $name")
                 }
             }
             defaultProject = angularJson.defaultProject?.let { defaultProject ->
                 projects.find { it.name == defaultProject }
             }
         } else {
+            LOG.info("fallback to legacyApps when deserializing ${angularJsonFile.path}")
             projects = angularJson.legacyApps.map { app ->
                 NxLegacyProjectImpl(angularJson, app, angularCliFolder, project)
             }

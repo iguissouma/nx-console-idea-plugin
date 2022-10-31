@@ -7,21 +7,24 @@ import com.intellij.javascript.nodejs.NodeModuleSearchUtil
 import com.intellij.javascript.nodejs.packageJson.notification.PackageJsonGetDependenciesAction
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.notification.Notification
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+
+private val LOG = logger<NxCliUtil>()
 
 object NxCliUtil {
 
     private val NX_CLI_PACKAGE: String = "@nrwl/cli"
 
     fun findCliJson(dir: VirtualFile?): VirtualFile? {
+        LOG.info("findCliJson called with dir= ${dir?.path}")
         if (dir == null || !dir.isValid) return null
         for (name in ANGULAR_JSON_NAMES) {
             val cliJson = dir.findChild(name)
             if (cliJson != null) {
+                LOG.info("Found cli json file=${cliJson.name} in dir=${dir.path} ")
                 return cliJson
             }
         }
@@ -29,17 +32,23 @@ object NxCliUtil {
     }
 
     fun findAngularCliFolder(project: Project, file: VirtualFile?): VirtualFile? {
+        LOG.info("findAngularCliFolder called for idea project ${project.name} with vf path ${file?.path}")
         var current = file
         while (current != null) {
-            if (current.isDirectory && findCliJson(current) != null) return current
+            if (current.isDirectory && findCliJson(current) != null) return current.also {
+                LOG.info("Found nx cli folder in ${it.path}")
+            }
             current = current.parent
         }
         return if (findCliJson(project.baseDir) != null) {
+            LOG.info("Found one of $ANGULAR_JSON_NAMES in project baseDir=${project.baseDir.path}")
             project.baseDir
-        } else null
+        } else null.also {
+            LOG.info("Cannot find one of $ANGULAR_JSON_NAMES in project baseDir=${project.baseDir.path}")
+        }
     }
 
-    private val ANGULAR_JSON_NAMES: List<String> = listOf(
+    val ANGULAR_JSON_NAMES: List<String> = listOf(
         "angular.json",
         ".angular-cli.json",
         "angular-cli.json",

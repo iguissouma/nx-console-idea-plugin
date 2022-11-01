@@ -33,38 +33,44 @@ class NxConfigProvider private constructor() {
         @JvmStatic
         fun getNxConfig(project: Project, context: VirtualFile): INxConfig? {
             LOG.info("getNxConfig called for idea project ${project.name} with context vf path ${context.path}")
-            // get package.json file
-            val packageJsonFile = PackageJsonUtil.findChildPackageJsonFile(project.baseDir) ?: return null.also {
-                LOG.info("getNxConfig package.json not found in project.baseDir=${project.baseDir.path}")
-            }
-            LOG.info("root package.json found=${packageJsonFile.path}")
+
             val angularCliJson = NxCliUtil.findAngularCliFolder(project, context)?.let {
                 NxCliUtil.findCliJson(it)
-            } ?: return CachedValuesManager.getManager(project).getCachedValue(
-                PsiManager.getInstance(project).findFile(packageJsonFile) ?: return null,
-                NX_CLI_CONFIG_KEY,
-                {
-                    val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(packageJsonFile)
-                    val config =
-                        try {
-                            NxConfigFromGlobs(project, packageJsonFile)
-                        } catch (e: ProcessCanceledException) {
-                            thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
-                            throw e
-                        } catch (e: Exception) {
-                            thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
-                            LOG.info("Cannot load nx config from glob root package json file=" + packageJsonFile.path + ": " + e.message)
-                            null
-                        }
-                    CachedValueProvider.Result.create(config, cachedDocument ?: packageJsonFile)
-                },
-                false
-            )
+            } ?: kotlin.run {
 
+                // get package.json file
+                val packageJsonFile = PackageJsonUtil.findChildPackageJsonFile(project.baseDir) ?: return null.also {
+                    LOG.info("getNxConfig package.json not found in project.baseDir=${context}")
+                }
+                LOG.info("root package.json found=${packageJsonFile.path}")
+
+                return CachedValuesManager.getManager(project).getCachedValue(
+                    PsiManager.getInstance(project).findFile(packageJsonFile) ?: return null,
+                    NX_CLI_CONFIG_KEY,
+                    {
+                        val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(packageJsonFile)
+                        val config =
+                            try {
+                                NxConfigFromGlobs(project, packageJsonFile)
+                            } catch (e: ProcessCanceledException) {
+                                thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
+                                throw e
+                            } catch (e: Exception) {
+                                thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
+                                LOG.info("Cannot load nx config from glob root package json file=" + packageJsonFile.path + ": " + e.message)
+                                null
+                            }
+                        CachedValueProvider.Result.create(config, cachedDocument ?: packageJsonFile)
+                    },
+                    false
+                )
+
+            }
 
             val psiFile = PsiManager.getInstance(project).findFile(angularCliJson) ?: return null.also {
                 LOG.info("cannot find psiFile from vf=${angularCliJson.path}")
             }
+
             return CachedValuesManager.getManager(project).getCachedValue(
                 psiFile,
                 NX_CLI_CONFIG_KEY,

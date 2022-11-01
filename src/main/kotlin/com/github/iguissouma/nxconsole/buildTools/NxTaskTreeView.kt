@@ -48,7 +48,7 @@ class NxTaskTreeView(val nxService: NxService, val project: Project, val layoutP
         }
         // buildfileTreeNode.add(generateAndRunTargetNode)
 
-        val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+        val nxConfig = NxConfigProvider.getNxConfig(project, structure.nxJson)
 
         LOG.info("Loaded nxConfig with projects (${nxConfig?.projects?.size})")
 

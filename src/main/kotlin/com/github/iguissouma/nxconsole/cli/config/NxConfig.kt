@@ -87,12 +87,14 @@ class NxConfigFromGlobs(
             val relativePath = VfsUtilCore.getRelativePath(it, project.baseDir)
             val psiFile = PsiManager.getInstance(project).findFile(it) as? JsonFile
             val scriptsProperty = NpmScriptsUtil.findScriptsProperty(psiFile)
+            val json: Map<String, Any> = psiFile?.let { it1 -> mapper.readValue(it1.text) } ?: emptyMap()
+            val name = json["name"] as? String  ?: it.parent.nameWithoutExtension
             NxProjectImpl(
-                name = it.parent.nameWithoutExtension,
+                name = name,
                 projectPath = FileUtil.getRelativePath(packageJsonFile.path, it.parent.path, '/') ,
                 ngProject = mapper.readValue("""
                                 {
-                                  "name": "${it.parent.nameWithoutExtension}",
+                                  "name": "${name}",
                                   "projectType": "library",
                                   "root": "$relativePath",
                                   "sourceRoot": "$relativePath",
@@ -108,7 +110,7 @@ class NxConfigFromGlobs(
             val psiFile = PsiManager.getInstance(project).findFile(it) ?: error("cannot PsiFile for file ${it.path}")
             val ngProject: AngularJsonProject = mapper.readValue(psiFile.text)
             NxProjectImpl(
-                name = it.parent.nameWithoutExtension,
+                name = ngProject.name ?: it.parent.nameWithoutExtension,
                 projectPath = FileUtil.getRelativePath(packageJsonFile.path, it.parent.path, '/') ,
                 ngProject = ngProject,
                 angularCliFolder = packageJsonFile,

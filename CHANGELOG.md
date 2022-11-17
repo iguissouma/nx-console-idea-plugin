@@ -4,9 +4,14 @@
 
 ## [Unreleased]
 
-## [0.50.0]
+## [0.51.0]
 ### Fixed
 
+- Fix run Nx tasks from nx workspace not a root project but a module of project
+- Fix nx project names taken from `project.json` or `package.json`
+
+## [0.50.0]
+### Fixed
 - Fix nx config for workspaces without workspace.json and project.json files
 
 ## [0.49.1]

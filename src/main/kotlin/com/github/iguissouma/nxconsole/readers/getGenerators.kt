@@ -13,15 +13,23 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 
+data class GetGeneratorsOptions(
+    val includeHidden: Boolean = false,
+    val includeNgAdd: Boolean = false,
+)
+
 fun getGenerators(
     workspacePath: String,
-    projects: WorkspaceProjects
+    projects: WorkspaceProjects,
+    options: GetGeneratorsOptions = GetGeneratorsOptions(),
 ): List<CollectionInfo> {
     val baseDir = workspacePath
     val collections = readCollections(
         workspacePath, ReadCollectionsOptions(
             projects = projects,
-            clearPackageJsonCache = false
+            clearPackageJsonCache = false,
+            includeHidden = options.includeHidden,
+            includeNgAdd = options.includeNgAdd,
         )
     )
 

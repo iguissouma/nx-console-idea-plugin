@@ -3,13 +3,15 @@ package com.github.iguissouma.nxconsole.schematics
 import com.github.iguissouma.nxconsole.cli.config.NxConfigProvider
 import com.github.iguissouma.nxconsole.cli.config.WorkspaceType
 import com.github.iguissouma.nxconsole.readers.CollectionInfo
+import com.github.iguissouma.nxconsole.readers.WorkspaceProjects
 import com.github.iguissouma.nxconsole.readers.WorkspaceType.*
 import com.github.iguissouma.nxconsole.readers.getGeneratorOptions
 import com.github.iguissouma.nxconsole.readers.getGenerators
 import com.intellij.openapi.project.Project
 
 fun doLoadGenerators(project: Project): List<Schematic> {
-    val generators = getGenerators(project.basePath!!, null)
+    val nxConfig = NxConfigProvider.getNxConfig(project, project.baseDir)
+    val generators = getGenerators(project.basePath!!, nxConfig?.projects)
     val nxWorkspaceType = NxConfigProvider.getNxWorkspaceType(project, project.baseDir)
     val workspaceType = if (nxWorkspaceType == WorkspaceType.ANGULAR) ng else nx
     return generators.mapNotNull { collectionInfo: CollectionInfo ->

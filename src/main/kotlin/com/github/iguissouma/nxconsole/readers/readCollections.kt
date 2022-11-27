@@ -1,5 +1,6 @@
 package com.github.iguissouma.nxconsole.readers
 
+import com.github.iguissouma.nxconsole.cli.config.NxProject
 import com.github.iguissouma.nxconsole.readers.CollectionType.*
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -169,15 +170,21 @@ data class Generator(
 )
 
 // export type WorkspaceProjects = WorkspaceJsonConfiguration['projects'];
-typealias WorkspaceProjects = List<Any>?
+typealias WorkspaceProjects = List<NxProject>?
 
-data class ReadCollectionsOptions(val projects: WorkspaceProjects, val clearPackageJsonCache: Boolean?)
+data class ReadCollectionsOptions(
+    val projects: WorkspaceProjects,
+    val clearPackageJsonCache: Boolean?,
+    val includeHidden: Boolean?,
+    val includeNgAdd: Boolean?,
+)
 
 fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): List<CollectionInfo> {
     //TODO
     if (options?.clearPackageJsonCache == true) {
         clearJsonCache("package.json", workspacePath)
     }
+
     val packages = workspaceDependencies(workspacePath, options?.projects)
 
     val collections = packages.map { packageDetails(it) }
@@ -412,6 +419,7 @@ private operator fun <E> List<E>.get(fullFilePath: E): E {
  */
 fun workspaceDependencies(workspacePath: String, projects: WorkspaceProjects): List<String> {
     val dependencies: MutableList<String> = mutableListOf()
+
     dependencies.addAll(localDependencies(workspacePath, projects))
 
     //if (await isWorkspaceInPnp(workspacePath)) {
@@ -492,9 +500,8 @@ fun localDependencies(workspacePath: String, projects: WorkspaceProjects): Colle
         return [];
     }*/
 
-    val packages = projects.filterIsInstance<ProjectConfiguration>().map {
-        "${workspacePath}/${it.root}/package.json"
-    }
+    val packages = projects.mapNotNull { it.rootDir?.findChild("package.json")?.path }
+
     val existingPackages: MutableList<String> = mutableListOf()
 
     for (pkg in packages) {

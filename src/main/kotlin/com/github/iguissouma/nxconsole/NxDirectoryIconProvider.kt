@@ -12,7 +12,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
 
-class NxDirectoryIconProvider : IconProvider(), DumbAware {
+class NxDirectoryIconProvider : IconProvider() {
 
     override fun getIcon(element: PsiElement, flags: Int): Icon? {
         if (element is PsiDirectory) {

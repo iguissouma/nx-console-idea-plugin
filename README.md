@@ -6,7 +6,7 @@
 
 <!-- Plugin description -->
 
-This plugin will add support for projects using [Nx](http://nx.dev/) dev tools. 
+This plugin will add support for projects using [Nx](https://nx.dev/) dev tools. 
 
 <p>Donate(<a href="https://www.paypal.com/donate?hosted_button_id=A2YAJPJ9UBKZQ">PayPal</a>) </p>
 <br>

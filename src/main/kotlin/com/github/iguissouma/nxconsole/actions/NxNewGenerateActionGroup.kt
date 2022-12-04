@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.actionSystem.UpdateInBackground
 import com.intellij.openapi.options.advanced.AdvancedSettings
 import java.util.*
 
@@ -20,7 +21,7 @@ fun String.capitalized(): String = this.replaceFirstChar {
     else it.toString()
 }
 
-class NxNewGenerateActionGroup : ActionGroup() {
+class NxNewGenerateActionGroup : ActionGroup(), UpdateInBackground {
 
     override fun update(e: AnActionEvent) {
         val project = e.getData(LangDataKeys.PROJECT) ?: return

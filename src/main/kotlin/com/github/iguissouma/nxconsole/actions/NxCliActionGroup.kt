@@ -8,9 +8,10 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.actionSystem.UpdateInBackground
 import java.util.*
 
-class NxCliActionGroup : ActionGroup() {
+class NxCliActionGroup : ActionGroup(), UpdateInBackground {
 
     override fun update(e: AnActionEvent) {
         val project = e.getData(LangDataKeys.PROJECT) ?: return

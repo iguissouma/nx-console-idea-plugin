@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.52.2] - 2022-12-06
+
+### Fixed
+- Fix exceptions at startup caused by action group slow operations
+
 ## [0.52.1] - 2022-11-30
 
 ### Fixed
@@ -298,7 +303,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.52.1...HEAD
+[Unreleased]: null/compare/v0.52.2...HEAD
+[0.52.2]: null/compare/v0.52.1...v0.52.2
 [0.52.1]: null/compare/v0.51.0...v0.52.1
 [0.51.0]: null/compare/v0.50.0...v0.51.0
 [0.50.0]: null/compare/v0.49.1...v0.50.0

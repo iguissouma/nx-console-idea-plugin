@@ -53,10 +53,9 @@ class NxConfigProvider private constructor() {
                             try {
                                 NxConfigFromGlobs(project, packageJsonFile)
                             } catch (e: ProcessCanceledException) {
-                                thisLogger().error("NxConfigFromGlobs loading canceled", e)
+                                LOG.info("NxConfigFromGlobs loading canceled")
                                 null
                             } catch (e: Exception) {
-                                thisLogger().error("an error occurred while loading NxConfigFromGlobs", e)
                                 LOG.info("Cannot load nx config from glob root package json file=" + packageJsonFile.path + ": " + e.message)
                                 null
                             }
@@ -84,10 +83,10 @@ class NxConfigProvider private constructor() {
                                 psiFile.project
                             )
                         } catch (e: ProcessCanceledException) {
-                            thisLogger().error("NxConfig loading canceled", e)
+                            LOG.info("NxConfig loading canceled")
                             null
                         } catch (e: Exception) {
-                            LOG.warn("Cannot load nx config from " + angularCliJson.path + ": " + e.message)
+                            LOG.info("Cannot load nx config from " + angularCliJson.path + ": " + e.message)
                             null
                         }
                     CachedValueProvider.Result.create(config, cachedDocument ?: angularCliJson)

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.52.4] - 2022-12-13
+
+### Fixed
+- catch exceptions process canceled and log as info
+
 ## [0.52.3] - 2022-12-09
 
 ### Fixed
@@ -308,7 +313,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.52.3...HEAD
+[Unreleased]: null/compare/v0.52.4...HEAD
+[0.52.4]: null/compare/v0.52.3...v0.52.4
 [0.52.3]: null/compare/v0.52.2...v0.52.3
 [0.52.2]: null/compare/v0.52.1...v0.52.2
 [0.52.1]: null/compare/v0.51.0...v0.52.1

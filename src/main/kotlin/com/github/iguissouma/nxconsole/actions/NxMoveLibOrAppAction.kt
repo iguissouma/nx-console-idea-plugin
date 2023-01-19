@@ -77,8 +77,7 @@ class NxMoveLibOrAppAction : AnAction(NxIcons.NRWL_ICON) {
                     baseDir = cli,
                     workingDir = VfsUtilCore.virtualToIoFile(workingDir ?: cli),
                     project = project,
-                    callback = {
-                    },
+                    callback = null,
                     title = "Move",
                     filters = arrayOf(filter),
                     args = args

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.53.0] - 2023-01-19
+
+### Fixed
+- Fix move/rename app/lib exception
+
 ## [0.52.4] - 2022-12-13
 
 ### Fixed
@@ -313,7 +318,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.52.4...HEAD
+[Unreleased]: null/compare/v0.53.0...HEAD
+[0.53.0]: null/compare/v0.52.4...v0.53.0
 [0.52.4]: null/compare/v0.52.3...v0.52.4
 [0.52.3]: null/compare/v0.52.2...v0.52.3
 [0.52.2]: null/compare/v0.52.1...v0.52.2

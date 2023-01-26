@@ -179,17 +179,17 @@ data class ReadCollectionsOptions(
     val includeNgAdd: Boolean?,
 )
 
-fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): List<CollectionInfo> {
+fun readCollections(workspacePath: String, options: ReadCollectionsOptions): List<CollectionInfo> {
     //TODO
     if (options?.clearPackageJsonCache == true) {
         clearJsonCache("package.json", workspacePath)
     }
 
-    val packages = workspaceDependencies(workspacePath, options?.projects)
+    val packages = workspaceDependencies(workspacePath, options.projects)
 
     val collections = packages.map { packageDetails(it) }
 
-    val allCollections = collections.flatMap { readCollection(workspacePath, it) ?: emptyList() }
+    val allCollections = collections.flatMap { readCollection(workspacePath, it, options) ?: emptyList() }
 
     /**
      * Since we gather all collections, and collections listed in `extends`, we need to dedupe collections here if workspaces have that extended collection in their own package.json
@@ -212,7 +212,11 @@ fun readCollections(workspacePath: String, options: ReadCollectionsOptions?): Li
     return dedupedCollections.values.toList()
 }
 
-fun readCollection(workspacePath: String, packageDetails: PackageDetails): List<CollectionInfo>? {
+fun readCollection(
+    workspacePath: String,
+    packageDetails: PackageDetails,
+    options: ReadCollectionsOptions,
+): List<CollectionInfo>? {
     try {
         val (packagePath, packageName, json) = packageDetails
         val executorCollections =
@@ -225,7 +229,8 @@ fun readCollection(workspacePath: String, packageDetails: PackageDetails): List<
             packageName,
             packagePath,
             executorCollections,
-            generatorCollections
+            generatorCollections,
+            NxGeneratorsRequestOptions(options.includeHidden ?: false, options.includeNgAdd ?: false)
         )
 
     } catch (e: Exception) {
@@ -238,7 +243,8 @@ fun getCollectionInfo(
     collectionName: String?,
     collectionPath: String,
     executorCollection: Map<String, Any?>,
-    generatorCollection: Map<String, Any?>
+    generatorCollection: Map<String, Any?>,
+    options: NxGeneratorsRequestOptions,
 ): List<CollectionInfo>? {
     val collectionMap: MutableMap<String, CollectionInfo> = mutableMapOf()
     fun buildCollectionInfo(
@@ -264,7 +270,7 @@ fun getCollectionInfo(
 
 
     for ((key, schema) in executors.entries) {
-        if (!canUse(key, schema as Map<String, Any?>)) {
+        if (!canUse(key, schema as Map<String, Any?>, options.includeHidden, options.includeNgAdd)) {
             continue
         }
         val collectionInfo = buildCollectionInfo(
@@ -288,7 +294,7 @@ fun getCollectionInfo(
         .plus(generatorCollectionJson?.get("schematics") as Map<String, Any?>? ?: emptyMap())
 
     for ((key, schema) in generators.entries) {
-        if (!canUse(key, schema as Map<String, Any?>)) {
+        if (!canUse(key, schema as Map<String, Any?>, options.includeHidden, options.includeNgAdd)) {
             continue
         }
         try {
@@ -349,11 +355,16 @@ fun collectionNameWithType(name: String, type: CollectionType): String {
  */
 fun canUse(
     name: String,
+    // s: { hidden: boolean; private: boolean; schema: string; extends: boolean }
     s: Map<String, Any?>?,
-// s: { hidden: boolean; private: boolean; schema: string; extends: boolean }
+    includeHiddenCollections: Boolean = false,
+    includeNgAddCollection: Boolean = false,
 ): Boolean {
-    return !(s?.get("hidden") as? Boolean ?: false) && !(s?.get("private") as? Boolean
-        ?: false) && !(s?.get("extends") as? Boolean ?: false) && name != "ng-add"
+    return (!(s?.get("hidden") as? Boolean ?: false) || includeHiddenCollections) &&
+            !(s?.get("private") as? Boolean ?: false) &&
+            !(s?.get("extends") as? Boolean ?: false) &&
+            !(s?.get("x-deprecated") as? Boolean ?: false) &&
+            (name != "ng-add" || includeNgAddCollection)
 }
 
 

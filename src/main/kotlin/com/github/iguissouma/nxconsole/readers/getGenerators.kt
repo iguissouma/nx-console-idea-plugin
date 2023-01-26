@@ -37,8 +37,8 @@ fun getGenerators(
         *collections.filter {
             it.type == CollectionType.generator
         }.toTypedArray(),
-        *checkAndReadWorkspaceGenerators(baseDir, schematics).toTypedArray(),
-        *checkAndReadWorkspaceGenerators(baseDir, generators).toTypedArray(),
+        *checkAndReadWorkspaceGenerators(baseDir, schematics, NxGeneratorsRequestOptions(options.includeHidden, options.includeNgAdd)).toTypedArray(),
+        *checkAndReadWorkspaceGenerators(baseDir, generators, NxGeneratorsRequestOptions(options.includeHidden, options.includeNgAdd)).toTypedArray(),
     )
     return generatorCollections.filterNot { it.data == null }
 
@@ -300,6 +300,7 @@ enum class WorkspaceGeneratorType {
 fun checkAndReadWorkspaceGenerators(
     baseDir: String,
     workspaceGeneratorType: WorkspaceGeneratorType,
+    options: NxGeneratorsRequestOptions,
 ): List<CollectionInfo> {
 
     val workspaceGeneratorsPath = Path("tools", workspaceGeneratorType.name)
@@ -311,6 +312,7 @@ fun checkAndReadWorkspaceGenerators(
             baseDir,
             workspaceGeneratorsPath,
             workspaceGeneratorType,
+            options,
         )
 
         return collections ?: emptyList()
@@ -319,10 +321,16 @@ fun checkAndReadWorkspaceGenerators(
 
 }
 
+data class NxGeneratorsRequestOptions (
+    val includeHidden: Boolean,
+    val includeNgAdd: Boolean,
+)
+
 fun readWorkspaceGeneratorsCollection(
     baseDir: String,
     workspaceGeneratorsPath: Path,
-    workspaceGeneratorType: WorkspaceGeneratorType
+    workspaceGeneratorType: WorkspaceGeneratorType,
+    options: NxGeneratorsRequestOptions,
 ): List<CollectionInfo>? {
     val collectionDir = Path(baseDir).resolve(workspaceGeneratorsPath).toFile()
     val collectionName = "workspace-${
@@ -340,6 +348,7 @@ fun readWorkspaceGeneratorsCollection(
                 "json" to emptyMap<String, Any>(),
             ),
             collection["json"] as Map<String, Any>,
+            options,
         ) ?: emptyList()
     } else {
         return collectionDir.walkBottomUp().filter { it.name == "schema.json" }.map {

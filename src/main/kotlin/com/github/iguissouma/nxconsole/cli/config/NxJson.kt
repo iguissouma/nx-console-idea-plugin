@@ -33,23 +33,23 @@ internal class AngularJson {
     val legacyLint: List<AngularJsonLintOptions> = ArrayList()
 }
 
-internal class AngularJsonProject {
-    @JsonProperty("projectType")
-    val projectType: NxProject.AngularProjectType? = null
+internal class AngularJsonProject(
+    @field:JsonProperty("projectType")
+    val projectType: NxProject.AngularProjectType? = null,
 
-    @JsonProperty("name")
-    val name: String? = null
+    @field:JsonProperty("name")
+    val name: String? = null,
 
-    @JsonProperty("root")
-    val rootPath: String? = null
+    @field:JsonProperty("root")
+    val rootPath: String? = null,
 
-    @JsonProperty("sourceRoot")
-    val sourceRoot: String? = null
+    @field:JsonProperty("sourceRoot")
+    val sourceRoot: String? = null,
 
-    @JsonProperty("targets")
-    @JsonAlias(value = ["architect"])
-    val architect: Map<String, NxProject.Architect> = emptyMap()
-}
+    @field:JsonProperty("targets")
+    @field:JsonAlias(value = ["architect"])
+    val architect: Map<String, NxProject.Architect> = emptyMap(),
+)
 
 internal class AngularJsonTargets {
     @JsonProperty("build")

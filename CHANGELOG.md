@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.55.0] - 2023-02-16
+
+### Fixed
+- Fix project names for tasks
+
 ## [0.54.0] - 2023-01-27
 
 ### Fixed
@@ -323,7 +328,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.54.0...HEAD
+[Unreleased]: null/compare/v0.55.0...HEAD
+[0.55.0]: null/compare/v0.54.0...v0.55.0
 [0.54.0]: null/compare/v0.53.0...v0.54.0
 [0.53.0]: null/compare/v0.52.4...v0.53.0
 [0.52.4]: null/compare/v0.52.3...v0.52.4

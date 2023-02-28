@@ -33,8 +33,9 @@ class NxRunConfiguration(
     var runSettings: NxRunSettings = NxRunSettings()
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-        val nxPackage = getNxPackage(this.project, this.runSettings)
-        return nxPackage?.let { NxRunProfileState(environment, this.runSettings, it) }
+        // val nxPackage = getNxPackage(this.project, this.runSettings)
+        // return nxPackage?.let { NxRunProfileState(environment, this.runSettings, it) }
+        return NxRunProfileState(environment, this.runSettings)
     }
 
     private fun getNxPackage(project: Project, runSettings: NxRunSettings): NodePackage? {

@@ -39,7 +39,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
 
     private val nxJsonField: TextFieldWithHistoryWithBrowseButton = createNxFileFieldWithBrowseButton(project)
     private var nodeInterpreterField: NodeJsInterpreterField = NodeJsInterpreterField(project, false)
-    private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
+    // private val nxPackageField: NodePackageField = NodePackageField(nodeInterpreterField, "nx")
     private val tasksField: TextFieldWithHistory = createTasksField(project, this.nxJsonField)
     private val argumentsEditor = createArgumentsEditor()
     private val packageManagerPackageField: NodePackageField =
@@ -55,7 +55,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         .addComponent(JSeparator(), 8)
         .addLabeledComponent("Node &interpreter:", this.nodeInterpreterField, 8)
         .addLabeledComponent("Package manager:", this.packageManagerPackageField, 8)
-        .addLabeledComponent("&Package nx-cli:", this.nxPackageField)
+        //.addLabeledComponent("&Package nx-cli:", this.nxPackageField)
         .addLabeledComponent("Environment:", this.envVarsComponent)
         .panel
 
@@ -134,15 +134,15 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
             this.nxJsonField.setTextAndAddToHistory(FileUtil.toSystemDependentName(settings.nxFileSystemIndependentPath!!))
         }
 
-        val defaultPackage =
-            NodePackage.findDefaultPackage(
-                project,
-                "@nrwl/cli",
-                NodeJsInterpreterRef.createProjectRef().resolve(project)
-            )
-        if (defaultPackage != null) {
-            this.nxPackageField.selected = defaultPackage
-        }
+       //  val defaultPackage =
+       //      NodePackage.findDefaultPackage(
+       //          project,
+       //          "@nrwl/cli",
+       //          NodeJsInterpreterRef.createProjectRef().resolve(project)
+       //      )
+       //  if (defaultPackage != null) {
+       //      this.nxPackageField.selected = defaultPackage
+       //  }
         this.packageManagerPackageField.selectedRef = settings.packageManagerPackageRef
 
         tasksField.setTextAndAddToHistory(ParametersListUtil.join(settings.tasks))
@@ -153,7 +153,7 @@ class NxRunConfigurationEditor(val project: Project) : SettingsEditor<NxRunConfi
         val dialogWrapper = DialogWrapper.findInstance(this.panel)
         if (dialogWrapper is SingleConfigurableEditor) {
             this.nodeInterpreterField.setPreferredWidthToFitText()
-            this.nxPackageField.setPreferredWidthToFitText()
+            // this.nxPackageField.setPreferredWidthToFitText()
             this.packageManagerPackageField.setPreferredWidthToFitText()
             SwingHelper.resizeDialogToFitTextFor(this.nxJsonField)
         }

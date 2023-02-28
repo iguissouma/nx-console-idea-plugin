@@ -47,7 +47,7 @@ import java.nio.file.Path
 class NxRunProfileState(
     val environment: ExecutionEnvironment,
     val runSettings: NxRunSettings,
-    val nxPackage: NodePackage
+    // val nxPackage: NodePackage
 ) : NodeBaseRunProfileState, NodeCommandLineOwner {
 
     override fun startProcess(configurator: CommandLineDebugConfigurator?): ProcessHandler {

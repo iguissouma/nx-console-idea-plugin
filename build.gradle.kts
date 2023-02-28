@@ -8,9 +8,9 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.7.21"
+    id("org.jetbrains.kotlin.jvm") version "1.8.0"
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.10.0"
+    id("org.jetbrains.intellij") version "1.12.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.0.0"
     // Gradle Qodana Plugin
@@ -28,7 +28,7 @@ repositories {
     jcenter()
 }
 
-// Set the JVM language level used to build project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
+// Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
 kotlin {
     jvmToolchain(11)
 }
@@ -118,8 +118,9 @@ tasks {
         changeNotes.set(provider {
             with(changelog) {
                 renderItem(
-                    getOrNull(properties("pluginVersion")) ?: getLatest(),
-                    Changelog.OutputType.HTML
+                    getOrNull(properties("pluginVersion"))
+                        ?: runCatching { getLatest() }.getOrElse { getUnreleased() },
+                    Changelog.OutputType.HTML,
                 )
             }
         })
@@ -128,7 +129,7 @@ tasks {
     publishPlugin {
         dependsOn("patchChangelog")
         token.set(System.getenv("PUBLISH_TOKEN"))
-        // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))

@@ -36,6 +36,9 @@ class NxGenerateRunAnythingProvider : RunAnythingCommandLineProvider() {
     override fun getIcon(value: String): Icon = NxIcons.NRWL_ICON
 
     override fun getHelpGroupTitle() = "Nx"
+    override fun execute(dataContext: DataContext, value: String) {
+        super.execute(dataContext, value)
+    }
 
     override fun getCompletionGroupTitle(): String {
         return "Nx tasks"

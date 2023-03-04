@@ -81,9 +81,10 @@ class NxRunConfiguration(
         runSettings.writeToXml(element)
     }
 
-    override fun getInterpreter(): NodeJsInterpreter? {
-        return this.runSettings.interpreterRef.resolve(this.project)
-    }
+    override val interpreter: NodeJsInterpreter?
+        get() {
+            return this.runSettings.interpreterRef.resolve(this.project)
+        }
 
     override fun useRunExecutor(): Boolean {
         return true

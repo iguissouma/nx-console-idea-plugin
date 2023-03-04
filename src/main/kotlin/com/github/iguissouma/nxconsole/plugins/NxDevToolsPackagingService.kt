@@ -30,6 +30,7 @@ import com.intellij.util.ObjectUtils
 import com.intellij.webcore.packaging.InstalledPackage
 import com.intellij.webcore.packaging.PackageManagementServiceEx
 import com.intellij.webcore.packaging.RepoPackage
+import org.jetbrains.annotations.Nls
 import java.io.File
 import java.util.*
 
@@ -87,7 +88,7 @@ class NxDevToolsPackagingService(
         return this.allPackages
     }
 
-    override fun getInstalledPackages(): MutableCollection<InstalledPackage> {
+    override fun getInstalledPackagesList(): MutableList<out InstalledPackage> {
         val output = NxExecutionUtil(myProject).executeAndGetOutput("list") ?: return mutableListOf()
         if (output.exitCode != 0) {
             return mutableListOf()
@@ -159,7 +160,8 @@ class NxDevToolsPackagingService(
         )
     }
 
-    override fun uninstallPackages(installedPackages: MutableList<InstalledPackage>?, listener: Listener) {
+    override fun uninstallPackages(installedPackages: MutableList<out InstalledPackage>?, listener: Listener?) {
+        listener ?: return
         ApplicationManager.getApplication().executeOnPooledThread {
             val var3: Iterator<*> = installedPackages!!.iterator()
             while (var3.hasNext()) {
@@ -181,9 +183,10 @@ class NxDevToolsPackagingService(
     }
 
     override fun fetchPackageVersions(
-        packageName: String,
-        consumer: CatchingConsumer<MutableList<String>, Exception>?
+        packageName: String?,
+        consumer: CatchingConsumer<in MutableList<String>, in java.lang.Exception>?
     ) {
+        packageName ?: return
         this.myManager.fetchPackageInfo(
             object : NodePackageInfoManager.PackageInfoConsumer(packageName) {
                 override fun onPackageInfo(packageInfo: NodePackageInfo?) {
@@ -199,7 +202,11 @@ class NxDevToolsPackagingService(
         )
     }
 
-    override fun fetchPackageDetails(packageName: String?, consumer: CatchingConsumer<String, Exception>?) {
+    override fun fetchPackageDetails(
+        packageName: String?,
+        consumer: CatchingConsumer<in @Nls String, in java.lang.Exception>?
+    ) {
+        packageName ?: return
         myManager.fetchPackageInfo(
             object : NodePackageInfoManager.PackageInfoConsumer(packageName!!) {
                 override fun onPackageInfo(packageInfo: NodePackageInfo?) {
@@ -314,7 +321,7 @@ class NxDevToolsPackagingService(
         return if (baseDir != null) VfsUtilCore.virtualToIoFile(baseDir) else null
     }
 
-    override fun fetchLatestVersion(pkg: InstalledPackage, consumer: CatchingConsumer<String, Exception>) {
+    override fun fetchLatestVersion(pkg: InstalledPackage, consumer: CatchingConsumer<in String,in Exception>) {
         myManager.fetchPackageInfo(
             object : NodePackageInfoManager.PackageInfoConsumer(pkg.name, false) {
                 override fun onPackageInfo(packageInfo: NodePackageInfo?) {

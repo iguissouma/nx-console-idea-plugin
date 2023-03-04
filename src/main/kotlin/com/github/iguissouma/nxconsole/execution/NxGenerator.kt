@@ -157,8 +157,8 @@ class NxGenerator {
         if (targetRun.interpreter is NodeJsRemoteInterpreter) {
             commandLine.addParameter("--")
         }
-        commandLine.addParameters(arguments)
-        commandLine.addParameters(args.toList())
+        commandLine.addParameters(arguments.filterNotNull())
+        commandLine.addParameters(args.filterNotNull().toList())
         commandLine.setWorkingDirectory(targetRun.path(workingDir.path))
         NodeCommandLineUtil.prependNodeDirToPATH(targetRun)
 

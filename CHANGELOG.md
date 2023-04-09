@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.57.0] - 2023-04-09
+
+### Added
+- Add support  for 2023.1 version
+
 ## [0.56.0] - 2023-03-01
 
 ### Fixed
@@ -333,7 +338,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.56.0...HEAD
+[Unreleased]: null/compare/v0.57.0...HEAD
+[0.57.0]: null/compare/v0.56.0...v0.57.0
 [0.56.0]: null/compare/v0.55.0...v0.56.0
 [0.55.0]: null/compare/v0.54.0...v0.55.0
 [0.54.0]: null/compare/v0.53.0...v0.54.0

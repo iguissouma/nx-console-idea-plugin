@@ -188,11 +188,13 @@
                 text="Show Affected" icon="/actions/diagramDiff.svg">
         </action>
 
+        <action id="Nx.NxNewMenuGenerateAction" class="com.github.iguissouma.nxconsole.actions.NxNewMenuGenerateAction">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewDir"/>
+        </action>
+        
         <!--Nx new generate-->
         <group id="Nx.NxNewGenerateActionGroup"
-               class="com.github.iguissouma.nxconsole.actions.NxNewGenerateActionGroup"
-               popup="true">
-            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewDir"/>
+               class="com.github.iguissouma.nxconsole.actions.NxNewGenerateActionGroup">
         </group>
 
         <!--Nx action-->

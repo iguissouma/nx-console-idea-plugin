@@ -8,8 +8,10 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.actionSystem.PopupAction
 import com.intellij.openapi.actionSystem.UpdateInBackground
 import com.intellij.openapi.options.advanced.AdvancedSettings
+import org.intellij.images.thumbnail.actions.FilterByTagActionGroup
 import java.util.*
 
 /**

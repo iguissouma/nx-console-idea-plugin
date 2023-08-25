@@ -114,6 +114,8 @@
         <psi.referenceContributor language="JSON" implementation="com.github.iguissouma.nxconsole.references.NxProjectJsonReferenceContributor"/>
         <completion.contributor language="JSON" implementationClass="com.github.iguissouma.nxconsole.completions.NxProjetJsonCompletionContributor" order="first" />
 
+        <pluginReplacement implementation="com.github.iguissouma.nxconsole.deprecation.NxConsolePluginReplacement"/>
+        <postStartupActivity implementation="com.github.iguissouma.nxconsole.deprecation.ShowDeprecationNoticeStartupActivity"/>
 
     </extensions>
 

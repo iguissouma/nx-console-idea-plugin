@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.59.0] - 2023-08-27
+
+### Added
+- Add deprecation notification
+
 ## [0.58.0] - 2023-05-20
 
 ### Added
@@ -344,7 +349,8 @@
 - Run Nx Tasks from angular.json file
 - dep graph file perspective for nx.json
 
-[Unreleased]: null/compare/v0.58.0...HEAD
+[Unreleased]: null/compare/v0.59.0...HEAD
+[0.59.0]: null/compare/v0.58.0...v0.59.0
 [0.58.0]: null/compare/v0.57.0...v0.58.0
 [0.57.0]: null/compare/v0.56.0...v0.57.0
 [0.56.0]: null/compare/v0.55.0...v0.56.0

@@ -28,12 +28,14 @@ import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.util.NlsContexts.DialogTitle
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.CollectionComboBoxModel
@@ -48,6 +50,7 @@ import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.panels.Wrapper
+import com.intellij.ui.components.textFieldWithHistoryWithBrowseButton
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.Cell
 import com.intellij.ui.layout.CellBuilder
@@ -86,6 +89,10 @@ import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
 import javax.swing.event.DocumentEvent
+import kotlin.jvm.functions.Function0
+import kotlin.jvm.functions.Function1
+import kotlin.jvm.functions.Function2
+import kotlin.jvm.internal.Intrinsics
 
 class SpinnerPredicate(private val spinner: JBIntSpinner, private val predicate: (Int?) -> Boolean) :
     ComponentPredicate() {
@@ -451,6 +458,7 @@ class NxBuildersUiPanel(
                 )
                 OptionSettingControl(cb, cb.component.selected, {})
             }
+
             OptionSettingType.String -> {
                 val textField = textField(
                     { modelUI[option.name] as? String ?: "" },
@@ -462,6 +470,7 @@ class NxBuildersUiPanel(
                     { textField.component.text = option.default }
                 )
             }
+
             OptionSettingType.Enum -> {
                 val comboBoxModel: CollectionComboBoxModel<String> = CollectionComboBoxModel(option.enum)
                 val cb = comboBox(
@@ -491,20 +500,25 @@ class NxBuildersUiPanel(
 
             OptionSettingType.Directory -> {
                 val textField = textFieldWithHistoryWithBrowseButton(
-                    { modelUI[option.name] as? String ?: "" },
-                    { modelUI[option.name] = it },
-                    "Select ${option.name}",
                     project,
-                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
+                    "Select ${option.name}", FileChooserDescriptorFactory.createSingleFolderDescriptor()!!, null, null
                 )
+                val modelBinding: PropertyBinding<String> =
+                    PropertyBinding<String>({ modelUI[option.name] as? String ?: "" }, { modelUI[option.name] = it })
+                textField.text = modelBinding.get()
+
+                val builder = this.component(textField)
+                    .withBinding(TextFieldWithHistoryWithBrowseButton::getText, TextFieldWithHistoryWithBrowseButton::setText, modelBinding)
+
                 PathShortener.enablePathShortening(
-                    textField.component.childComponent.textEditor,
+                    textField.childComponent.textEditor,
                     JTextField(project.basePath)
                 )
+
                 OptionSettingControl(
-                    textField,
-                    textField.component.childComponent.textEditor.enteredTextSatisfies { it == option.default.toString() },
-                    { textField.component.text = option.default.toString() }
+                    builder,
+                    textField.childComponent.textEditor.enteredTextSatisfies { it == option.default.toString() },
+                    { textField.text = option.default.toString() }
                 )
             }
 
@@ -571,9 +585,6 @@ class NxBuildersUiPanel(
             return cell.component(component, viewComponent)
         }
 
-        override fun withButtonGroup(title: String?, buttonGroup: ButtonGroup, body: () -> Unit) {
-            cell.withButtonGroup(title, buttonGroup, body)
-        }
     }
 
     private fun runnerAndConfigurationSettings(): RunnerAndConfigurationSettings {
@@ -650,16 +661,22 @@ class NxBuildersUiPanel(
                         ignoreCase = true
                     ) || "projectName".equals(option.name, ignoreCase = true)
                     ) -> buildProjectTextField(option)
+
             option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() && (
                     "path".equals(
                         option.name,
                         ignoreCase = true
                     ) || "directory".equals(option.name, ignoreCase = true)
                     ) -> buildDirectoryTextField(option)
-            option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() -> buildTextField(option)
+
+            option.type.lowercase(Locale.getDefault()) == "string" && option.enum.isNullOrEmpty() -> buildTextField(
+                option
+            )
+
             (option.type.lowercase(Locale.getDefault()) == "string" || option.type.lowercase(Locale.getDefault()) == "enum") && option.enum.isNotEmpty() -> buildSelectField(
                 option
             )
+
             option.type.lowercase(Locale.getDefault()) == "boolean" -> buildCheckboxField(option)
             option.type.lowercase(Locale.getDefault()) == "number" -> buildNumberField(option)
             else -> buildTextField(option)

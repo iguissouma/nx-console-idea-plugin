@@ -43,6 +43,7 @@ import com.intellij.ui.TextFieldWithHistoryWithBrowseButton
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.panels.Wrapper
+import com.intellij.ui.components.textFieldWithHistoryWithBrowseButton
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.Cell
 import com.intellij.ui.layout.CellBuilder
@@ -517,20 +518,25 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
 
             OptionSettingType.Directory -> {
                 val textField = textFieldWithHistoryWithBrowseButton(
-                    { modelUI[option.name!!] as? String ?: "" },
-                    { modelUI[option.name!!] = it },
-                    "Select ${option.name}",
                     project,
-                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
+                    "Select ${option.name}", FileChooserDescriptorFactory.createSingleFolderDescriptor()!!, null, null
                 )
+                val modelBinding: PropertyBinding<String> =
+                    PropertyBinding<String>({ modelUI[option.name] as? String ?: "" }, { modelUI[option.name!!] = it })
+                textField.text = modelBinding.get()
+
+                val builder = this.component(textField)
+                    .withBinding(TextFieldWithHistoryWithBrowseButton::getText, TextFieldWithHistoryWithBrowseButton::setText, modelBinding)
+
                 PathShortener.enablePathShortening(
-                    textField.component.childComponent.textEditor,
+                    textField.childComponent.textEditor,
                     JTextField(project.basePath)
                 )
+
                 OptionSettingControl(
-                    textField,
-                    textField.component.childComponent.textEditor.enteredTextSatisfies { it == option.default.toString() },
-                    { textField.component.text = option.default.toString() }
+                    builder,
+                    textField.childComponent.textEditor.enteredTextSatisfies { it == option.default.toString() },
+                    { textField.text = option.default.toString() }
                 )
             }
 
@@ -597,9 +603,6 @@ class NxGenerateUiPanel(project: Project, var schematic: Schematic, args: Mutabl
             return cell.component(component, viewComponent)
         }
 
-        override fun withButtonGroup(title: String?, buttonGroup: ButtonGroup, body: () -> Unit) {
-            cell.withButtonGroup(title, buttonGroup, body)
-        }
     }
 
     private fun createCenterPanel(): DialogPanel {

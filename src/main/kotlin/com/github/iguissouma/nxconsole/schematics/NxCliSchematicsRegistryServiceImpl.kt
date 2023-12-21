@@ -49,7 +49,7 @@ class NxCliSchematicsRegistryServiceImpl : NxCliSchematicsRegistryService {
                 ).getUpToDateOrCompute {
                     CachedValueProvider.Result.create(
                         doLoadGenerators(angularJson.project),
-                        NodeModulesDirectoryManager.getInstance(angularJson.project).nodeModulesDirChangeTracker,
+                        NodeModulesDirectoryManager.getInstance(angularJson.project).getNodeModulesDirChangeTracker(),
                         SCHEMATICS_CACHE_TRACKER,
                         angularJson
                     )
